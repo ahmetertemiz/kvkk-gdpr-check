@@ -108,6 +108,22 @@ export const DATA_CATEGORIES = {
   ceza: { tr: 'Ceza Mahkûmiyeti ve Güvenlik Tedbirleri', en: 'Criminal convictions', special: true },
   sendika: { tr: 'Sendika Üyeliği', en: 'Trade union membership', special: true },
   siyasi: { tr: 'Siyasi Düşünce', en: 'Political opinions', special: true },
+  genetik: { tr: 'Genetik Veri', en: 'Genetic data', special: true },
+  kilik: { tr: 'Kılık ve Kıyafet', en: 'Appearance and dress', special: true },
+  mesleki: {
+    tr: 'Mesleki Deneyim / Özlük', en: 'Professional data',
+    subjects: { tr: 'Üye / kullanıcı / aday [[kontrol]]', en: 'Users / applicants [[check]]' },
+    purposes: { tr: ['[[kontrol: mesleki verinin hangi özellik için gerektiğini yazın]]'], en: ['[[check: which feature needs professional data]]'] },
+    basis: { tr: 'KVKK md.5/2-c (sözleşmenin kurulması/ifası) [[kontrol]]', en: 'GDPR Art.6(1)(b) — contract [[check]]' },
+    retention: { tr: '[[kontrol: amaç için gereken süre]]', en: '[[check: period necessary]]' },
+  },
+  hukuki: {
+    tr: 'Hukuki İşlem', en: 'Legal proceedings',
+    subjects: { tr: 'Üye / kullanıcı [[kontrol]]', en: 'Users [[check]]' },
+    purposes: { tr: ['[[kontrol: hukuki işlem verisinin hangi amaçla işlendiğini yazın]]'], en: ['[[check: purpose of processing legal data]]'] },
+    basis: { tr: '[[kontrol: KVKK md.5/2-e (hakkın tesisi/korunması) veya başka bir sebep]]', en: '[[check: legal basis]]' },
+    retention: { tr: '[[kontrol: amaç için gereken süre]]', en: '[[check: period necessary]]' },
+  },
 };
 
 // Defaults shared by every special category.

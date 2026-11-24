@@ -16,6 +16,8 @@ Kullanım:
   kvkk-check docs [dizin] [--url <URL>]      Aydınlatma metni, çerez politikası,
                                              veri envanteri vb. dokümanları üret
   kvkk-check ui [--port 4477]                Yerel web arayüzünü aç
+  kvkk-check anket [dizin]                   Koddan anlaşılamayan soruları sor, cevapları
+                                             kvkk-answers.json dosyasına yaz (-y: yalnızca şablon)
   kvkk-check audit [dizin] [--url <URL>]     Derin denetim: veri haritası, akış analizi,
                                              ilke bazlı hukuki değerlendirme
                                              (-f text|md|html|json, --graph graf.json,
@@ -41,7 +43,9 @@ Canlı tarama seçenekleri:
       --timeout <ms>                  Sayfa başına zaman aşımı (varsayılan: 30000)
 
 Doküman seçenekleri:
-      --answers <dosya.json>          Şirket bilgileri (soru sormadan)
+      --answers <dosya.json>          Şirket bilgileri ve anket cevapları (audit ve docs;
+                                      varsayılan: <dizin>/kvkk-answers.json)
+      --no-audit                      Derin denetimi çalıştırma (DPIA/LIA/TIA taslakları üretilmez)
       --out <dizin>                   Çıktı dizini (varsayılan: ./privacy-docs)
   -y, --yes                           Soru sorma, bilinmeyenleri [[...]] bırak
 
@@ -49,7 +53,7 @@ Yapılandırma: proje kökünde .kvkkcheckrc.json → { "ignore": [...], "disabl
 Satır bazlı susturma: // kvkk-ignore   veya   // kvkk-ignore SEC013
 `;
 
-const SUBCOMMANDS = new Set(['url', 'docs', 'ui', 'audit']);
+const SUBCOMMANDS = new Set(['url', 'docs', 'ui', 'audit', 'anket', 'questions']);
 
 function parseArgs(argv) {
   const a = {
@@ -87,6 +91,7 @@ function parseArgs(argv) {
       case '-y': case '--yes': a.yes = true; break;
       case '--port': a.port = Number(next()); break;
       case '--graph': a.graphOut = next(); break;
+      case '--no-audit': a.noAudit = true; break;
       case '--include-tests': a.includeTests = true; break;
       case '-h': case '--help': a.help = true; break;
       case '--version': console.log(JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version); process.exit(0);
@@ -130,6 +135,25 @@ async function runLive(args) {
   });
 }
 
+/** Answers file: --answers, or <dir>/kvkk-answers.json when it exists. A broken file is an error, never silently ignored. */
+function readAnswers(args) {
+  const file = args.answers || path.join(args.dir, 'kvkk-answers.json');
+  // anket creates the file; for the other commands a named file that does not exist is an error
+  if ((!args.answers || args.cmd === 'anket' || args.cmd === 'questions') && !fs.existsSync(file)) return {};
+  try {
+    const j = JSON.parse(fs.readFileSync(file, 'utf8'));
+    if (!j || typeof j !== 'object' || Array.isArray(j)) throw new Error('JSON object expected');
+    return j;
+  } catch (e) {
+    console.error(args.lang === 'en' ? `Cannot read answers (${file}): ${e.message}` : `Cevap dosyası okunamadı (${file}): ${e.message}`);
+    process.exit(2);
+  }
+}
+
+function warnProblems(organization, lang) {
+  for (const p of organization?.problems || []) process.stderr.write(lang === 'en' ? `  ! ignored answer (wrong type): org.${p}\n` : `  ! sayılmayan cevap (tür yanlış): org.${p}\n`);
+}
+
 function assertDir(dir) {
   if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) {
     console.error(`Dizin bulunamadı: ${dir}`);
@@ -156,7 +180,8 @@ async function main() {
     assertDir(args.dir);
     const live = args.url ? (await runLive(args)).live : null;
     const { audit } = await import('../src/audit/index.js');
-    const result = await audit(args.dir, { ignore: args.ignore, live, lang: args.lang, includeTests: !!args.includeTests });
+    const result = await audit(args.dir, { ignore: args.ignore, live, lang: args.lang, includeTests: !!args.includeTests, org: readAnswers(args).org });
+    warnProblems(result.organization, args.lang);
     if (args.graphOut) fs.writeFileSync(args.graphOut, JSON.stringify(result.graph.toJSON(), null, 2));
     const { renderAudit } = await import('../src/audit/report/index.js');
     const rendered = renderAudit(result, { lang: args.lang, format: args.format, color: args.output ? false : args.color, verbose: args.verbose });
@@ -172,16 +197,33 @@ async function main() {
     return;
   }
 
+  if (args.cmd === 'anket' || args.cmd === 'questions') {
+    assertDir(args.dir);
+    const saved = readAnswers(args);
+    const { audit } = await import('../src/audit/index.js');
+    const { getModel } = await import('../src/audit/report/common.js');
+    const model = getModel(await audit(args.dir, { ignore: args.ignore, lang: args.lang }), args.lang);
+    const { runQuestionnaire } = await import('../src/audit/legal/questionnaire.js');
+    const file = args.answers || path.join(args.dir, 'kvkk-answers.json');
+    const { assessment } = await runQuestionnaire({ saved, model, file, lang: args.lang, interactive: !args.yes && process.stdin.isTTY });
+    warnProblems(assessment, args.lang);
+    const left = assessment.unanswered.length;
+    console.log(args.lang === 'en' ? `\n  ✔ ${file} written (${left} questions open). Fill in the null values, then run audit or docs.` : `\n  ✔ ${file} yazıldı (${left} soru açık). null olan yerleri doldurup audit ya da docs komutunu çalıştırın.`);
+    return;
+  }
+
   if (args.cmd === 'docs') {
     assertDir(args.dir);
     const code = scan(args.dir, { ignore: args.ignore, disable: args.disable });
     const live = args.url ? await runLive(args) : null;
     const result = mergeResults(code, live);
-    const { generateDocs } = await import('../src/docs/index.js');
-    let answers = {};
-    if (args.answers) answers = JSON.parse(fs.readFileSync(args.answers, 'utf8'));
+    const { generateDocs, auditForDocs } = await import('../src/docs/index.js');
+    const answers = readAnswers(args);
+    const { audit, warning } = args.noAudit ? { audit: null, warning: null } : await auditForDocs(args.dir, { org: answers.org, lang: args.lang, ignore: args.ignore, live: live?.live || null });
+    if (warning) process.stderr.write(`  ! ${warning}\n`);
+    warnProblems(audit?.organization, args.lang);
     const out = args.out || path.join(args.dir, 'privacy-docs');
-    const { files } = await generateDocs({ result, answers, outDir: out, lang: args.lang, interactive: !args.yes && process.stdin.isTTY });
+    const { files } = await generateDocs({ result, answers, outDir: out, lang: args.lang, interactive: !args.yes && process.stdin.isTTY, audit });
     console.log(args.lang === 'en' ? `\n  ✔ ${files.length} documents written to ${out}` : `\n  ✔ ${files.length} doküman yazıldı: ${out}`);
     for (const f of files) {
       const rel = path.relative(process.cwd(), f);

@@ -1,6 +1,7 @@
 // kvkk-ignore-file
 import { P, mdTable, toCsv, L, join, header } from './util.js';
 import { DATA_SENT, COOKIE_CATEGORIES } from './data.js';
+import { recipientsOf, dataSent } from './from-audit.js';
 
 const SEV = { critical: 'CRITICAL', high: 'HIGH', medium: 'MEDIUM', low: 'LOW', info: 'INFO' };
 const EU = /^(AT|BE|BG|HR|CY|CZ|DK|EE|FI|FR|DE|GR|HU|IE|IT|LV|LT|LU|MT|NL|PL|PT|RO|SK|SI|ES|SE|EU)$/i;
@@ -103,6 +104,19 @@ export function consentTexts(f) {
 
 const INV_HEADERS = ['Category', 'Fields (location)', 'Purpose', 'Legal basis', 'Data subjects', 'Retention', 'Recipients', 'International transfer', 'Security measures'];
 
+function recipientCell(f, catId) {
+  const r = recipientsOf(f, catId);
+  const out = [...new Set((r ? r.known : f.vendors).map((v) => v.group?.en).filter(Boolean))];
+  if (r?.unknown.length) out.push(`[[check: recipients whose data could not be traced: ${r.unknown.map((v) => v.name).join(', ')}]]`);
+  return out.join('; ') || '—';
+}
+function abroadCell(f, catId) {
+  const r = recipientsOf(f, catId, f.abroad);
+  if (!r) return f.abroad.length ? `Yes (${f.abroad.map((v) => v.name).join(', ')})` : 'No';
+  if (r.known.length) return `Yes (${r.known.map((v) => v.name).join(', ')})`;
+  return r.unknown.length ? `[[check: ${r.unknown.map((v) => v.name).join(', ')}]]` : 'Not seen in the code [[check]]';
+}
+
 function inventoryRows(f) {
   const a = f.answers;
   return f.categories.map((c) => [
@@ -112,8 +126,8 @@ function inventoryRows(f) {
     c.def.basis.en,
     c.def.subjects.en,
     (a.retention && a.retention[c.id]) || c.def.retention.en,
-    [...new Set(f.vendors.map((v) => v.group?.en).filter(Boolean))].join('; ') || '—',
-    f.abroad.length ? `Yes (${f.abroad.map((v) => v.name).join(', ')})` : 'No',
+    recipientCell(f, c.id),
+    abroadCell(f, c.id),
     c.def.special ? 'Encryption at rest, access logging, least privilege' : 'Access control, TLS, backups',
   ]);
 }
@@ -130,7 +144,7 @@ export function transfers(f) {
   return join(
     header('en', f, 'International Data Transfers'),
     f.abroad.length
-      ? mdTable(['Vendor', 'Company', 'Country', 'Data sent', 'Safeguard', 'DPA'], f.abroad.map((v) => [v.name, v.company || '—', v.country, (DATA_SENT[v.category] || { en: '[[check]]' }).en, safeguard(v), '[[DPA link]]']))
+      ? mdTable(['Vendor', 'Company', 'Country', 'Data sent', 'Safeguard', 'DPA'], f.abroad.map((v) => [v.name, v.company || '—', v.country, dataSent(v, 'en', (DATA_SENT[v.category] || { en: '[[check]]' }).en), safeguard(v), '[[DPA link]]']))
       : 'No international transfers detected. [[check]]',
     '## Turkey (KVKK md.9)',
     'If you are a Turkish controller: there is no adequacy decision to rely on in most cases [[check]], so use the Board\'s **standard contract** and notify the Authority within **5 business days** of signing.',

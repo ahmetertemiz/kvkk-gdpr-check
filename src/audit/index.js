@@ -737,6 +737,7 @@ export async function audit(root, opts = {}) {
   let findings = [];
   let review = [];
   let calibration = null;
+  let organization = null;
   try {
     const legal = await import('./legal/index.js');
     if (typeof legal.runAudit === 'function') ({ findings, review, calibration = null } = legal.runAudit(graph, ctx));
@@ -752,6 +753,8 @@ export async function audit(root, opts = {}) {
     const legal = await import('./legal/index.js');
     const model = ctx.shared?.auditMeta || (typeof legal.buildAuditModel === 'function' ? legal.buildAuditModel(graph, opts.lang || 'tr', cov.layers) : null);
     refreshHonesty(cov, graph, model, opts.lang === 'en');
+    // Organisational answers (kvkk-answers.json, key org). They never change a finding or the score.
+    if (model) organization = (await import('./legal/org.js')).assessOrg(opts.org, model);
   } catch (e) {
     if (e.code !== 'ERR_MODULE_NOT_FOUND') warnings.push(`vendor coverage failed: ${e.message}`);
     if (process.env.KVKK_DEBUG) console.error(e);
@@ -771,6 +774,7 @@ export async function audit(root, opts = {}) {
     review,
     reviewSummary: organized.summary,
     ...(calibration ? { calibration } : {}),
+    organization,
     warnings,
     coverage: cov.coverage,
     scoreReliable: cov.scoreReliable,

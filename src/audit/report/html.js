@@ -1,5 +1,6 @@
 import { pendingTop, S, L, SEVS, grade, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText } from './common.js';
 import { CONTROLLER_QUESTIONS } from '../legal/knowledge.js';
+import { ORG_STATUS, ORG_TEXT } from '../legal/org.js';
 import { buildDataMap } from './datamap.js';
 
 export function esc(s) {
@@ -131,6 +132,13 @@ ${steps.length ? `<ul class="steps">${steps.map((s) => `<li>${s.file ? `<span cl
 ${l.risk?.explain || conf ? `<div class="small muted">${[l.risk?.explain ? esc(L(l.risk.explain, lang)) : '', conf].filter(Boolean).join(' · ')}</div>` : ''}${cal ? `<div class="small muted cal"><b>${esc(t.calLbl)}:</b> ${esc(cal)}</div>` : ''}</div>`;
 }
 
+/** Organisational audit card: answers are user input and are escaped like everything else. */
+function orgHtml(org, lang) {
+  if (!org?.provided) return '';
+  const cls = { action: 'bad', open: 'sev-medium', ok: 'muted', na: 'muted' };
+  return `<div class="card"><h2>${esc(L(ORG_TEXT.title, lang))} (${org.answered}/${org.total})</h2><p class="muted">${esc(L(ORG_TEXT.hint, lang))}</p>${org.dpia.changed ? `<p class="bad">● ${esc(L(ORG_TEXT.dpiaChanged, lang))}</p>` : ''}<ul>${org.items.map((x) => `<li><b class="${cls[x.status]}">${esc(L(ORG_STATUS[x.status], lang))}</b> ${esc(L(x.title, lang))}<br><span class="small muted">${esc(L(x.detail, lang))} (${esc(x.refs.join(', '))})</span></li>`).join('')}</ul></div>`;
+}
+
 export function auditHtml(result, { lang = 'tr' } = {}) {
   result = viewResult(result);
   const t = S[lang];
@@ -206,7 +214,7 @@ ${layersHtml}<div class="card"><h2>${esc(t.inventory)} (${m.inventory.length})</
 
 <section class="panel" data-panel="deletion" hidden><div class="card"><h2>${esc(t.deletion)}</h2>${deletion}</div></section>
 
-<section class="panel" data-panel="questions" hidden><div class="card"><h2>${esc(t.questions)}</h2><p class="muted">${esc(t.questionsHint)}</p><ol>${CONTROLLER_QUESTIONS.map((q) => `<li>${esc(L(q, lang))}</li>`).join('')}</ol></div></section>
+<section class="panel" data-panel="questions" hidden><div class="card"><h2>${esc(t.questions)}</h2><p class="muted">${esc(t.questionsHint)}</p><ol>${(result.organization?.provided ? result.organization.unanswered : CONTROLLER_QUESTIONS).map((q) => `<li>${esc(L(q, lang))}</li>`).join('')}</ol><p class="small muted">${esc(L(ORG_TEXT.how, lang))}</p></div>${orgHtml(result.organization, lang)}</section>
 
 <footer>⚖️ ${esc(t.disclaimer)}<br>${esc(t.generated)} · ${date}</footer>
 </div>

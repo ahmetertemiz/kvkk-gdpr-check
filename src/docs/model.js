@@ -1,6 +1,7 @@
 import { VENDORS, vendorForLabel, vendorForCookie, vendorById, vendorForUrl } from '../data/vendors.js';
 import { DATA_CATEGORIES, categoryForField, COOKIE_CATEGORY } from './data.js';
 import { L, today } from './util.js';
+import { auditFields, auditVendors, recipientCategories } from './from-audit.js';
 
 const VENDOR_RULES = ['TRK001', 'TRF001', 'TRF002', 'FNT001', 'MED001'];
 const MARKETING_FIELD = /(marketing|newsletter|kampanya|pazarlama|iys|ileti|bulten|bülten)/i;
@@ -21,7 +22,7 @@ function isAbroad(country) {
 }
 
 /** Collect detected data fields grouped by category. */
-function collectCategories(result, hits, live, answers) {
+function collectCategories(result, hits, live, answers, audit) {
   const cats = new Map(); // id -> { id, def, fields: Map(name -> locations[]) }
   const add = (catId, field, loc, fieldEn) => {
     if (!catId) return;
@@ -34,11 +35,17 @@ function collectCategories(result, hits, live, answers) {
     }
   };
 
+  // The data-flow graph knows which names are data the app processes; the pattern scan only adds what the graph did not read.
+  const traced = auditFields(audit);
+  for (const e of traced) for (const loc of e.locations.length ? e.locations : [null]) add(e.cat, e.tr, loc, e.en);
+  const tracedCats = new Set(traced.map((e) => e.cat));
+
   for (const id of ['PII001', 'PII002', 'PII003']) {
     for (const l of hits[id]?.locations || []) {
       const name = L(l.label, 'tr');
       const nameEn = L(l.label, 'en');
       const cat = categoryForField(name) || categoryForField(nameEn) || (id === 'PII002' ? 'saglik' : 'kimlik');
+      if (tracedCats.has(cat)) continue;
       add(cat, name, l.file ? `${l.file}${l.line ? ':' + l.line : ''}` : null, nameEn);
     }
   }
@@ -63,7 +70,7 @@ function collectCategories(result, hits, live, answers) {
   return { cats, hasAccounts: !!hasAccounts };
 }
 
-function collectVendors(hits, live) {
+function collectVendors(hits, live, audit) {
   const map = new Map();
   const add = (v, evidence) => {
     if (!v) return;
@@ -71,6 +78,9 @@ function collectVendors(hits, live) {
     if (!map.has(key)) map.set(key, { ...v, evidence: [] });
     if (evidence && !map.get(key).evidence.includes(evidence)) map.get(key).evidence.push(evidence);
   };
+  for (const v of auditVendors(audit)) {
+    map.set(v.base.id || v.base.name, { ...v.base, evidence: [...new Set(v.evidence)], sent: [...v.elements.values()] });
+  }
   for (const id of VENDOR_RULES) {
     for (const l of hits[id]?.locations || []) add(vendorForLabel(l.label), l.file ? `${l.file}${l.line ? ':' + l.line : ''}` : id);
   }
@@ -131,13 +141,14 @@ function collectCookies(live, vendors) {
 }
 
 /**
- * Turn a scan result + answers into the facts every document template uses.
+ * Turn a scan result + answers (+ the deep audit, when it ran) into the facts every document template uses.
+ * @param {object|null} audit {model, findings, review, layers, organization} of src/audit (docs/index.js auditForDocs)
  */
-export function buildFacts(result, answers = {}) {
+export function buildFacts(result, answers = {}, audit = null) {
   const hits = hitsById(result);
   const live = result.live || null;
-  const { cats, hasAccounts } = collectCategories(result, hits, live, answers);
-  const vendors = collectVendors(hits, live);
+  const { cats, hasAccounts } = collectCategories(result, hits, live, answers, audit);
+  const vendors = collectVendors(hits, live, audit);
 
   // Fonts need no cookie consent (fix is self-hosting), so they are left out of consent texts.
   const consentVendors = vendors.filter((v) => v.consentRequired && v.category !== 'fonts');
@@ -185,6 +196,8 @@ export function buildFacts(result, answers = {}) {
       sentry: vendors.some((v) => v.id === 'sentry'),
     },
     isAbroad,
+    audit,
+    recipientCategories: audit ? recipientCategories(audit) : null,
   };
 }
 

@@ -12,6 +12,7 @@ import { PRINCIPLE_CHECKS } from './checks/principles.js';
 import { CONSENT_CHECKS } from './checks/consent.js';
 import { SECURITY_CHECKS } from './checks/security.js';
 import { OBJECT_ACCESS_CHECKS } from './checks/object-access.js';
+import { STORE_DECLARATION_CHECKS } from './checks/store-declarations.js';
 import { elements, sourcesOf, flowsOf, isUsed, nodeLabel, confidenceOf } from './model.js';
 import { secretFindings } from './secrets.js';
 import { calibrate, CALIBRATION_PROVENANCE } from './calibrate.js';
@@ -45,7 +46,7 @@ const HARDENING_CHECKS = await optionalChecks('./checks/hardening.js', 'HARDENIN
 
 const ALL_CHECKS = [
   ...SECURITY_CHECKS, ...PRINCIPLE_CHECKS, ...CONSENT_CHECKS, ...LIFECYCLE_CHECKS, ...TRANSPARENCY_CHECKS,
-  ...EXPOSURE_CHECKS, ...OBJECT_ACCESS_CHECKS, ...HARDENING_CHECKS,
+  ...EXPOSURE_CHECKS, ...OBJECT_ACCESS_CHECKS, ...HARDENING_CHECKS, ...STORE_DECLARATION_CHECKS,
 ];
 
 /**

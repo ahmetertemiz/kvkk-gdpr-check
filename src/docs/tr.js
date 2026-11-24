@@ -1,6 +1,7 @@
 // kvkk-ignore-file
 import { P, mdTable, toCsv, L, join, header } from './util.js';
 import { DATA_SENT, COOKIE_CATEGORIES } from './data.js';
+import { recipientsOf, dataSent } from './from-audit.js';
 
 const SEV = { critical: 'KRİTİK', high: 'YÜKSEK', medium: 'ORTA', low: 'DÜŞÜK', info: 'BİLGİ' };
 
@@ -33,7 +34,7 @@ function recipientRows(f) {
     v.name,
     v.purpose?.tr || '[[kontrol]]',
     countryTr(v.country),
-    v.country === 'TR' ? 'Hayır' : v.country === '—' ? '[[kontrol]]' : 'Evet',
+    v.country === 'TR' ? 'Hayır' : !v.country || v.country === '—' || v.country.includes('[[') ? '[[kontrol]]' : 'Evet',
   ]);
 }
 
@@ -198,10 +199,19 @@ function measures(c) {
   return base.join('; ');
 }
 
+function abroadCell(f, catId) {
+  const r = recipientsOf(f, catId, f.abroad);
+  if (!r) return f.abroad.length ? `Evet (${f.abroad.map((v) => v.name).join(', ')})` : 'Hayır';
+  if (r.known.length) return `Evet (${r.known.map((v) => v.name).join(', ')})`;
+  return r.unknown.length ? `[[kontrol: ${r.unknown.map((v) => v.name).join(', ')}]]` : 'Koddan görülmedi [[kontrol]]';
+}
+
 function inventoryRows(f) {
   const a = f.answers;
   return f.categories.map((c) => {
-    const recipients = [...new Set(f.vendors.map((v) => v.group?.tr).filter(Boolean))];
+    const rec = recipientsOf(f, c.id);
+    const recipients = [...new Set((rec ? rec.known : f.vendors).map((v) => v.group?.tr).filter(Boolean))];
+    if (rec?.unknown.length) recipients.push(`[[kontrol: veri akışı koddan izlenemeyen alıcılar: ${rec.unknown.map((v) => v.name).join(', ')}]]`);
     const locs = [...c.fields.entries()].map(([k, v]) => (v.length ? `${k} (${v.slice(0, 2).join(', ')})` : k)).join('; ');
     return [
       c.def.tr + (c.def.special ? ' (özel nitelikli)' : ''),
@@ -211,7 +221,7 @@ function inventoryRows(f) {
       c.def.subjects.tr,
       (a.retention && a.retention[c.id]) || c.def.retention.tr,
       recipients.join('; ') || '—',
-      f.abroad.length ? `Evet (${f.abroad.map((v) => v.name).join(', ')})` : 'Hayır',
+      abroadCell(f, c.id),
       measures(c),
     ];
   });
@@ -225,7 +235,7 @@ export function envanterMd(f) {
     'VERBİS kaydı ve Kişisel Veri Saklama ve İmha Politikası için temel oluşturur. Excel için aynı tablo `veri-envanteri.csv` dosyasındadır.',
     mdTable(INV_HEADERS, inventoryRows(f)),
     '## VERBİS notu',
-    'Yıllık çalışan sayısı 50\'den az **ve** yıllık mali bilanço toplamı Kurul\'un belirlediği eşiğin altında olan, ana faaliyet konusu özel nitelikli kişisel veri işleme olmayan yurt içi yerleşik veri sorumluları VERBİS kaydından istisnadır (Kurul\'un 2019/387 sayılı kararı ve sonraki güncellemeleri). [[kontrol: güncel bilanço eşiğini verbis.kvkk.gov.tr üzerinden doğrulayın]] Yurt dışında yerleşik veri sorumluları bu istisnadan yararlanamaz.',
+    'Cevaplarınıza göre değerlendirme `organizasyon-denetimi.md` dosyasındadır (derin denetim çalıştıysa). Genel ölçüt: yıllık çalışan sayısı 50\'den az **ve** yıllık mali bilanço toplamı 100 milyon TL\'den az olan, ana faaliyeti özel nitelikli veri işlemek olmayan yurt içi yerleşik veri sorumluları kayıttan istisnadır; ana faaliyet özel nitelikli veri işlemekse 10\'dan az çalışan **ve** 10 milyon TL\'den az bilanço aranır (Kurul 2025/1572). Bilanço esasına göre defter tutmayanlarda yalnızca çalışan sayısına bakılır (Kurul 2025/2393). [[kontrol: eşikler 24.11.2026\'da ikincil kaynaklardan alındı; verbis.kvkk.gov.tr üzerinden doğrulayın]] Yurt dışında yerleşik veri sorumluları için ayrı kurallar geçerlidir. İstisna yalnızca VERBİS kaydını kapsar.',
   );
 }
 
@@ -238,7 +248,7 @@ export function yurtDisi(f) {
     v.name,
     v.company || '—',
     countryTr(v.country),
-    (DATA_SENT[v.category] || { tr: '[[kontrol]]' }).tr,
+    dataSent(v, 'tr', (DATA_SENT[v.category] || { tr: '[[kontrol]]' }).tr),
     'Standart sözleşme (imza + 5 iş günü içinde Kurum\'a bildirim) [[kontrol]]',
     v.privacyUrl ? `[[DPA linki]] / ${v.privacyUrl}` : '[[DPA linki]]',
   ]);

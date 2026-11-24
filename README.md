@@ -114,10 +114,15 @@ Tarama sonuçlarından (tespit edilen veri alanları, servisler, gerçek çerezl
 | `privacy-policy.md` | GDPR Art.13 İngilizce gizlilik politikası |
 
 ```bash
+npx kvkk-gdpr-check anket                     # koddan anlaşılamayanları sorar → kvkk-answers.json
 npx kvkk-gdpr-check docs                      # şirket bilgilerini sorar
 npx kvkk-gdpr-check docs --url https://siten.com --answers sirket.json -y --out privacy-docs
 npx kvkk-gdpr-check docs --lang en            # İngilizce set
 ```
+
+`docs` veriyi derin denetimin veri akışı grafiğinden alır: hangi veri, nerede, hangi alıcıya gidiyor (`--no-audit` ile yalnızca desen taraması). Ayrıca şu **taslakları** üretir: DPIA, LIA (meşru menfaate dayanabilecek faaliyetler), TIA (her yurt dışı alıcı) ve organizasyon denetimi. Araç yalnızca olguları ve kanıtı yazar; değerlendirme ve karar yerleri `[[...]]` olarak boştur. **Bir hukukçu okumadan kullanmayın.**
+
+`anket` VERBİS yükümlülüğü, rolünüz, aktarım araçları (standart sözleşmede 5 iş günü), saklama, erişim, çocuklar ve ölçek gibi soruları sorar (`-y`: yalnızca şablon yazar). Cevaplar `audit` ve `docs` sonuçlarını değiştirir, ama kod bulgularını ve skoru değiştirmez; her sonuç "beyana dayalı" olarak işaretlenir. VERBİS eşikleri 24.11.2026'da ikincil kaynaklardan alındı; resmî tatiller iş günü hesabında yoktur.
 
 ### 4. 📊 HTML rapor & web arayüzü
 
@@ -184,7 +189,7 @@ Rapor, job özetine Markdown olarak yazılır; bulgular Code Scanning'de satır 
 ## Mimari
 
 ```
-bin/cli.js            alt komutlar: scan | audit | url | docs | ui
+bin/cli.js            alt komutlar: scan | audit | url | docs | anket | ui
 src/audit/            derin denetim motoru (docs/AUDIT-ENGINE.md)
 src/scan.js           kod tarayıcı (satır + çok satırlı desenler, proje kuralları)
 src/rules.js          çekirdek web kuralları  ─┐

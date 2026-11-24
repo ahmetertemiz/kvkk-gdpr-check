@@ -200,9 +200,9 @@ export async function startUi({ port = 4477, lang = 'tr', open = true, quiet = f
     const a = body.answers && typeof body.answers === 'object' ? body.answers : {};
     const answers = {};
     for (const k of ['companyName', 'appName', 'email', 'website', 'address']) if (typeof a[k] === 'string' && a[k].trim()) answers[k] = a[k].trim().slice(0, 300);
-    let generateDocs;
+    let generateDocs, auditForDocs;
     try {
-      ({ generateDocs } = await import('../docs/index.js'));
+      ({ generateDocs, auditForDocs } = await import('../docs/index.js'));
     } catch (e) {
       throw new HttpError(500, `${MSG[L].docs}: ${e.message || e}`);
     }
@@ -210,7 +210,8 @@ export async function startUi({ port = 4477, lang = 'tr', open = true, quiet = f
     tempDirs.add(outDir);
     let out;
     try {
-      out = await generateDocs({ result, answers, outDir, lang: L, interactive: false });
+      const audit = result.root ? (await auditForDocs(result.root, { lang: L, live: result.live || null })).audit : null;
+      out = await generateDocs({ result, answers, outDir, lang: L, interactive: false, audit });
     } catch (e) {
       throw new HttpError(500, `${MSG[L].docs}: ${e.message || e}`);
     }

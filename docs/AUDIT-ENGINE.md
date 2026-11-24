@@ -211,4 +211,13 @@ Motor, gerçek açık kaynak projelerde ölçülerek geliştirildi. Sonuçlar, y
 | **Faz 4 — Canlı altyapı** | Supabase/Firebase/Vercel bağlayıcıları, git geçmişi, sürekli izleme (yeni izleyici, yeni akış alarmı) |
 | **Faz 5 — Ürün** | Hosted panel, çoklu proje, ekip ve hukukçu inceleme/onay akışı, PDF denetim raporu, sürüm karşılaştırma |
 
+**Faz 2 durumu (24.11.2026):** işleme faaliyetleri, hukuki sebep, ROPA, risk ve beyan↔gerçek zaten vardı. Eklenenler:
+
+- `docs` komutu denetim modelini kullanır (`src/docs/from-audit.js`); izlenemeyen alıcılar "almıyor" diye yazılmaz, `[[kontrol]]` olur.
+- Organizasyon anketi: `src/audit/legal/org.js` (kurallar) ve `questionnaire.js` (`anket` komutu). Rapor bölümü ve JSON'da `organization`. Bulguları ve skoru değiştirmez.
+- DPIA / LIA / TIA taslakları: `src/docs/assessments.js`. Hiçbir değerlendirme sonucu önerilmez.
+- Mağaza beyanı: AUD-TRN-05 (`checks/store-declarations.js`), depodaki Apple gizlilik bildirimi ile cihaz dışına giden veri. Ölçülmediği için yalnızca "Doğrulanmalı" listesinde görünür. Android karşılığı depoda yoktur (Play formu çevrimiçi doldurulur); ankette sorulur. Apple veri türü listesi resmî sayfadan doğrulanamadı.
+
+Doğrulanmayanlar: bu bölümün hukuki doğruluğu bir hukukçu tarafından incelenmedi; taslakların ve anketin gerçek projelerde isabeti ölçülmedi.
+
 **Ürün modeli önerisi (open-core):** CLI ve tarayıcılar açık kaynak olarak kalır, bu benimsenmeyi ve güveni getirir. Ücretli katman: LLM destekli derin denetim, sürekli izleme, ekip paneli, hukukçu onaylı şablonlar ve hukukçu inceleme ağı.

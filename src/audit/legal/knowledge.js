@@ -103,7 +103,7 @@ export const DPIA_CRITERIA = {
 
 /** Questions only the controller can answer — rendered in the report. */
 export const CONTROLLER_QUESTIONS = [
-  { tr: 'VERBİS kayıt yükümlülüğünüz var mı? (yıllık çalışan sayısı 50+ veya bilanço 100M TL+ ya da ana faaliyetiniz özel nitelikli veri işlemek)', en: 'Are you required to register with VERBİS (Turkey)?' },
+  { tr: 'VERBİS kayıt yükümlülüğünüz var mı? (genel ölçüt: yıllık çalışan 50+ veya bilanço 100M TL+; ana faaliyet özel nitelikli veri işlemekse 10+ çalışan veya 10M TL+. Güncel Kurul kararını doğrulayın)', en: 'Are you required to register with VERBİS (Turkey)? (50+ employees or TRY 100M+ balance sheet; 10+ or TRY 10M+ if special-category data is the main activity; verify the current decision)' },
   { tr: 'Veri sorumlusu musunuz, yoksa B2B müşterileriniz adına veri işleyen mi? (İkisi birden olabilir.)', en: 'Are you a controller, or a processor for your B2B customers (or both)?' },
   { tr: 'Tespit edilen her yurt dışı servisle DPA / KVKK standart sözleşmesi imzalandı ve Kurum\'a bildirildi mi?', en: 'Have DPAs / SCCs been signed with every vendor abroad?' },
   { tr: 'Her veri kategorisi için saklama süresi ve imha periyodu belirlendi mi? (Saklama ve İmha Politikası)', en: 'Is a retention period defined for each data category?' },

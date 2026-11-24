@@ -76,6 +76,7 @@ export function auditJson(result, { lang = 'tr' } = {}) {
       reviewSummary: result.reviewSummary ? { ...result.reviewSummary, ...(Array.isArray(result.reviewSummary.suppressed) ? { suppressed: result.reviewSummary.suppressed.map((x) => ({ ...x, label: txt(x.label, lang), reason: txt(x.reason, lang) })) } : {}) } : null,
       calibration: result.calibration || null,
       model,
+      organization: result.organization ? { ...result.organization, items: result.organization.items.map((i) => ({ ...i, title: txt(i.title, lang), detail: txt(i.detail, lang) })) } : null,
       graph: result.graph?.toJSON ? result.graph.toJSON() : null,
       warnings: result.warnings || [],
     },

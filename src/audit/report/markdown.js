@@ -1,5 +1,6 @@
 import { pendingTop, S, L, SEVS, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText } from './common.js';
 import { CONTROLLER_QUESTIONS } from '../legal/knowledge.js';
+import { ORG_STATUS, ORG_TEXT } from '../legal/org.js';
 import { buildDataMap, toMermaid } from './datamap.js';
 
 const ICON = { critical: '🛑', high: '🔴', medium: '🟠', low: '🟡', info: '🔵' };
@@ -119,7 +120,15 @@ export function auditMarkdown(result, { lang = 'tr' } = {}) {
   const dv = dpiaView(m.dpia, t, lang);
   o.push(`## ${t.dpia}`, '', dv.labels.length ? `**${dv.head}:** ${dv.labels.join(', ')}` : dv.head, '');
   o.push(`## ${t.questions}`, '', `_${t.questionsHint}_`, '');
-  for (const q of CONTROLLER_QUESTIONS) o.push(`- [ ] ${L(q, lang)}`);
+  const org = result.organization;
+  for (const q of org?.provided ? org.unanswered : CONTROLLER_QUESTIONS) o.push(`- [ ] ${L(q, lang)}`);
+  o.push('', `_${L(ORG_TEXT.how, lang)}_`);
+  if (org?.provided) {
+    o.push('', `## ${L(ORG_TEXT.title, lang)} (${org.answered}/${org.total})`, '', `_${L(ORG_TEXT.hint, lang)}_`, '');
+    if (org.dpia.changed) o.push(`**${L(ORG_TEXT.dpiaChanged, lang)}**`, '');
+    o.push('| | | |', '|---|---|---|');
+    for (const i of org.items) o.push(`| ${L(ORG_STATUS[i.status], lang)} | ${cell(L(i.title, lang))} | ${cell(L(i.detail, lang))} _(${cell(i.refs.join(', '))})_ |`);
+  }
   const warns = result.warnings || [];
   if (warns.length) {
     o.push('', `## ${t.warnings}`, '');
