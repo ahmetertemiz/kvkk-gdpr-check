@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Mobile App",
+    "android": { "permissions": ["ACCESS_BACKGROUND_LOCATION", "CAMERA"] },
+    "ios": {
+      "infoPlist": {
+        "NSLocationAlwaysUsageDescription": "Konum",
+        "NSAppTransportSecurity": { "NSAllowsArbitraryLoads": true }
+      }
+    }
+  }
+}

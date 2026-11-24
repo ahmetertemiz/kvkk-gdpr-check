@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><title>JS Örnek</title></head>
+<body>
+  <h1>Uygulama</h1>
+  <form id="f">
+    <input type="email" name="email" placeholder="E-posta">
+    <label><input type="checkbox" name="newsletter" checked> Bülten</label>
+    <button>Gönder</button>
+  </form>
+  <div id="cookie-banner" style="position:fixed;bottom:0;left:0;right:0;padding:16px;background:#eee">
+    Bu site deneyiminizi iyileştirmek için çerezler kullanır.
+    <button id="acc">Kabul Et</button>
+    <button id="set">Ayarlar</button>
+  </div>
+  <script>
+    // Tracking cookies set immediately, before any choice (the bug we want to catch)
+    document.cookie = '_ga=GA1.1.12345.67890; max-age=63072000; path=/';
+    document.cookie = '_fbp=fb.1.123.456; max-age=7776000; path=/';
+    localStorage.setItem('ph_phc_test_posthog', '{}');
+    document.getElementById('acc').onclick = () => { document.getElementById('cookie-banner').remove(); };
+  </script>
+</body>
+</html>

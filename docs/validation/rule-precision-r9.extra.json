@@ -1,0 +1,763 @@
+{
+  "labels": 1464,
+  "date": "2026-11-24",
+  "fpRepos": {
+    "SEC-01:policy-public-read": 3,
+    "SEC-01:policy-public-write": 1,
+    "SEC-04:contact-or-location": 1,
+    "SEC-04:name": 3,
+    "SEC-04:free-text": 6,
+    "SEC-04:inferred-category": 4,
+    "SEC-04:token-or-payment": 2,
+    "SEC-04:nonprod-file": 3,
+    "SEC-05:token-client-storage": 1,
+    "TRN-01:no-notice": 2,
+    "TRN-01:external-notice": 1,
+    "TRF-01:traced-vendor": 2,
+    "TRF-01:sdk-implied": 2,
+    "TRF-01:unknown-location-smtp": 1,
+    "TRF-01:unknown-location-host": 3,
+    "TRF-01:oauth-idp": 1,
+    "TRF-01:config-only": 2,
+    "DSR-01:no-export": 1,
+    "DSR-01:no-rectification": 6,
+    "RET-01:record-user-ref-only": 5,
+    "RET-01:record-direct-identifier": 8,
+    "RET-01:log-store": 5,
+    "RET-01:record-content": 6,
+    "RET-01:bucket": 2,
+    "RET-01:record-name-or-inferred-only": 4,
+    "LB-01:asset-no-consent": 3,
+    "DEL-01:headline-no-account-erasure": 3,
+    "DEL-01:record-level-evidence": 5,
+    "DEL-01:account-created-never-deleted": 1,
+    "DEL-01:derived-store-never-deleted": 1,
+    "DEL-01:manual-erasure-channel": 1,
+    "MIN-01:unused-schema-field": 6,
+    "MIN-01:unused-body-field": 8,
+    "MIN-01:unused-column": 3,
+    "MIN-01:unused-device-permission": 2,
+    "MIN-01:unread-sibling-column": 2,
+    "MIN-01:unused-form-stored-field": 1,
+    "SEC-SECRET:provider-key": 1,
+    "SEC-SECRET:db-url-password": 1,
+    "SEC-SECRET:gcp-service-account": 1,
+    "SEC-SECRET:ci-public-ip": 1,
+    "SEC-SECRET:public-env-secret": 1,
+    "SEC-03:idor-body-subject": 2,
+    "SEC-03:idor-suspect": 7,
+    "SEC-03:no-auth": 9,
+    "SEC-03:unauth-bulk-mutation": 1,
+    "SEC-03:client-identity": 1,
+    "DPIA-01:systematic-monitoring": 2,
+    "SEC-08:not-found-message": 9,
+    "SEC-08:signup-taken": 3,
+    "SEC-08:raw-provider-error": 2,
+    "SEC-08:reset-oracle": 3,
+    "DEL-02:vendor-copy": 2,
+    "DEL-02:vendor-sdk-ids": 2,
+    "DEL-02:no-fk-link": 3,
+    "DEL-02:fk-no-cascade": 4,
+    "DEL-02:fk-parent-not-deleted": 2,
+    "MIN-02:password": 4,
+    "MIN-02:token-other": 1,
+    "MIN-02:token-on-create": 1,
+    "MIN-02:relation-row": 2,
+    "MIN-02:other-sensitive": 3,
+    "SEC-09:oauth-tokens-unencrypted": 1,
+    "SEC-09:reset-or-refresh-plaintext": 1,
+    "LB-04:no-consent-record-table": 2,
+    "TRN-03:scraping-tool": 1,
+    "TRN-02:recipient-not-listed": 1,
+    "TRN-02:category-missing": 4,
+    "TRN-02:category-missing-inferred": 6,
+    "PRF-01:scraping-tool": 1,
+    "SPC-01:special-to-log": 1,
+    "SPC-01:special-public-column": 1,
+    "SEC-14:reset-keeps-sessions": 1,
+    "LB-05:iframe": 1,
+    "LB-05:cdn-image": 1,
+    "SEC-20:credential-endpoint-no-ratelimit": 6,
+    "SEC-02:public-bucket": 2,
+    "SEC-02:policy-any-authenticated": 1,
+    "SEC-11:non-secret-named-fallback": 1,
+    "SEC-21:weak-password-policy": 1,
+    "SEC-21:length-check": 1,
+    "SEC-07:token-in-url": 1,
+    "SEC-06:plaintext-password": 4
+  },
+  "live": {
+    "source": "latest.json",
+    "note": "labels matched by the engine that produced this bench report, all stacks; in-sample, review ordering only",
+    "subs": {
+      "DEL-01:account-created-never-deleted": {
+        "tp": 27,
+        "fp": 1
+      },
+      "DEL-01:deactivation-only": {
+        "tp": 1,
+        "fp": 0
+      },
+      "DEL-01:dead-deletion-helper": {
+        "tp": 2,
+        "fp": 0
+      },
+      "DEL-01:derived-store-never-deleted": {
+        "tp": 1,
+        "fp": 0
+      },
+      "DEL-01:headline-no-account-erasure": {
+        "tp": 51,
+        "fp": 1
+      },
+      "DEL-01:manual-erasure-channel": {
+        "tp": 2,
+        "fp": 1
+      },
+      "DEL-01:operator-only-evidence": {
+        "tp": 3,
+        "fp": 0
+      },
+      "DEL-01:record-level-evidence": {
+        "tp": 81,
+        "fp": 5
+      },
+      "DEL-01:subcollection-orphan": {
+        "tp": 1,
+        "fp": 0
+      },
+      "DEL-02:bucket-files": {
+        "tp": 6,
+        "fp": 0
+      },
+      "DEL-02:document-store": {
+        "tp": 1,
+        "fp": 0
+      },
+      "DEL-02:embedded-copy": {
+        "tp": 3,
+        "fp": 0
+      },
+      "DEL-02:fk-no-cascade": {
+        "tp": 13,
+        "fp": 7
+      },
+      "DEL-02:fk-parent-not-deleted": {
+        "tp": 0,
+        "fp": 1
+      },
+      "DEL-02:fk-set-null": {
+        "tp": 1,
+        "fp": 0
+      },
+      "DEL-02:no-fk-link": {
+        "tp": 11,
+        "fp": 9
+      },
+      "DEL-02:non-atomic": {
+        "tp": 1,
+        "fp": 0
+      },
+      "DEL-02:soft-delete": {
+        "tp": 21,
+        "fp": 0
+      },
+      "DEL-02:vendor-copy": {
+        "tp": 7,
+        "fp": 1
+      },
+      "DEL-02:vendor-sdk-ids": {
+        "tp": 0,
+        "fp": 2
+      },
+      "DPIA-01:innovative-tech": {
+        "tp": 7,
+        "fp": 0
+      },
+      "DPIA-01:other-criterion": {
+        "tp": 7,
+        "fp": 0
+      },
+      "DPIA-01:special-or-large": {
+        "tp": 7,
+        "fp": 0
+      },
+      "DPIA-01:systematic-monitoring": {
+        "tp": 0,
+        "fp": 1
+      },
+      "DSR-01:no-erasure": {
+        "tp": 2,
+        "fp": 0
+      },
+      "DSR-01:no-export": {
+        "tp": 63,
+        "fp": 0
+      },
+      "DSR-01:no-rectification": {
+        "tp": 11,
+        "fp": 5
+      },
+      "LB-01:asset-no-consent": {
+        "tp": 23,
+        "fp": 5
+      },
+      "LB-01:tracker-init-no-consent": {
+        "tp": 6,
+        "fp": 0
+      },
+      "LB-04:no-consent-record-table": {
+        "tp": 5,
+        "fp": 0
+      },
+      "LB-05:cdn-image": {
+        "tp": 0,
+        "fp": 1
+      },
+      "LB-05:cdn-script-style": {
+        "tp": 21,
+        "fp": 0
+      },
+      "LB-05:map-tiles": {
+        "tp": 0,
+        "fp": 2
+      },
+      "MIN-01:unread-sibling-column": {
+        "tp": 0,
+        "fp": 3
+      },
+      "MIN-01:unused-body-field": {
+        "tp": 1,
+        "fp": 10
+      },
+      "MIN-01:unused-column": {
+        "tp": 0,
+        "fp": 2
+      },
+      "MIN-01:unused-device-permission": {
+        "tp": 9,
+        "fp": 1
+      },
+      "MIN-01:unused-form-stored-field": {
+        "tp": 0,
+        "fp": 1
+      },
+      "MIN-01:unused-schema-field": {
+        "tp": 0,
+        "fp": 2
+      },
+      "MIN-02:other-person-row": {
+        "tp": 1,
+        "fp": 0
+      },
+      "MIN-02:other-sensitive": {
+        "tp": 5,
+        "fp": 5
+      },
+      "MIN-02:password": {
+        "tp": 3,
+        "fp": 3
+      },
+      "MIN-02:relation-row": {
+        "tp": 1,
+        "fp": 3
+      },
+      "MIN-02:special-category": {
+        "tp": 1,
+        "fp": 0
+      },
+      "MIN-02:token-other": {
+        "tp": 4,
+        "fp": 0
+      },
+      "PRF-01:public-post-api": {
+        "tp": 2,
+        "fp": 0
+      },
+      "PRF-01:scraping-tool": {
+        "tp": 2,
+        "fp": 0
+      },
+      "RET-01:bucket": {
+        "tp": 27,
+        "fp": 0
+      },
+      "RET-01:log-store": {
+        "tp": 15,
+        "fp": 3
+      },
+      "RET-01:record-content": {
+        "tp": 79,
+        "fp": 10
+      },
+      "RET-01:record-direct-identifier": {
+        "tp": 184,
+        "fp": 14
+      },
+      "RET-01:record-name-or-inferred-only": {
+        "tp": 0,
+        "fp": 2
+      },
+      "RET-01:record-user-ref-only": {
+        "tp": 151,
+        "fp": 17
+      },
+      "SEC-01:firestore-no-rules": {
+        "tp": 4,
+        "fp": 0
+      },
+      "SEC-01:open-policy-opaque-json": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-01:operator-secret-public": {
+        "tp": 0,
+        "fp": 1
+      },
+      "SEC-01:policy-null-owner-write": {
+        "tp": 2,
+        "fp": 0
+      },
+      "SEC-01:policy-public-read": {
+        "tp": 6,
+        "fp": 1
+      },
+      "SEC-01:policy-public-write": {
+        "tp": 7,
+        "fp": 1
+      },
+      "SEC-01:rls-disabled": {
+        "tp": 3,
+        "fp": 0
+      },
+      "SEC-02:policy-anon": {
+        "tp": 3,
+        "fp": 0
+      },
+      "SEC-02:public-bucket": {
+        "tp": 8,
+        "fp": 2
+      },
+      "SEC-03:admin-ui-no-auth": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-03:ai-forward": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-03:allow-any-subject-api": {
+        "tp": 2,
+        "fp": 1
+      },
+      "SEC-03:client-identity": {
+        "tp": 9,
+        "fp": 1
+      },
+      "SEC-03:email-relay": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-03:function-level-authz": {
+        "tp": 3,
+        "fp": 1
+      },
+      "SEC-03:idor-body-subject": {
+        "tp": 36,
+        "fp": 8
+      },
+      "SEC-03:idor-suspect": {
+        "tp": 7,
+        "fp": 19
+      },
+      "SEC-03:middleware-path-mismatch": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-03:no-auth": {
+        "tp": 26,
+        "fp": 7
+      },
+      "SEC-03:non-terminating-guard": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-03:open-proxy": {
+        "tp": 2,
+        "fp": 0
+      },
+      "SEC-03:optional-owner-filter": {
+        "tp": 2,
+        "fp": 0
+      },
+      "SEC-03:other-person-row": {
+        "tp": 11,
+        "fp": 1
+      },
+      "SEC-03:outbound-idor": {
+        "tp": 4,
+        "fp": 0
+      },
+      "SEC-03:privileged-callback": {
+        "tp": 2,
+        "fp": 0
+      },
+      "SEC-03:privileged-no-auth": {
+        "tp": 5,
+        "fp": 0
+      },
+      "SEC-03:session-unchecked": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-03:shared-server-client": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-03:unauth-bulk-mutation": {
+        "tp": 9,
+        "fp": 0
+      },
+      "SEC-04:contact-or-location": {
+        "tp": 33,
+        "fp": 1
+      },
+      "SEC-04:free-text": {
+        "tp": 9,
+        "fp": 5
+      },
+      "SEC-04:inferred-category": {
+        "tp": 0,
+        "fp": 1
+      },
+      "SEC-04:name": {
+        "tp": 11,
+        "fp": 2
+      },
+      "SEC-04:orm-error-object": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-04:other-identifier": {
+        "tp": 5,
+        "fp": 0
+      },
+      "SEC-04:token-or-payment": {
+        "tp": 3,
+        "fp": 1
+      },
+      "SEC-04:whole-record": {
+        "tp": 3,
+        "fp": 0
+      },
+      "SEC-05:token-client-storage": {
+        "tp": 16,
+        "fp": 1
+      },
+      "SEC-06:plaintext-password": {
+        "tp": 0,
+        "fp": 8
+      },
+      "SEC-07:pii-in-query": {
+        "tp": 3,
+        "fp": 0
+      },
+      "SEC-07:pii-in-url-path": {
+        "tp": 3,
+        "fp": 0
+      },
+      "SEC-07:token-in-url": {
+        "tp": 6,
+        "fp": 1
+      },
+      "SEC-07:token-redirect-client-host": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-08:not-found-message": {
+        "tp": 12,
+        "fp": 4
+      },
+      "SEC-08:raw-provider-error": {
+        "tp": 5,
+        "fp": 0
+      },
+      "SEC-08:reset-oracle": {
+        "tp": 3,
+        "fp": 1
+      },
+      "SEC-08:signup-taken": {
+        "tp": 19,
+        "fp": 2
+      },
+      "SEC-08:status-before-password": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-09:capability-token-plaintext": {
+        "tp": 2,
+        "fp": 0
+      },
+      "SEC-09:oauth-tokens-unencrypted": {
+        "tp": 7,
+        "fp": 0
+      },
+      "SEC-09:password-in-email": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-09:reset-or-refresh-plaintext": {
+        "tp": 14,
+        "fp": 1
+      },
+      "SEC-09:reset-token-raw-lookup": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-10:weak-hash-cost": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-11:secret-named-fallback": {
+        "tp": 4,
+        "fp": 0
+      },
+      "SEC-12:firestore-auth-only-write": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-13:cookie-no-httponly": {
+        "tp": 6,
+        "fp": 0
+      },
+      "SEC-13:token-cookie-flags": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-14:cookie-only-signout": {
+        "tp": 2,
+        "fp": 0
+      },
+      "SEC-14:email-change": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-14:generic-credential-update": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-14:long-lived-token": {
+        "tp": 2,
+        "fp": 0
+      },
+      "SEC-14:reset-keeps-sessions": {
+        "tp": 2,
+        "fp": 0
+      },
+      "SEC-15:committed-database": {
+        "tp": 3,
+        "fp": 0
+      },
+      "SEC-16:payment-customer-by-email": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-17:firestore-broad-read": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-18:next-no-headers": {
+        "tp": 13,
+        "fp": 0
+      },
+      "SEC-19:definer-no-search-path": {
+        "tp": 25,
+        "fp": 0
+      },
+      "SEC-20:credential-endpoint-no-ratelimit": {
+        "tp": 25,
+        "fp": 7
+      },
+      "SEC-20:credential-mutation-no-ratelimit": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-20:recovery-no-ratelimit": {
+        "tp": 2,
+        "fp": 0
+      },
+      "SEC-20:signup-no-ratelimit": {
+        "tp": 12,
+        "fp": 0
+      },
+      "SEC-21:length-check": {
+        "tp": 4,
+        "fp": 1
+      },
+      "SEC-21:no-policy": {
+        "tp": 5,
+        "fp": 0
+      },
+      "SEC-21:rule-string-min": {
+        "tp": 2,
+        "fp": 0
+      },
+      "SEC-21:weak-password-policy": {
+        "tp": 14,
+        "fp": 0
+      },
+      "SEC-22:dangerous-email-linking": {
+        "tp": 2,
+        "fp": 0
+      },
+      "SEC-23:startup-drop": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-24:framework-debug": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-24:graphql-debug-surface": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-26:unsanitised-user-html": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-SECRET:ci-artifact-secret": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-SECRET:ci-public-ip": {
+        "tp": 2,
+        "fp": 0
+      },
+      "SEC-SECRET:db-url-password": {
+        "tp": 1,
+        "fp": 1
+      },
+      "SEC-SECRET:env-default-literal": {
+        "tp": 0,
+        "fp": 1
+      },
+      "SEC-SECRET:provider-key": {
+        "tp": 2,
+        "fp": 1
+      },
+      "SEC-SECRET:public-env-secret": {
+        "tp": 0,
+        "fp": 1
+      },
+      "SEC-SECRET:settings-allowed-hosts": {
+        "tp": 1,
+        "fp": 1
+      },
+      "SEC-SECRET:settings-debug": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SEC-SECRET:settings-signing-literal": {
+        "tp": 3,
+        "fp": 0
+      },
+      "SPC-01:special-internal-store": {
+        "tp": 2,
+        "fp": 0
+      },
+      "SPC-01:special-public-column": {
+        "tp": 3,
+        "fp": 2
+      },
+      "SPC-01:special-to-client-store": {
+        "tp": 1,
+        "fp": 0
+      },
+      "SPC-01:special-to-log": {
+        "tp": 3,
+        "fp": 0
+      },
+      "SPC-01:special-to-vendor": {
+        "tp": 2,
+        "fp": 0
+      },
+      "TRF-01:config-only": {
+        "tp": 3,
+        "fp": 5
+      },
+      "TRF-01:oauth-idp": {
+        "tp": 23,
+        "fp": 2
+      },
+      "TRF-01:sdk-implied": {
+        "tp": 29,
+        "fp": 2
+      },
+      "TRF-01:traced-vendor": {
+        "tp": 112,
+        "fp": 5
+      },
+      "TRF-01:unknown-location-host": {
+        "tp": 9,
+        "fp": 0
+      },
+      "TRF-01:unknown-location-smtp": {
+        "tp": 9,
+        "fp": 0
+      },
+      "TRF-01:vendor-untraced": {
+        "tp": 15,
+        "fp": 3
+      },
+      "TRN-01:external-notice": {
+        "tp": 2,
+        "fp": 1
+      },
+      "TRN-01:no-notice": {
+        "tp": 56,
+        "fp": 2
+      },
+      "TRN-01:placeholder-notice": {
+        "tp": 2,
+        "fp": 0
+      },
+      "TRN-02:category-missing": {
+        "tp": 14,
+        "fp": 3
+      },
+      "TRN-02:category-missing-inferred": {
+        "tp": 1,
+        "fp": 3
+      },
+      "TRN-02:idp-mismatch": {
+        "tp": 1,
+        "fp": 0
+      },
+      "TRN-02:recipient-not-listed": {
+        "tp": 20,
+        "fp": 4
+      },
+      "TRN-03:contact-import": {
+        "tp": 1,
+        "fp": 0
+      },
+      "TRN-03:enrichment-api": {
+        "tp": 1,
+        "fp": 0
+      },
+      "TRN-03:public-post-api": {
+        "tp": 3,
+        "fp": 0
+      },
+      "TRN-03:recipient-tracking": {
+        "tp": 1,
+        "fp": 0
+      },
+      "TRN-03:scraping-tool": {
+        "tp": 2,
+        "fp": 0
+      }
+    }
+  }
+}

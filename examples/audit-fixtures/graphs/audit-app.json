@@ -1,0 +1,2145 @@
+{
+ "nodes": [
+  {
+   "evidence": [
+    {
+     "file": "supabase",
+     "line": 0,
+     "snippet": "create table public.auth.users",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:table:auth.users",
+   "type": "Store",
+   "kind": "table",
+   "table": "auth.users",
+   "schema": "auth",
+   "rls": null,
+   "policies": [],
+   "managed": true
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 2,
+     "snippet": "create table public.profiles",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:table:profiles",
+   "type": "Store",
+   "kind": "table",
+   "table": "profiles",
+   "schema": "public",
+   "rls": true,
+   "policies": [
+    {
+     "name": "own profile",
+     "cmd": "all",
+     "roles": [],
+     "using": "auth.uid() = id",
+     "check": "auth.uid() = id",
+     "ownerCheck": true
+    }
+   ]
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 4,
+     "snippet": "full_name text",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:column:profiles.full_name",
+   "type": "Store",
+   "kind": "column",
+   "table": "profiles",
+   "column": "full_name",
+   "sqlType": "text"
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/signup/page.tsx",
+     "line": 11,
+     "snippet": "fullName",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "data:full_name",
+   "type": "DataElement",
+   "name": "full_name",
+   "category": "identity",
+   "sensitivity": "normal",
+   "identifier": "direct",
+   "label": {
+    "tr": "Ad soyad",
+    "en": "Full name"
+   },
+   "aliases": [
+    "full_name",
+    "fullName"
+   ]
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 5,
+     "snippet": "email text",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:column:profiles.email",
+   "type": "Store",
+   "kind": "column",
+   "table": "profiles",
+   "column": "email",
+   "sqlType": "text"
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/signup/page.tsx",
+     "line": 12,
+     "snippet": "email",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "data:email",
+   "type": "DataElement",
+   "name": "email",
+   "category": "contact",
+   "sensitivity": "normal",
+   "identifier": "direct",
+   "label": {
+    "tr": "E-posta",
+    "en": "Email"
+   },
+   "aliases": [
+    "email"
+   ]
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 6,
+     "snippet": "phone text",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:column:profiles.phone",
+   "type": "Store",
+   "kind": "column",
+   "table": "profiles",
+   "column": "phone",
+   "sqlType": "text"
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/signup/page.tsx",
+     "line": 13,
+     "snippet": "phone",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "data:phone",
+   "type": "DataElement",
+   "name": "phone",
+   "category": "contact",
+   "sensitivity": "normal",
+   "identifier": "direct",
+   "label": {
+    "tr": "Telefon",
+    "en": "Phone number"
+   },
+   "aliases": [
+    "phone"
+   ]
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 7,
+     "snippet": "birth_date date",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:column:profiles.birth_date",
+   "type": "Store",
+   "kind": "column",
+   "table": "profiles",
+   "column": "birth_date",
+   "sqlType": "date"
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/signup/page.tsx",
+     "line": 14,
+     "snippet": "birthDate",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "data:birth_date",
+   "type": "DataElement",
+   "name": "birth_date",
+   "category": "identity",
+   "sensitivity": "normal",
+   "identifier": "indirect",
+   "label": {
+    "tr": "Doğum tarihi",
+    "en": "Date of birth"
+   },
+   "aliases": [
+    "birth_date",
+    "birthDate"
+   ]
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 8,
+     "snippet": "tckn text",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:column:profiles.tckn",
+   "type": "Store",
+   "kind": "column",
+   "table": "profiles",
+   "column": "tckn",
+   "sqlType": "text"
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/signup/page.tsx",
+     "line": 15,
+     "snippet": "tckn",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "data:national_id",
+   "type": "DataElement",
+   "name": "national_id",
+   "category": "identity",
+   "sensitivity": "high",
+   "identifier": "direct",
+   "label": {
+    "tr": "TC Kimlik No / ulusal kimlik",
+    "en": "National ID number"
+   },
+   "aliases": [
+    "tckn"
+   ]
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 9,
+     "snippet": "avatar_url text",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:column:profiles.avatar_url",
+   "type": "Store",
+   "kind": "column",
+   "table": "profiles",
+   "column": "avatar_url",
+   "sqlType": "text"
+  },
+  {
+   "evidence": [],
+   "id": "data:photo",
+   "type": "DataElement",
+   "name": "photo",
+   "category": "audiovisual",
+   "sensitivity": "normal",
+   "identifier": "direct",
+   "label": {
+    "tr": "Fotoğraf / avatar",
+    "en": "Photo / avatar"
+   },
+   "aliases": [
+    "avatar_url"
+   ]
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 10,
+     "snippet": "marketing_opt_in boolean",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:column:profiles.marketing_opt_in",
+   "type": "Store",
+   "kind": "column",
+   "table": "profiles",
+   "column": "marketing_opt_in",
+   "sqlType": "boolean",
+   "default": "true"
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/signup/page.tsx",
+     "line": 17,
+     "snippet": "marketing",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "data:marketing_consent",
+   "type": "DataElement",
+   "name": "marketing_consent",
+   "category": "marketing",
+   "sensitivity": "normal",
+   "identifier": "none",
+   "label": {
+    "tr": "Pazarlama tercihleri / izinleri",
+    "en": "Marketing preferences / consent"
+   },
+   "aliases": [
+    "marketing_opt_in",
+    "marketing"
+   ]
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 17,
+     "snippet": "create table public.health_logs",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:table:health_logs",
+   "type": "Store",
+   "kind": "table",
+   "table": "health_logs",
+   "schema": "public",
+   "rls": true,
+   "policies": [
+    {
+     "name": "read all logs",
+     "cmd": "select",
+     "roles": [],
+     "using": "true",
+     "ownerCheck": false,
+     "public": true,
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 26
+    }
+   ]
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 20,
+     "snippet": "symptoms text",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:column:health_logs.symptoms",
+   "type": "Store",
+   "kind": "column",
+   "table": "health_logs",
+   "column": "symptoms",
+   "sqlType": "text"
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/api/health/route.ts",
+     "line": 6,
+     "snippet": "symptoms",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "data:health",
+   "type": "DataElement",
+   "name": "health",
+   "category": "health",
+   "sensitivity": "special",
+   "identifier": "none",
+   "label": {
+    "tr": "Sağlık bilgisi",
+    "en": "Health information"
+   },
+   "aliases": [
+    "symptoms"
+   ]
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 22,
+     "snippet": "notes text",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:column:health_logs.notes",
+   "type": "Store",
+   "kind": "column",
+   "table": "health_logs",
+   "column": "notes",
+   "sqlType": "text"
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/api/health/route.ts",
+     "line": 6,
+     "snippet": "notes",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "data:free_text",
+   "type": "DataElement",
+   "name": "free_text",
+   "category": "user-content",
+   "sensitivity": "normal",
+   "identifier": "none",
+   "label": {
+    "tr": "Serbest metin / kullanıcı içeriği",
+    "en": "Free text / user content"
+   },
+   "aliases": [
+    "notes",
+    "message",
+    "content"
+   ]
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 29,
+     "snippet": "create table public.orders",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:table:orders",
+   "type": "Store",
+   "kind": "table",
+   "table": "orders",
+   "schema": "public",
+   "rls": false,
+   "policies": []
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 32,
+     "snippet": "shipping_address text",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:column:orders.shipping_address",
+   "type": "Store",
+   "kind": "column",
+   "table": "orders",
+   "column": "shipping_address",
+   "sqlType": "text"
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/api/checkout/route.ts",
+     "line": 7,
+     "snippet": "shippingAddress",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "data:address",
+   "type": "DataElement",
+   "name": "address",
+   "category": "contact",
+   "sensitivity": "normal",
+   "identifier": "direct",
+   "label": {
+    "tr": "Adres",
+    "en": "Postal address"
+   },
+   "aliases": [
+    "shipping_address",
+    "shippingAddress"
+   ]
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 34,
+     "snippet": "stripe_customer_id text",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:column:orders.stripe_customer_id",
+   "type": "Store",
+   "kind": "column",
+   "table": "orders",
+   "column": "stripe_customer_id",
+   "sqlType": "text"
+  },
+  {
+   "evidence": [],
+   "id": "data:payment_info",
+   "type": "DataElement",
+   "name": "payment_info",
+   "category": "finance",
+   "sensitivity": "normal",
+   "identifier": "indirect",
+   "label": {
+    "tr": "Ödeme kaydı",
+    "en": "Payment record"
+   },
+   "aliases": [
+    "stripe_customer_id"
+   ]
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 39,
+     "snippet": "create table public.support_tickets",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:table:support_tickets",
+   "type": "Store",
+   "kind": "table",
+   "table": "support_tickets",
+   "schema": "public",
+   "rls": true,
+   "policies": []
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 41,
+     "snippet": "email text",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:column:support_tickets.email",
+   "type": "Store",
+   "kind": "column",
+   "table": "support_tickets",
+   "column": "email",
+   "sqlType": "text"
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 42,
+     "snippet": "message text",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:column:support_tickets.message",
+   "type": "Store",
+   "kind": "column",
+   "table": "support_tickets",
+   "column": "message",
+   "sqlType": "text"
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 48,
+     "snippet": "create table public.chat_messages",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:table:chat_messages",
+   "type": "Store",
+   "kind": "table",
+   "table": "chat_messages",
+   "schema": "public",
+   "rls": true,
+   "policies": [
+    {
+     "name": "own messages",
+     "cmd": "select",
+     "using": "auth.uid() = user_id",
+     "ownerCheck": true
+    }
+   ]
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 51,
+     "snippet": "content text",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:column:chat_messages.content",
+   "type": "Store",
+   "kind": "column",
+   "table": "chat_messages",
+   "column": "content",
+   "sqlType": "text"
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 52,
+     "snippet": "embedding vector(1536)",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:column:chat_messages.embedding",
+   "type": "Store",
+   "kind": "column",
+   "table": "chat_messages",
+   "column": "embedding",
+   "sqlType": "vector(1536)",
+   "vector": true,
+   "derived": true
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 58,
+     "snippet": "insert into storage.buckets ... true",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:bucket:avatars",
+   "type": "Store",
+   "kind": "bucket",
+   "name": "avatars",
+   "public": true
+  },
+  {
+   "evidence": [],
+   "id": "store:log:console",
+   "type": "Store",
+   "kind": "log"
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/lib/supabase.ts",
+     "line": 3,
+     "snippet": "Supabase",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "sink:vendor:supabase",
+   "type": "Sink",
+   "kind": "vendor",
+   "vendorId": "supabase",
+   "vendorName": "Supabase",
+   "country": "US (bölge seçilebilir)",
+   "category": "processor",
+   "consentRequired": false
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/components/Analytics.tsx",
+     "line": 7,
+     "snippet": "PostHog",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "sink:vendor:posthog",
+   "type": "Sink",
+   "kind": "vendor",
+   "vendorId": "posthog",
+   "vendorName": "PostHog",
+   "country": "US/EU",
+   "category": "analytics",
+   "consentRequired": true,
+   "initUngated": true
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/lib/clients.ts",
+     "line": 5,
+     "snippet": "OpenAI",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "sink:vendor:openai",
+   "type": "Sink",
+   "kind": "vendor",
+   "vendorId": "openai",
+   "vendorName": "OpenAI",
+   "country": "US",
+   "category": "ai",
+   "consentRequired": false
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/lib/clients.ts",
+     "line": 6,
+     "snippet": "E-posta servisi (Resend/SendGrid/Mailchimp/Postmark/Mailgun/Brevo)",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "sink:vendor:email-services",
+   "type": "Sink",
+   "kind": "vendor",
+   "vendorId": "email-services",
+   "vendorName": "E-posta servisi (Resend/SendGrid/Mailchimp/Postmark/Mailgun/Brevo)",
+   "country": "US/EU",
+   "category": "email",
+   "consentRequired": false
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/lib/clients.ts",
+     "line": 7,
+     "snippet": "Stripe",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "sink:vendor:stripe",
+   "type": "Sink",
+   "kind": "vendor",
+   "vendorId": "stripe",
+   "vendorName": "Stripe",
+   "country": "US/IE",
+   "category": "payments",
+   "consentRequired": false
+  },
+  {
+   "evidence": [],
+   "id": "sink:client-response",
+   "type": "Sink",
+   "kind": "client-response"
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/api/signup/route.ts",
+     "line": 6,
+     "snippet": "export async function POST",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "endpoint:POST /api/signup",
+   "type": "Endpoint",
+   "method": "POST",
+   "path": "/api/signup",
+   "file": "src/app/api/signup/route.ts",
+   "line": 6,
+   "framework": "nextjs-app",
+   "auth": false
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/api/profile/route.ts",
+     "line": 4,
+     "snippet": "export async function GET",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "endpoint:GET /api/profile",
+   "type": "Endpoint",
+   "method": "GET",
+   "path": "/api/profile",
+   "file": "src/app/api/profile/route.ts",
+   "line": 4,
+   "framework": "nextjs-app",
+   "auth": true,
+   "ownershipCheck": true
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/api/health/route.ts",
+     "line": 5,
+     "snippet": "export async function POST",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "endpoint:POST /api/health",
+   "type": "Endpoint",
+   "method": "POST",
+   "path": "/api/health",
+   "file": "src/app/api/health/route.ts",
+   "line": 5,
+   "framework": "nextjs-app",
+   "auth": false,
+   "ownershipCheck": false
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/api/chat/route.ts",
+     "line": 6,
+     "snippet": "export async function POST",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "endpoint:POST /api/chat",
+   "type": "Endpoint",
+   "method": "POST",
+   "path": "/api/chat",
+   "file": "src/app/api/chat/route.ts",
+   "line": 6,
+   "framework": "nextjs-app",
+   "auth": true
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/api/checkout/route.ts",
+     "line": 5,
+     "snippet": "export async function POST",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "endpoint:POST /api/checkout",
+   "type": "Endpoint",
+   "method": "POST",
+   "path": "/api/checkout",
+   "file": "src/app/api/checkout/route.ts",
+   "line": 5,
+   "framework": "nextjs-app",
+   "auth": true
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/api/account/delete/route.ts",
+     "line": 5,
+     "snippet": "export async function POST",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "endpoint:POST /api/account/delete",
+   "type": "Endpoint",
+   "method": "POST",
+   "path": "/api/account/delete",
+   "file": "src/app/api/account/delete/route.ts",
+   "line": 5,
+   "framework": "nextjs-app",
+   "auth": true
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/support/actions.ts",
+     "line": 4,
+     "snippet": "export async function ACTION",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "endpoint:ACTION submitTicket",
+   "type": "Endpoint",
+   "method": "ACTION",
+   "path": "submitTicket",
+   "file": "src/app/support/actions.ts",
+   "line": 4,
+   "framework": "server-action",
+   "auth": "unknown"
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/signup/page.tsx",
+     "line": 10,
+     "snippet": "<form onSubmit=…>",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "source:form:signup",
+   "type": "Source",
+   "kind": "form",
+   "name": "signup",
+   "fields": [
+    "fullName",
+    "email",
+    "phone",
+    "birthDate",
+    "tckn",
+    "password",
+    "marketing"
+   ],
+   "preChecked": [
+    "marketing"
+   ],
+   "hasPrivacyLink": false,
+   "submitsTo": "endpoint:POST /api/signup"
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/signup/page.tsx",
+     "line": 16,
+     "snippet": "password",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "data:password",
+   "type": "DataElement",
+   "name": "password",
+   "category": "transaction-security",
+   "sensitivity": "high",
+   "identifier": "none",
+   "label": {
+    "tr": "Şifre",
+    "en": "Password"
+   },
+   "aliases": [
+    "password"
+   ]
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/api/health/route.ts",
+     "line": 6,
+     "snippet": "await req.json()",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "source:request:endpoint:POST /api/health",
+   "type": "Source",
+   "kind": "request",
+   "name": "POST /api/health"
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/support/page.tsx",
+     "line": 5,
+     "snippet": "<form action={submitTicket}>",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "source:form:support",
+   "type": "Source",
+   "kind": "form",
+   "name": "support",
+   "fields": [
+    "email",
+    "message"
+   ],
+   "preChecked": []
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/components/CookieBanner.tsx",
+     "line": 5,
+     "snippet": "<button onClick={onAccept}>Kabul et</button>",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "control:consent-ui:CookieBanner",
+   "type": "Control",
+   "kind": "consent-ui",
+   "name": "CookieBanner",
+   "hasAccept": true,
+   "hasReject": false
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/api/account/delete/route.ts",
+     "line": 8,
+     "snippet": "supabaseAdmin.auth.admin.deleteUser(user.id)",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "control:deletion-flow:account-delete",
+   "type": "Control",
+   "kind": "deletion-flow",
+   "name": "POST /api/account/delete"
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/privacy/page.tsx",
+     "line": 4,
+     "snippet": "Gizlilik Politikası ve Aydınlatma Metni",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "declaration:policy:privacy",
+   "type": "Declaration",
+   "kind": "privacy-notice",
+   "file": "src/app/privacy/page.tsx",
+   "line": 4,
+   "declaredData": [
+    "Ad, soyad, e-posta ve telefon numaranızı"
+   ],
+   "declaredVendors": [
+    "Supabase",
+    "Stripe"
+   ],
+   "declaresNoTransferAbroad": true,
+   "controller": "Örnek Teknoloji A.Ş.",
+   "contactEmail": "kvkk@ornek.com"
+  }
+ ],
+ "edges": [
+  {
+   "from": "store:table:profiles",
+   "to": "store:column:profiles.full_name",
+   "type": "hasColumn",
+   "evidence": []
+  },
+  {
+   "from": "store:column:profiles.full_name",
+   "to": "data:full_name",
+   "type": "represents",
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 4,
+     "snippet": "full_name",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "store:table:profiles",
+   "to": "store:column:profiles.email",
+   "type": "hasColumn",
+   "evidence": []
+  },
+  {
+   "from": "store:column:profiles.email",
+   "to": "data:email",
+   "type": "represents",
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 5,
+     "snippet": "email",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "store:table:profiles",
+   "to": "store:column:profiles.phone",
+   "type": "hasColumn",
+   "evidence": []
+  },
+  {
+   "from": "store:column:profiles.phone",
+   "to": "data:phone",
+   "type": "represents",
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 6,
+     "snippet": "phone",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "store:table:profiles",
+   "to": "store:column:profiles.birth_date",
+   "type": "hasColumn",
+   "evidence": []
+  },
+  {
+   "from": "store:column:profiles.birth_date",
+   "to": "data:birth_date",
+   "type": "represents",
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 7,
+     "snippet": "birth_date",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "store:table:profiles",
+   "to": "store:column:profiles.tckn",
+   "type": "hasColumn",
+   "evidence": []
+  },
+  {
+   "from": "store:column:profiles.tckn",
+   "to": "data:national_id",
+   "type": "represents",
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 8,
+     "snippet": "tckn",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "store:table:profiles",
+   "to": "store:column:profiles.avatar_url",
+   "type": "hasColumn",
+   "evidence": []
+  },
+  {
+   "from": "store:column:profiles.avatar_url",
+   "to": "data:photo",
+   "type": "represents",
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 9,
+     "snippet": "avatar_url",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "store:table:profiles",
+   "to": "store:column:profiles.marketing_opt_in",
+   "type": "hasColumn",
+   "evidence": []
+  },
+  {
+   "from": "store:column:profiles.marketing_opt_in",
+   "to": "data:marketing_consent",
+   "type": "represents",
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 10,
+     "snippet": "marketing_opt_in",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "store:table:profiles",
+   "to": "store:table:auth.users",
+   "type": "references",
+   "evidence": [],
+   "column": "id",
+   "refColumn": "id",
+   "onDelete": "cascade"
+  },
+  {
+   "from": "store:table:health_logs",
+   "to": "store:column:health_logs.symptoms",
+   "type": "hasColumn",
+   "evidence": []
+  },
+  {
+   "from": "store:column:health_logs.symptoms",
+   "to": "data:health",
+   "type": "represents",
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 20,
+     "snippet": "symptoms",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "store:table:health_logs",
+   "to": "store:column:health_logs.notes",
+   "type": "hasColumn",
+   "evidence": []
+  },
+  {
+   "from": "store:column:health_logs.notes",
+   "to": "data:free_text",
+   "type": "represents",
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 22,
+     "snippet": "notes",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "store:table:health_logs",
+   "to": "store:table:profiles",
+   "type": "references",
+   "evidence": [],
+   "column": "user_id",
+   "onDelete": "cascade"
+  },
+  {
+   "from": "store:table:orders",
+   "to": "store:column:orders.shipping_address",
+   "type": "hasColumn",
+   "evidence": []
+  },
+  {
+   "from": "store:column:orders.shipping_address",
+   "to": "data:address",
+   "type": "represents",
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 32,
+     "snippet": "shipping_address",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "store:table:orders",
+   "to": "store:column:orders.stripe_customer_id",
+   "type": "hasColumn",
+   "evidence": []
+  },
+  {
+   "from": "store:column:orders.stripe_customer_id",
+   "to": "data:payment_info",
+   "type": "represents",
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 34,
+     "snippet": "stripe_customer_id",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "store:table:orders",
+   "to": "store:table:profiles",
+   "type": "references",
+   "evidence": [],
+   "column": "user_id",
+   "onDelete": null
+  },
+  {
+   "from": "store:table:support_tickets",
+   "to": "store:column:support_tickets.email",
+   "type": "hasColumn",
+   "evidence": []
+  },
+  {
+   "from": "store:column:support_tickets.email",
+   "to": "data:email",
+   "type": "represents",
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 41,
+     "snippet": "email",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "store:table:support_tickets",
+   "to": "store:column:support_tickets.message",
+   "type": "hasColumn",
+   "evidence": []
+  },
+  {
+   "from": "store:column:support_tickets.message",
+   "to": "data:free_text",
+   "type": "represents",
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 42,
+     "snippet": "message",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "store:table:chat_messages",
+   "to": "store:column:chat_messages.content",
+   "type": "hasColumn",
+   "evidence": []
+  },
+  {
+   "from": "store:column:chat_messages.content",
+   "to": "data:free_text",
+   "type": "represents",
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 51,
+     "snippet": "content",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "store:table:chat_messages",
+   "to": "store:column:chat_messages.embedding",
+   "type": "hasColumn",
+   "evidence": []
+  },
+  {
+   "from": "store:table:chat_messages",
+   "to": "store:table:auth.users",
+   "type": "references",
+   "evidence": [],
+   "column": "user_id",
+   "onDelete": "cascade"
+  },
+  {
+   "from": "source:form:signup",
+   "to": "endpoint:POST /api/signup",
+   "type": "handledBy",
+   "evidence": []
+  },
+  {
+   "from": "source:form:signup",
+   "to": "data:full_name",
+   "type": "collects",
+   "evidence": [
+    {
+     "file": "src/app/signup/page.tsx",
+     "line": 11,
+     "snippet": "register('fullName')",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "source:form:signup",
+   "to": "data:email",
+   "type": "collects",
+   "evidence": [
+    {
+     "file": "src/app/signup/page.tsx",
+     "line": 12,
+     "snippet": "register('email')",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "source:form:signup",
+   "to": "data:phone",
+   "type": "collects",
+   "evidence": [
+    {
+     "file": "src/app/signup/page.tsx",
+     "line": 13,
+     "snippet": "register('phone')",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "source:form:signup",
+   "to": "data:birth_date",
+   "type": "collects",
+   "evidence": [
+    {
+     "file": "src/app/signup/page.tsx",
+     "line": 14,
+     "snippet": "register('birthDate')",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "source:form:signup",
+   "to": "data:national_id",
+   "type": "collects",
+   "evidence": [
+    {
+     "file": "src/app/signup/page.tsx",
+     "line": 15,
+     "snippet": "register('tckn')",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "source:form:signup",
+   "to": "data:password",
+   "type": "collects",
+   "evidence": [
+    {
+     "file": "src/app/signup/page.tsx",
+     "line": 16,
+     "snippet": "register('password')",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "source:form:signup",
+   "to": "data:marketing_consent",
+   "type": "collects",
+   "evidence": [
+    {
+     "file": "src/app/signup/page.tsx",
+     "line": 17,
+     "snippet": "register('marketing')",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "data:full_name",
+   "to": "store:column:profiles.full_name",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/signup/route.ts",
+     "line": 9,
+     "snippet": "supabaseAdmin.from('profiles').insert({ full_name })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/signup",
+   "sourceId": "source:form:signup"
+  },
+  {
+   "from": "data:email",
+   "to": "store:column:profiles.email",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/signup/route.ts",
+     "line": 9,
+     "snippet": "supabaseAdmin.from('profiles').insert({ email })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/signup",
+   "sourceId": "source:form:signup"
+  },
+  {
+   "from": "data:phone",
+   "to": "store:column:profiles.phone",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/signup/route.ts",
+     "line": 9,
+     "snippet": "supabaseAdmin.from('profiles').insert({ phone })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/signup",
+   "sourceId": "source:form:signup"
+  },
+  {
+   "from": "data:birth_date",
+   "to": "store:column:profiles.birth_date",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/signup/route.ts",
+     "line": 9,
+     "snippet": "supabaseAdmin.from('profiles').insert({ birth_date })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/signup",
+   "sourceId": "source:form:signup"
+  },
+  {
+   "from": "data:national_id",
+   "to": "store:column:profiles.tckn",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/signup/route.ts",
+     "line": 9,
+     "snippet": "supabaseAdmin.from('profiles').insert({ tckn })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/signup",
+   "sourceId": "source:form:signup"
+  },
+  {
+   "from": "data:marketing_consent",
+   "to": "store:column:profiles.marketing_opt_in",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/signup/route.ts",
+     "line": 9,
+     "snippet": "supabaseAdmin.from('profiles').insert({ marketing_opt_in })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/signup",
+   "sourceId": "source:form:signup"
+  },
+  {
+   "from": "data:email",
+   "to": "sink:vendor:supabase",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/signup/route.ts",
+     "line": 8,
+     "snippet": "supabase.auth.signUp({ email, password })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/signup",
+   "sourceId": "source:form:signup"
+  },
+  {
+   "from": "data:password",
+   "to": "sink:vendor:supabase",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/signup/route.ts",
+     "line": 8,
+     "snippet": "supabase.auth.signUp({ email, password })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/signup",
+   "sourceId": "source:form:signup"
+  },
+  {
+   "from": "data:email",
+   "to": "store:log:console",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/signup/route.ts",
+     "line": 18,
+     "snippet": "console.log('new signup', email, phone)",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/signup"
+  },
+  {
+   "from": "data:phone",
+   "to": "store:log:console",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/signup/route.ts",
+     "line": 18,
+     "snippet": "console.log('new signup', email, phone)",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/signup"
+  },
+  {
+   "from": "data:email",
+   "to": "sink:vendor:email-services",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/signup/route.ts",
+     "line": 19,
+     "snippet": "resend.emails.send({ to: email })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/signup"
+  },
+  {
+   "from": "data:full_name",
+   "to": "sink:vendor:email-services",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/signup/route.ts",
+     "line": 19,
+     "snippet": "html: `Merhaba ${fullName}`",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/signup"
+  },
+  {
+   "from": "data:email",
+   "to": "sink:vendor:posthog",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/components/Analytics.tsx",
+     "line": 8,
+     "snippet": "posthog.identify(user.id, { email: user.email, phone: user.phone })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "data:phone",
+   "to": "sink:vendor:posthog",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/components/Analytics.tsx",
+     "line": 8,
+     "snippet": "posthog.identify(user.id, { email: user.email, phone: user.phone })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "data:full_name",
+   "to": "endpoint:GET /api/profile",
+   "type": "readBy",
+   "evidence": [
+    {
+     "file": "src/app/api/profile/route.ts",
+     "line": 7,
+     "snippet": "supabase.from('profiles').select('*')",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "star": true
+  },
+  {
+   "from": "endpoint:GET /api/profile",
+   "to": "data:full_name",
+   "type": "exposes",
+   "evidence": [
+    {
+     "file": "src/app/api/profile/route.ts",
+     "line": 8,
+     "snippet": "NextResponse.json(data)",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "data:email",
+   "to": "endpoint:GET /api/profile",
+   "type": "readBy",
+   "evidence": [
+    {
+     "file": "src/app/api/profile/route.ts",
+     "line": 7,
+     "snippet": "supabase.from('profiles').select('*')",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "star": true
+  },
+  {
+   "from": "endpoint:GET /api/profile",
+   "to": "data:email",
+   "type": "exposes",
+   "evidence": [
+    {
+     "file": "src/app/api/profile/route.ts",
+     "line": 8,
+     "snippet": "NextResponse.json(data)",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "data:phone",
+   "to": "endpoint:GET /api/profile",
+   "type": "readBy",
+   "evidence": [
+    {
+     "file": "src/app/api/profile/route.ts",
+     "line": 7,
+     "snippet": "supabase.from('profiles').select('*')",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "star": true
+  },
+  {
+   "from": "endpoint:GET /api/profile",
+   "to": "data:phone",
+   "type": "exposes",
+   "evidence": [
+    {
+     "file": "src/app/api/profile/route.ts",
+     "line": 8,
+     "snippet": "NextResponse.json(data)",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "data:birth_date",
+   "to": "endpoint:GET /api/profile",
+   "type": "readBy",
+   "evidence": [
+    {
+     "file": "src/app/api/profile/route.ts",
+     "line": 7,
+     "snippet": "supabase.from('profiles').select('*')",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "star": true
+  },
+  {
+   "from": "endpoint:GET /api/profile",
+   "to": "data:birth_date",
+   "type": "exposes",
+   "evidence": [
+    {
+     "file": "src/app/api/profile/route.ts",
+     "line": 8,
+     "snippet": "NextResponse.json(data)",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "data:national_id",
+   "to": "endpoint:GET /api/profile",
+   "type": "readBy",
+   "evidence": [
+    {
+     "file": "src/app/api/profile/route.ts",
+     "line": 7,
+     "snippet": "supabase.from('profiles').select('*')",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "star": true
+  },
+  {
+   "from": "endpoint:GET /api/profile",
+   "to": "data:national_id",
+   "type": "exposes",
+   "evidence": [
+    {
+     "file": "src/app/api/profile/route.ts",
+     "line": 8,
+     "snippet": "NextResponse.json(data)",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "data:photo",
+   "to": "endpoint:GET /api/profile",
+   "type": "readBy",
+   "evidence": [
+    {
+     "file": "src/app/api/profile/route.ts",
+     "line": 7,
+     "snippet": "supabase.from('profiles').select('*')",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "star": true
+  },
+  {
+   "from": "endpoint:GET /api/profile",
+   "to": "data:photo",
+   "type": "exposes",
+   "evidence": [
+    {
+     "file": "src/app/api/profile/route.ts",
+     "line": 8,
+     "snippet": "NextResponse.json(data)",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "data:marketing_consent",
+   "to": "endpoint:GET /api/profile",
+   "type": "readBy",
+   "evidence": [
+    {
+     "file": "src/app/api/profile/route.ts",
+     "line": 7,
+     "snippet": "supabase.from('profiles').select('*')",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "star": true
+  },
+  {
+   "from": "endpoint:GET /api/profile",
+   "to": "data:marketing_consent",
+   "type": "exposes",
+   "evidence": [
+    {
+     "file": "src/app/api/profile/route.ts",
+     "line": 8,
+     "snippet": "NextResponse.json(data)",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "source:request:endpoint:POST /api/health",
+   "to": "data:health",
+   "type": "collects",
+   "evidence": [
+    {
+     "file": "src/app/api/health/route.ts",
+     "line": 6,
+     "snippet": "const { userId, symptoms, notes } = await req.json()",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "source:request:endpoint:POST /api/health",
+   "to": "data:free_text",
+   "type": "collects",
+   "evidence": [
+    {
+     "file": "src/app/api/health/route.ts",
+     "line": 6,
+     "snippet": "const { userId, symptoms, notes } = await req.json()",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "data:health",
+   "to": "store:column:health_logs.symptoms",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/health/route.ts",
+     "line": 7,
+     "snippet": "insert({ user_id: userId, symptoms, notes })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/health",
+   "sourceId": "source:request:endpoint:POST /api/health"
+  },
+  {
+   "from": "data:free_text",
+   "to": "store:column:health_logs.notes",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/health/route.ts",
+     "line": 7,
+     "snippet": "insert({ symptoms, notes })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/health"
+  },
+  {
+   "from": "data:health",
+   "to": "sink:vendor:openai",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/health/route.ts",
+     "line": 10,
+     "snippet": "content: `Belirtiler: ${symptoms}`",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/health",
+   "sourceId": "source:request:endpoint:POST /api/health"
+  },
+  {
+   "from": "data:free_text",
+   "to": "sink:vendor:openai",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/health/route.ts",
+     "line": 10,
+     "snippet": "Notlar: ${notes}",
+     "kind": "static",
+     "confidence": 0.8
+    },
+    {
+     "file": "src/app/api/chat/route.ts",
+     "line": 10,
+     "snippet": "openai.embeddings.create({ input: last })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/health"
+  },
+  {
+   "from": "data:free_text",
+   "to": "store:column:chat_messages.content",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/chat/route.ts",
+     "line": 11,
+     "snippet": "insert({ content: last })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/chat"
+  },
+  {
+   "from": "data:email",
+   "to": "sink:vendor:stripe",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/checkout/route.ts",
+     "line": 8,
+     "snippet": "stripe.customers.create({ email, name, address })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/checkout"
+  },
+  {
+   "from": "data:full_name",
+   "to": "sink:vendor:stripe",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/checkout/route.ts",
+     "line": 8,
+     "snippet": "stripe.customers.create({ name: fullName })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/checkout"
+  },
+  {
+   "from": "data:address",
+   "to": "sink:vendor:stripe",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/checkout/route.ts",
+     "line": 8,
+     "snippet": "address: { line1: shippingAddress }",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/checkout"
+  },
+  {
+   "from": "data:address",
+   "to": "store:column:orders.shipping_address",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/checkout/route.ts",
+     "line": 9,
+     "snippet": "insert({ shipping_address })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:POST /api/checkout"
+  },
+  {
+   "from": "source:form:support",
+   "to": "data:email",
+   "type": "collects",
+   "evidence": [
+    {
+     "file": "src/app/support/page.tsx",
+     "line": 6,
+     "snippet": "name=\"email\"",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "source:form:support",
+   "to": "data:free_text",
+   "type": "collects",
+   "evidence": [
+    {
+     "file": "src/app/support/page.tsx",
+     "line": 7,
+     "snippet": "name=\"message\"",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "data:email",
+   "to": "store:column:support_tickets.email",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/support/actions.ts",
+     "line": 7,
+     "snippet": "insert({ email, message })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:ACTION submitTicket"
+  },
+  {
+   "from": "data:free_text",
+   "to": "store:column:support_tickets.message",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/support/actions.ts",
+     "line": 7,
+     "snippet": "insert({ email, message })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:ACTION submitTicket"
+  },
+  {
+   "from": "control:deletion-flow:account-delete",
+   "to": "store:table:auth.users",
+   "type": "deletes",
+   "evidence": [
+    {
+     "file": "src/app/api/account/delete/route.ts",
+     "line": 8,
+     "snippet": "deleteUser",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  }
+ ]
+}

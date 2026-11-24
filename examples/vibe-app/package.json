@@ -1,0 +1,10 @@
+{
+  "name": "vibe-app",
+  "dependencies": {
+    "next": "15.0.0",
+    "@supabase/supabase-js": "2.45.0",
+    "openai": "4.60.0",
+    "mixpanel-browser": "2.55.0",
+    "@sentry/nextjs": "8.30.0"
+  }
+}

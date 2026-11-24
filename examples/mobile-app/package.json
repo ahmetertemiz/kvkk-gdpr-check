@@ -1,0 +1,13 @@
+{
+  "name": "mobile-app",
+  "dependencies": {
+    "expo": "52.0.0",
+    "react-native": "0.76.0",
+    "react-native-appsflyer": "6.15.0",
+    "@react-native-async-storage/async-storage": "2.0.0",
+    "posthog-react-native": "3.3.0",
+    "resend": "4.0.0",
+    "express": "4.21.0",
+    "openai": "4.60.0"
+  }
+}

@@ -1,0 +1,36 @@
+name: 'KVKK / GDPR Check'
+description: 'Scan your app for KVKK & GDPR privacy risks (trackers without consent, exposed secrets, missing RLS, missing privacy notice...)'
+branding:
+  icon: 'shield'
+  color: 'red'
+inputs:
+  path:
+    description: 'Directory to scan'
+    default: '.'
+  fail-on:
+    description: 'Fail the job at this severity or above (critical|high|medium|low|none)'
+    default: 'high'
+  lang:
+    description: 'Report language (tr|en)'
+    default: 'tr'
+  url:
+    description: 'Optional live URL (e.g. staging) to scan as well (HTTP mode unless playwright-core is installed)'
+    default: ''
+  sarif:
+    description: 'Also write kvkk.sarif for GitHub code scanning upload'
+    default: 'true'
+runs:
+  using: 'composite'
+  steps:
+    - name: Run kvkk-gdpr-check
+      shell: bash
+      env:
+        KVKK_URL: ${{ inputs.url }}
+      run: |
+        URLARG=""; if [ -n "$KVKK_URL" ]; then URLARG="--url $KVKK_URL --no-browser"; fi
+        node "$GITHUB_ACTION_PATH/bin/cli.js" "${{ inputs.path }}" $URLARG --format md --output kvkk-report.md --lang "${{ inputs.lang }}" --fail-on none --no-color
+        cat kvkk-report.md >> "$GITHUB_STEP_SUMMARY"
+        if [ "${{ inputs.sarif }}" = "true" ]; then
+          node "$GITHUB_ACTION_PATH/bin/cli.js" "${{ inputs.path }}" $URLARG --format sarif --output kvkk.sarif --lang "${{ inputs.lang }}" --fail-on none --no-color > /dev/null
+        fi
+        node "$GITHUB_ACTION_PATH/bin/cli.js" "${{ inputs.path }}" $URLARG --format json --output kvkk-report.json --fail-on "${{ inputs.fail-on }}" --no-color > /dev/null

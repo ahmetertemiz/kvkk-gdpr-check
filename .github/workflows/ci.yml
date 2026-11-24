@@ -1,0 +1,25 @@
+name: ci
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci
+      - run: npm test
+      - run: npm run check:publishable
+      # what a user gets: the packed tarball, installed without dev dependencies
+      - run: |
+          npm pack --pack-destination "$RUNNER_TEMP"
+          mkdir "$RUNNER_TEMP/app" && cd "$RUNNER_TEMP/app" && npm init -y > /dev/null
+          npm install --omit=dev --omit=optional "$RUNNER_TEMP"/kvkk-gdpr-check-*.tgz
+          npx kvkk-gdpr-check audit "$GITHUB_WORKSPACE/examples/audit-app" -f json -o audit.json --fail-on none
+          node -e "const j=require('./audit.json'); if(!j.findings.length) process.exit(1)"

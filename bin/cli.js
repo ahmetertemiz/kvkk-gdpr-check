@@ -1,0 +1,225 @@
+#!/usr/bin/env node
+import fs from 'node:fs';
+import path from 'node:path';
+import { scan } from '../src/scan.js';
+import { RULES, SEVERITY_ORDER } from '../src/rules.js';
+import { mergeResults } from '../src/summary.js';
+import { toText, toMarkdown, toJSON, toSarif } from '../src/report.js';
+
+const HELP = `
+kvkk-check — KVKK / GDPR uyum risk tarayıcısı
+
+Kullanım:
+  kvkk-check [dizin] [seçenekler]            Kaynak kodu tara
+  kvkk-check [dizin] --url <URL>             Kod + canlı siteyi birlikte tara
+  kvkk-check url <URL> [seçenekler]          Sadece canlı siteyi tara
+  kvkk-check docs [dizin] [--url <URL>]      Aydınlatma metni, çerez politikası,
+                                             veri envanteri vb. dokümanları üret
+  kvkk-check ui [--port 4477]                Yerel web arayüzünü aç
+  kvkk-check audit [dizin] [--url <URL>]     Derin denetim: veri haritası, akış analizi,
+                                             ilke bazlı hukuki değerlendirme
+                                             (-f text|md|html|json, --graph graf.json,
+                                             --include-tests: test/fixture dosyalarını da dahil et)
+
+Tarama seçenekleri:
+  -f, --format <text|md|json|sarif|html>  Çıktı formatı (varsayılan: text)
+  -o, --output <dosya>                Raporu dosyaya yaz
+  -l, --lang <tr|en>                  Dil (varsayılan: tr)
+      --fail-on <seviye>              Bu seviye veya üstünde bulgu varsa exit 1
+                                      (critical|high|medium|low|none, varsayılan: high)
+      --ignore <glob,...>             Yok sayılacak yollar
+      --disable <ID,...>              Kapatılacak kurallar
+  -v, --verbose                       Tüm konumları ve kod satırlarını göster
+      --no-color                      Renksiz çıktı
+      --list-rules                    Tüm kuralları listele
+
+Canlı tarama seçenekleri:
+      --url <URL>                     Taranacak site
+      --pages <yol,...>               Ek sayfalar (ör. "/signup,/login")
+      --max-pages <n>                 Otomatik keşfedilecek en fazla sayfa (varsayılan: 5)
+      --no-browser                    Tarayıcı kullanma, sadece HTTP ile hafif tarama
+      --timeout <ms>                  Sayfa başına zaman aşımı (varsayılan: 30000)
+
+Doküman seçenekleri:
+      --answers <dosya.json>          Şirket bilgileri (soru sormadan)
+      --out <dizin>                   Çıktı dizini (varsayılan: ./privacy-docs)
+  -y, --yes                           Soru sorma, bilinmeyenleri [[...]] bırak
+
+Yapılandırma: proje kökünde .kvkkcheckrc.json → { "ignore": [...], "disable": [...] }
+Satır bazlı susturma: // kvkk-ignore   veya   // kvkk-ignore SEC013
+`;
+
+const SUBCOMMANDS = new Set(['url', 'docs', 'ui', 'audit']);
+
+function parseArgs(argv) {
+  const a = {
+    cmd: 'scan', dir: '.', format: 'text', lang: 'tr', failOn: 'high', ignore: [], disable: [], pages: [],
+    maxPages: 5, timeout: 30000, browser: true, color: process.stdout.isTTY && !process.env.NO_COLOR, port: 4477,
+  };
+  if (SUBCOMMANDS.has(argv[0])) a.cmd = argv.shift();
+  for (let i = 0; i < argv.length; i++) {
+    const x = argv[i];
+    const next = () => {
+      const v = argv[++i];
+      if (v === undefined) {
+        console.error(`${x} bir değer bekliyor`);
+        process.exit(2);
+      }
+      return v;
+    };
+    switch (x) {
+      case '-f': case '--format': a.format = next(); break;
+      case '-o': case '--output': a.output = next(); break;
+      case '-l': case '--lang': a.lang = next(); break;
+      case '--fail-on': a.failOn = next(); break;
+      case '--ignore': a.ignore.push(...next().split(',')); break;
+      case '--disable': a.disable.push(...next().split(',').map((s) => s.trim().toUpperCase())); break;
+      case '-v': case '--verbose': a.verbose = true; break;
+      case '--no-color': a.color = false; break;
+      case '--list-rules': a.listRules = true; break;
+      case '--url': a.url = next(); break;
+      case '--pages': a.pages.push(...next().split(',').filter(Boolean)); break;
+      case '--max-pages': a.maxPages = Number(next()); break;
+      case '--no-browser': a.browser = false; break;
+      case '--timeout': a.timeout = Number(next()); break;
+      case '--answers': a.answers = next(); break;
+      case '--out': a.out = next(); break;
+      case '-y': case '--yes': a.yes = true; break;
+      case '--port': a.port = Number(next()); break;
+      case '--graph': a.graphOut = next(); break;
+      case '--include-tests': a.includeTests = true; break;
+      case '-h': case '--help': a.help = true; break;
+      case '--version': console.log(JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version); process.exit(0);
+      default:
+        if (x.startsWith('-')) {
+          console.error(`Bilinmeyen seçenek: ${x}`);
+          process.exit(2);
+        }
+        if (a.cmd === 'url') a.url = x;
+        else a.dir = x;
+    }
+  }
+  if (!['tr', 'en'].includes(a.lang)) a.lang = 'tr';
+  return a;
+}
+
+async function render(result, args) {
+  if (args.format === 'html') {
+    const { toHtml } = await import('../src/report/html.js');
+    return toHtml(result, { lang: args.lang });
+  }
+  const fmt = { text: toText, md: toMarkdown, markdown: toMarkdown, json: toJSON, sarif: toSarif }[args.format];
+  if (!fmt) {
+    console.error(`Bilinmeyen format: ${args.format}`);
+    process.exit(2);
+  }
+  return fmt(result, { lang: args.lang, color: args.output ? false : args.color, verbose: args.verbose });
+}
+
+async function runLive(args) {
+  const { scanUrl } = await import('../src/live/index.js');
+  if (!/^https?:\/\//i.test(args.url)) args.url = 'https://' + args.url;
+  process.stderr.write(args.lang === 'en' ? `  Scanning ${args.url} …\n` : `  ${args.url} taranıyor…\n`);
+  return scanUrl(args.url, {
+    lang: args.lang,
+    pages: args.pages,
+    maxPages: args.maxPages,
+    browser: args.browser ? 'auto' : 'none',
+    timeout: args.timeout,
+    disable: args.disable,
+  });
+}
+
+function assertDir(dir) {
+  if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) {
+    console.error(`Dizin bulunamadı: ${dir}`);
+    process.exit(2);
+  }
+}
+
+async function main() {
+  const args = parseArgs(process.argv.slice(2));
+  if (args.help) return console.log(HELP);
+
+  if (args.listRules) {
+    const { LIVE_RULES = [] } = await import('../src/live/rules.js').catch(() => ({}));
+    for (const r of [...RULES, ...LIVE_RULES]) console.log(`${r.id.padEnd(8)} ${r.severity.padEnd(9)} ${r.title[args.lang]}`);
+    return;
+  }
+
+  if (args.cmd === 'ui') {
+    const { startUi } = await import('../src/ui/server.js');
+    return startUi({ port: args.port, lang: args.lang });
+  }
+
+  if (args.cmd === 'audit') {
+    assertDir(args.dir);
+    const live = args.url ? (await runLive(args)).live : null;
+    const { audit } = await import('../src/audit/index.js');
+    const result = await audit(args.dir, { ignore: args.ignore, live, lang: args.lang, includeTests: !!args.includeTests });
+    if (args.graphOut) fs.writeFileSync(args.graphOut, JSON.stringify(result.graph.toJSON(), null, 2));
+    const { renderAudit } = await import('../src/audit/report/index.js');
+    const rendered = renderAudit(result, { lang: args.lang, format: args.format, color: args.output ? false : args.color, verbose: args.verbose });
+    if (args.output) {
+      fs.mkdirSync(path.dirname(path.resolve(args.output)), { recursive: true });
+      fs.writeFileSync(args.output, rendered);
+      console.log(args.lang === 'en' ? `  Audit report written: ${args.output}` : `  Denetim raporu yazıldı: ${args.output}`);
+    } else console.log(rendered);
+    for (const w of result.warnings) process.stderr.write(`  ! ${w}
+`);
+    const threshold = SEVERITY_ORDER.indexOf(args.failOn);
+    if (args.failOn !== 'none' && threshold >= 0) process.exitCode = result.findings.some((f) => SEVERITY_ORDER.indexOf(f.severity) <= threshold) ? 1 : 0;
+    return;
+  }
+
+  if (args.cmd === 'docs') {
+    assertDir(args.dir);
+    const code = scan(args.dir, { ignore: args.ignore, disable: args.disable });
+    const live = args.url ? await runLive(args) : null;
+    const result = mergeResults(code, live);
+    const { generateDocs } = await import('../src/docs/index.js');
+    let answers = {};
+    if (args.answers) answers = JSON.parse(fs.readFileSync(args.answers, 'utf8'));
+    const out = args.out || path.join(args.dir, 'privacy-docs');
+    const { files } = await generateDocs({ result, answers, outDir: out, lang: args.lang, interactive: !args.yes && process.stdin.isTTY });
+    console.log(args.lang === 'en' ? `\n  ✔ ${files.length} documents written to ${out}` : `\n  ✔ ${files.length} doküman yazıldı: ${out}`);
+    for (const f of files) {
+      const rel = path.relative(process.cwd(), f);
+      console.log(`    - ${rel.startsWith('..') ? f : rel}`);
+    }
+    return;
+  }
+
+  let result;
+  if (args.cmd === 'url') {
+    if (!args.url) {
+      console.error('Kullanım: kvkk-check url <URL>');
+      process.exit(2);
+    }
+    result = await runLive(args);
+  } else {
+    assertDir(args.dir);
+    const code = scan(args.dir, { ignore: args.ignore, disable: args.disable });
+    result = args.url ? mergeResults(code, await runLive(args)) : code;
+  }
+
+  const rendered = await render(result, args);
+  if (args.output) {
+    fs.mkdirSync(path.dirname(path.resolve(args.output)), { recursive: true });
+    fs.writeFileSync(args.output, rendered);
+    if (args.format !== 'text') console.log(toText(result, { lang: args.lang, color: args.color }));
+    console.log(args.lang === 'en' ? `  Report written: ${args.output}` : `  Rapor yazıldı: ${args.output}`);
+  } else {
+    console.log(rendered);
+  }
+
+  const threshold = SEVERITY_ORDER.indexOf(args.failOn);
+  if (args.failOn !== 'none' && threshold >= 0) {
+    process.exitCode = result.findings.some((f) => SEVERITY_ORDER.indexOf(f.severity) <= threshold) ? 1 : 0;
+  }
+}
+
+main().catch((e) => {
+  console.error(e?.stack || e);
+  process.exit(2);
+});

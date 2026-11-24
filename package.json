@@ -1,0 +1,57 @@
+{
+  "name": "kvkk-gdpr-check",
+  "version": "0.3.0",
+  "description": "KVKK & GDPR uyum tarayıcısı: kaynak kod, canlı site ve mobil uygulama taraması + aydınlatma metni, çerez politikası, VERBİS envanteri üretici. / KVKK & GDPR compliance scanner for code, live sites and mobile apps, with privacy document generator.",
+  "type": "module",
+  "bin": {
+    "kvkk-check": "bin/cli.js",
+    "kvkk-gdpr-check": "bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "templates",
+    "skill",
+    "docs/*.md",
+    "README.md",
+    "LICENSE",
+    "SECURITY.md"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "scan:example": "node bin/cli.js examples/vibe-app",
+    "bench": "node bench/run.js",
+    "check:publishable": "node scripts/check-publishable.js",
+    "prepublishOnly": "npm test && npm run check:publishable"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "kvkk",
+    "gdpr",
+    "privacy",
+    "compliance",
+    "cookie-consent",
+    "vibecoding",
+    "security",
+    "scanner",
+    "cli",
+    "gizlilik"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "playwright-core": "^1.56.1"
+  },
+  "peerDependencies": {
+    "playwright-core": ">=1.40.0"
+  },
+  "peerDependenciesMeta": {
+    "playwright-core": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@babel/parser": "^7.29.15"
+  }
+}

@@ -1,0 +1,225 @@
+{
+ "nodes": [
+  {
+   "evidence": [
+    {
+     "file": "supabase",
+     "line": 0,
+     "snippet": "create table public.auth.users",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:table:auth.users",
+   "type": "Store",
+   "kind": "table",
+   "table": "auth.users",
+   "schema": "public",
+   "rls": null,
+   "policies": [],
+   "managed": true
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 1,
+     "snippet": "create table public.profiles",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:table:profiles",
+   "type": "Store",
+   "kind": "table",
+   "table": "profiles",
+   "schema": "public",
+   "rls": true,
+   "policies": [
+    {
+     "name": "own",
+     "cmd": "all",
+     "using": "auth.uid() = id",
+     "ownerCheck": true
+    }
+   ]
+  },
+  {
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 3,
+     "snippet": "display_name text",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "store:column:profiles.display_name",
+   "type": "Store",
+   "kind": "column",
+   "table": "profiles",
+   "column": "display_name",
+   "sqlType": "text"
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/profile/page.tsx",
+     "line": 5,
+     "snippet": "displayName",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "data:full_name",
+   "type": "DataElement",
+   "name": "full_name",
+   "category": "identity",
+   "sensitivity": "normal",
+   "identifier": "direct",
+   "label": {
+    "tr": "Ad soyad",
+    "en": "Full name"
+   },
+   "aliases": [
+    "display_name",
+    "displayName"
+   ]
+  },
+  {
+   "evidence": [
+    {
+     "file": "src/app/api/profile/route.ts",
+     "line": 3,
+     "snippet": "export async function PATCH",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "id": "endpoint:PATCH /api/profile",
+   "type": "Endpoint",
+   "method": "PATCH",
+   "path": "/api/profile",
+   "file": "src/app/api/profile/route.ts",
+   "line": 3,
+   "framework": "nextjs-app",
+   "auth": true,
+   "ownershipCheck": true
+  },
+  {
+   "evidence": [],
+   "id": "source:form:profile",
+   "type": "Source",
+   "kind": "form",
+   "name": "profile",
+   "fields": [
+    "displayName"
+   ],
+   "preChecked": []
+  },
+  {
+   "evidence": [],
+   "id": "control:deletion-flow:del",
+   "type": "Control",
+   "kind": "deletion-flow",
+   "name": "delete"
+  },
+  {
+   "evidence": [],
+   "id": "control:export-flow:exp",
+   "type": "Control",
+   "kind": "export-flow",
+   "name": "export"
+  },
+  {
+   "evidence": [],
+   "id": "control:retention-job:purge",
+   "type": "Control",
+   "kind": "retention-job"
+  },
+  {
+   "evidence": [],
+   "id": "declaration:policy:p",
+   "type": "Declaration",
+   "kind": "privacy-notice",
+   "declaredData": [
+    "görünen ad (display name)"
+   ],
+   "declaredVendors": [],
+   "declaresNoTransferAbroad": true
+  }
+ ],
+ "edges": [
+  {
+   "from": "store:table:profiles",
+   "to": "store:column:profiles.display_name",
+   "type": "hasColumn",
+   "evidence": []
+  },
+  {
+   "from": "store:column:profiles.display_name",
+   "to": "data:full_name",
+   "type": "represents",
+   "evidence": [
+    {
+     "file": "supabase/migrations/0001_init.sql",
+     "line": 3,
+     "snippet": "display_name",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ]
+  },
+  {
+   "from": "store:table:profiles",
+   "to": "store:table:auth.users",
+   "type": "references",
+   "evidence": [],
+   "onDelete": "cascade"
+  },
+  {
+   "from": "source:form:profile",
+   "to": "data:full_name",
+   "type": "collects",
+   "evidence": []
+  },
+  {
+   "from": "data:full_name",
+   "to": "store:column:profiles.display_name",
+   "type": "flowsTo",
+   "evidence": [
+    {
+     "file": "src/app/api/profile/route.ts",
+     "line": 6,
+     "snippet": "update({ display_name })",
+     "kind": "static",
+     "confidence": 0.8
+    }
+   ],
+   "via": "endpoint:PATCH /api/profile",
+   "op": "update"
+  },
+  {
+   "from": "data:full_name",
+   "to": "endpoint:PATCH /api/profile",
+   "type": "readBy",
+   "evidence": [],
+   "columns": [
+    "display_name"
+   ],
+   "star": false
+  },
+  {
+   "from": "control:deletion-flow:del",
+   "to": "store:table:auth.users",
+   "type": "deletes",
+   "evidence": []
+  },
+  {
+   "from": "control:retention-job:purge",
+   "to": "store:table:profiles",
+   "type": "expires",
+   "evidence": []
+  }
+ ]
+}

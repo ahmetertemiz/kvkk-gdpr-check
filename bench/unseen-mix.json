@@ -1,0 +1,60 @@
+{
+  "note": "Fixed stack mix of the unseen set, from round 10 on. Every round draws one NEW public repository per slot (never one listed in repos.json), so rounds differ in repositories and not in stacks. Rounds 4-8 used a different mix each time; their precision and misses are not comparable with each other.",
+  "slots": [
+    {
+      "slot": 1,
+      "want": "Lovable (Vite + Supabase)"
+    },
+    {
+      "slot": 2,
+      "want": "v0 or Bolt"
+    },
+    {
+      "slot": 3,
+      "want": "Next.js + Supabase"
+    },
+    {
+      "slot": 4,
+      "want": "Next.js + Prisma or Drizzle + Auth.js / Clerk"
+    },
+    {
+      "slot": 5,
+      "want": "SvelteKit + ORM"
+    },
+    {
+      "slot": 6,
+      "want": "Remix / React Router + ORM"
+    },
+    {
+      "slot": 7,
+      "want": "Express + SQL or Mongoose"
+    },
+    {
+      "slot": 8,
+      "want": "NestJS + ORM"
+    },
+    {
+      "slot": 9,
+      "want": "Django"
+    },
+    {
+      "slot": 10,
+      "want": "Flask or FastAPI"
+    },
+    {
+      "slot": 11,
+      "want": "Laravel"
+    },
+    {
+      "slot": 12,
+      "want": "Expo / React Native or Flutter + Supabase / Firebase"
+    }
+  ],
+  "report": [
+    "precision of scored findings",
+    "confirmed misses per repository (total, high)",
+    "review list real / noise",
+    "coverage honest",
+    "the same numbers per support tier (src/audit/legal/support.js)"
+  ]
+}

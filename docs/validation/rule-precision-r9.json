@@ -1,0 +1,5180 @@
+{
+  "generatedFrom": {
+    "labels": "bench/labels/*.json",
+    "firstSightRepos": [
+      "n-bolt-supabase",
+      "n-convex-clerk",
+      "n-expo-firebase",
+      "n-express-pg",
+      "n-next-drizzle-betterauth",
+      "n-remix-prisma",
+      "r4-astro-supabase",
+      "r4-hono-d1",
+      "r4-laravel",
+      "r4-mobile-appwrite-pocketbase",
+      "r4-nest-or-sequelize",
+      "r4-rr7-supabase",
+      "r5-django-rest",
+      "r5-express-mongoose",
+      "r5-flutter-firebase",
+      "r5-lovable-supabase",
+      "r5-next-clerk-prisma-stripe",
+      "r5-sveltekit-lucia-or-prisma",
+      "r6-django-app",
+      "r6-fastify-or-koa-prisma",
+      "r6-flutter-backend",
+      "r6-next-authjs-drizzle",
+      "r6-nuxt-supabase",
+      "r6-vibe-supabase",
+      "r7-bolt-v0-b",
+      "r7-expo-supabase",
+      "r7-express-sql",
+      "r7-fastapi",
+      "r7-lovable-a",
+      "r7-nest-prisma",
+      "r7-next-prisma-authjs",
+      "r7-next-supabase-saas",
+      "r7-react-firebase",
+      "r7-remix-rr7",
+      "r7-sveltekit-supabase",
+      "r7-t3",
+      "r8-django",
+      "r8-expo-firebase",
+      "r8-express-mongoose",
+      "r8-flask",
+      "r8-flutter-supabase",
+      "r8-laravel",
+      "r8-lovable",
+      "r8-nest-typeorm",
+      "r8-next-ai-supabase",
+      "r8-next-clerk-drizzle",
+      "r8-sveltekit-prisma",
+      "r8-v0-bolt",
+      "r9-django",
+      "r9-express",
+      "r9-flask-fastapi",
+      "r9-laravel",
+      "r9-lovable",
+      "r9-mobile",
+      "r9-nest",
+      "r9-next-orm-auth",
+      "r9-next-supabase",
+      "r9-remix-orm",
+      "r9-sveltekit-orm",
+      "r9-v0-bolt"
+    ],
+    "included": "original labels (no round field) and rounds \"r6-unseen\", \"r7-unseen\", \"r8-unseen\", \"r9-unseen\"; finding-level labels only; scored and review-routed (demoted) locations alike",
+    "excluded": {
+      "gateRounds": "round matching /gate/ (r5-gate, r6-gate, r7-gate): labels added on already-tuned code",
+      "gateLabels": 357,
+      "labelAuditRounds": "round matching /label-audit/: rows re-judged in place after first sight (counted by the round-6 measurement, excluded from round 8 on)",
+      "labelAuditLabels": [
+        {
+          "repo": "n-convex-clerk",
+          "i": 49,
+          "round": "r5-label-audit",
+          "ruleId": "AUD-SEC-03",
+          "verdict": "FP"
+        },
+        {
+          "repo": "n-convex-clerk",
+          "i": 55,
+          "round": "r6-label-audit",
+          "ruleId": "AUD-SEC-03",
+          "verdict": "TP"
+        },
+        {
+          "repo": "n-convex-clerk",
+          "i": 56,
+          "round": "r6-label-audit",
+          "ruleId": "AUD-SEC-03",
+          "verdict": "TP"
+        },
+        {
+          "repo": "n-convex-clerk",
+          "i": 57,
+          "round": "r6-label-audit",
+          "ruleId": "AUD-SEC-03",
+          "verdict": "TP"
+        },
+        {
+          "repo": "r6-django-app",
+          "i": 24,
+          "round": "r7-label-audit",
+          "ruleId": "AUD-SEC-03",
+          "verdict": "FP"
+        }
+      ],
+      "stepLabels": 18,
+      "hRepos": "h-* label files carry round-3 judgements (tool output v4) made after the round-2 holdout was tuned on; they are not first-sight. Reported separately under hReposRound3 for comparison only."
+    },
+    "wilson": "Wilson score interval, two-sided 90% (z=1.645), lower bound on tp/(tp+fp); UNCERTAIN excluded from precision",
+    "subSignalKeys": "stable keys <RULE>:<signal>; emittedBy names the emitting file:function/branch, howToDetect says what the engine knows at emit time",
+    "byRound": "per sub-signal tp/fp/unc/precision/lower90 by round group (repo prefix: n, r4, r5, r6, r7)",
+    "fpRepos": "per sub-signal, the number of repos its FP labels come from (demotion needs at least 2, calibrate.js DEMOTE_MIN_FP_REPOS)",
+    "atReview": "per sub-signal, the subset of its labels whose location was shown in review[] when it was labelled (reviewVerdict present; r7 on). Already counted in tp/fp/unc",
+    "date": "2026-11-24"
+  },
+  "total": {
+    "tp": 1039,
+    "fp": 341,
+    "unc": 84,
+    "precision": 0.753,
+    "lower90": 0.733,
+    "labels": 1464
+  },
+  "byRoundGroup": {
+    "n": {
+      "tp": 172,
+      "fp": 51,
+      "unc": 8,
+      "precision": 0.771,
+      "lower90": 0.722
+    },
+    "r4": {
+      "tp": 36,
+      "fp": 9,
+      "unc": 7,
+      "precision": 0.8,
+      "lower90": 0.686
+    },
+    "r5": {
+      "tp": 62,
+      "fp": 15,
+      "unc": 6,
+      "precision": 0.805,
+      "lower90": 0.721
+    },
+    "r6": {
+      "tp": 80,
+      "fp": 57,
+      "unc": 10,
+      "precision": 0.584,
+      "lower90": 0.514
+    },
+    "r7": {
+      "tp": 153,
+      "fp": 32,
+      "unc": 6,
+      "precision": 0.827,
+      "lower90": 0.777
+    },
+    "r8": {
+      "tp": 239,
+      "fp": 76,
+      "unc": 21,
+      "precision": 0.759,
+      "lower90": 0.717
+    },
+    "r9": {
+      "tp": 297,
+      "fp": 101,
+      "unc": 26,
+      "precision": 0.746,
+      "lower90": 0.709
+    }
+  },
+  "rules": {
+    "AUD-SEC-01": {
+      "tp": 12,
+      "fp": 4,
+      "unc": 2,
+      "sub": {
+        "SEC-01:policy-public-read": {
+          "tp": 2,
+          "fp": 3,
+          "unc": 1,
+          "precision": 0.4,
+          "lower90": 0.143,
+          "repos": 5,
+          "emittedBy": "src/audit/legal/checks/security.js:tableAccess (public policy)",
+          "howToDetect": "policy cmd select with USING(true) for anon/public",
+          "byRound": {
+            "n": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r7": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r8": {
+              "tp": 1,
+              "fp": 1,
+              "unc": 1,
+              "precision": 0.5,
+              "lower90": 0.121
+            },
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 1,
+            "unc": 1,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 3
+        },
+        "SEC-01:rls-disabled": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/checks/security.js:tableAccess (RLS disabled)",
+          "howToDetect": "table without ENABLE ROW LEVEL SECURITY",
+          "byRound": {
+            "r4": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 0
+        },
+        "SEC-01:policy-public-write": {
+          "tp": 7,
+          "fp": 1,
+          "unc": 1,
+          "precision": 0.875,
+          "lower90": 0.589,
+          "repos": 3,
+          "emittedBy": "src/audit/legal/checks/security.js:tableAccess (public policy)",
+          "howToDetect": "policy cmd insert/update/delete/all with true for anon/public",
+          "byRound": {
+            "r6": {
+              "tp": 3,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.526
+            },
+            "r8": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 1,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r9": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.597
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 1,
+            "unc": 1,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 1
+        },
+        "SEC-01:firestore-no-rules": {
+          "tp": 2,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.425,
+          "repos": 2,
+          "emittedBy": "src/audit/legal/checks/security.js:firestoreNoRulesLocs",
+          "howToDetect": "Firestore collection queried and no firestore.rules in the repo",
+          "byRound": {
+            "r7": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r8": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 0.75,
+      "lower90": 0.545
+    },
+    "AUD-SEC-04": {
+      "tp": 48,
+      "fp": 24,
+      "unc": 2,
+      "sub": {
+        "SEC-04:contact-or-location": {
+          "tp": 28,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0.966,
+          "lower90": 0.859,
+          "repos": 15,
+          "emittedBy": "src/audit/legal/checks/security.js:logsAndClientStorage (log flow)",
+          "howToDetect": "el.name in {email, phone, address, precise/approx location, health, device_id, user_agent, photo}",
+          "byRound": {
+            "n": {
+              "tp": 8,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.747
+            },
+            "r5": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r6": {
+              "tp": 9,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.769
+            },
+            "r7": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r8": {
+              "tp": 2,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.667,
+              "lower90": 0.254
+            },
+            "r9": {
+              "tp": 6,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.689
+            }
+          },
+          "fpRepos": 1
+        },
+        "SEC-04:name": {
+          "tp": 8,
+          "fp": 3,
+          "unc": 0,
+          "precision": 0.727,
+          "lower90": 0.48,
+          "repos": 11,
+          "emittedBy": "src/audit/legal/checks/security.js:logsAndClientStorage (log flow)",
+          "howToDetect": "el.name in {full_name, username} (often a bare 'name' / 'title' variable)",
+          "byRound": {
+            "n": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.597
+            },
+            "r5": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r6": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r7": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r8": {
+              "tp": 1,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.121
+            },
+            "r9": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 3
+        },
+        "SEC-04:free-text": {
+          "tp": 8,
+          "fp": 7,
+          "unc": 1,
+          "precision": 0.533,
+          "lower90": 0.333,
+          "repos": 14,
+          "emittedBy": "src/audit/legal/checks/security.js:logsAndClientStorage (log flow)",
+          "howToDetect": "el.name in {free_text, uploaded_*}",
+          "byRound": {
+            "n": {
+              "tp": 3,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.75,
+              "lower90": 0.356
+            },
+            "r5": {
+              "tp": 1,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.121
+            },
+            "r6": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 1,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r7": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r8": {
+              "tp": 1,
+              "fp": 3,
+              "unc": 0,
+              "precision": 0.25,
+              "lower90": 0.058
+            },
+            "r9": {
+              "tp": 1,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0.333,
+              "lower90": 0.078
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 2,
+            "unc": 0,
+            "precision": 0.333,
+            "lower90": 0.078
+          },
+          "fpRepos": 6
+        },
+        "SEC-04:inferred-category": {
+          "tp": 0,
+          "fp": 6,
+          "unc": 1,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 5,
+          "emittedBy": "src/audit/legal/checks/security.js:logsAndClientStorage (log flow)",
+          "howToDetect": "el.name in the name-inferred set (legal_record, body_metrics, income, preferences_profile, employment, order_history, activity_timestamp)",
+          "byRound": {
+            "n": {
+              "tp": 0,
+              "fp": 3,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r5": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r6": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r9": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 1,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 1,
+            "unc": 1,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 4
+        },
+        "SEC-04:token-or-payment": {
+          "tp": 1,
+          "fp": 3,
+          "unc": 0,
+          "precision": 0.25,
+          "lower90": 0.058,
+          "repos": 3,
+          "emittedBy": "src/audit/legal/checks/security.js:logsAndClientStorage (log flow)",
+          "howToDetect": "el.name in {auth_token, payment_info, ...} (IDs/expiry often logged instead of values)",
+          "byRound": {
+            "n": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r6": {
+              "tp": 0,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r7": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 2
+        },
+        "SEC-04:nonprod-file": {
+          "tp": 0,
+          "fp": 4,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 3,
+          "emittedBy": "src/audit/legal/checks/security.js:logsAndClientStorage (log flow)",
+          "howToDetect": "log write site in a seed / test-config / script / tooling file (NONPROD_PATH_RE or fact:nonprod-files)",
+          "byRound": {
+            "r4": {
+              "tp": 0,
+              "fp": 3,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r6": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 3
+        },
+        "SEC-04:other-identifier": {
+          "tp": 2,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.425,
+          "repos": 1,
+          "byRound": {
+            "r9": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            }
+          },
+          "atReview": {
+            "tp": 2,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.425
+          },
+          "fpRepos": 0
+        },
+        "SEC-04:whole-record": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "byRound": {
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 0.667,
+      "lower90": 0.571
+    },
+    "AUD-SEC-05": {
+      "tp": 13,
+      "fp": 1,
+      "unc": 0,
+      "sub": {
+        "SEC-05:token-client-storage": {
+          "tp": 13,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0.929,
+          "lower90": 0.734,
+          "repos": 13,
+          "emittedBy": "src/audit/legal/checks/security.js:logsAndClientStorage (client store)",
+          "howToDetect": "auth_token/password/sensitive flow into store:client:* (non-secure)",
+          "byRound": {
+            "n": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r4": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r6": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r7": {
+              "tp": 3,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.526
+            },
+            "r8": {
+              "tp": 2,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.667,
+              "lower90": 0.254
+            },
+            "r9": {
+              "tp": 3,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.526
+            }
+          },
+          "fpRepos": 1
+        }
+      },
+      "precision": 0.929,
+      "lower90": 0.734
+    },
+    "AUD-TRN-01": {
+      "tp": 46,
+      "fp": 3,
+      "unc": 1,
+      "sub": {
+        "TRN-01:no-notice": {
+          "tp": 45,
+          "fp": 2,
+          "unc": 1,
+          "precision": 0.957,
+          "lower90": 0.879,
+          "repos": 48,
+          "emittedBy": "src/audit/legal/checks/transparency.js:transparencyGap (no notice)",
+          "howToDetect": "no notice found",
+          "byRound": {
+            "n": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.597
+            },
+            "r4": {
+              "tp": 6,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.689
+            },
+            "r5": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.597
+            },
+            "r6": {
+              "tp": 3,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.526
+            },
+            "r7": {
+              "tp": 10,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.787
+            },
+            "r8": {
+              "tp": 10,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.909,
+              "lower90": 0.677
+            },
+            "r9": {
+              "tp": 8,
+              "fp": 1,
+              "unc": 1,
+              "precision": 0.889,
+              "lower90": 0.623
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 1,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 2
+        },
+        "TRN-01:placeholder-notice": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/checks/transparency.js:transparencyGap (placeholder)",
+          "howToDetect": "notice file exists but is a stub",
+          "byRound": {
+            "n": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 0
+        },
+        "TRN-01:external-notice": {
+          "tp": 0,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 1,
+          "byRound": {
+            "r8": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 1
+        }
+      },
+      "precision": 0.939,
+      "lower90": 0.856
+    },
+    "AUD-TRF-01": {
+      "tp": 97,
+      "fp": 14,
+      "unc": 12,
+      "sub": {
+        "TRF-01:traced-vendor": {
+          "tp": 49,
+          "fp": 2,
+          "unc": 2,
+          "precision": 0.961,
+          "lower90": 0.888,
+          "repos": 36,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:internationalTransfers (traced flow to a catalogued vendor abroad)",
+          "howToDetect": "main branch: catalogued vendor with a country and a traced data flow",
+          "byRound": {
+            "n": {
+              "tp": 10,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.787
+            },
+            "r4": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r5": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 2,
+              "precision": 1,
+              "lower90": 0.597
+            },
+            "r6": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.597
+            },
+            "r7": {
+              "tp": 10,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.787
+            },
+            "r8": {
+              "tp": 8,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.889,
+              "lower90": 0.623
+            },
+            "r9": {
+              "tp": 11,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.917,
+              "lower90": 0.699
+            }
+          },
+          "fpRepos": 2
+        },
+        "TRF-01:sdk-implied": {
+          "tp": 19,
+          "fp": 2,
+          "unc": 2,
+          "precision": 0.905,
+          "lower90": 0.749,
+          "repos": 19,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:internationalTransfers (r.implied branch)",
+          "howToDetect": "r.implied (elements inferred from the SDK, no traced flow)",
+          "byRound": {
+            "n": {
+              "tp": 6,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.689
+            },
+            "r4": {
+              "tp": 0,
+              "fp": 0,
+              "unc": 1,
+              "precision": null,
+              "lower90": null
+            },
+            "r5": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r6": {
+              "tp": 2,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.667,
+              "lower90": 0.254
+            },
+            "r7": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r8": {
+              "tp": 5,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.833,
+              "lower90": 0.498
+            },
+            "r9": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 1,
+              "precision": 1,
+              "lower90": 0.597
+            }
+          },
+          "fpRepos": 2
+        },
+        "TRF-01:unknown-location-smtp": {
+          "tp": 4,
+          "fp": 1,
+          "unc": 4,
+          "precision": 0.8,
+          "lower90": 0.435,
+          "repos": 9,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:internationalTransfers (abroadKvkk == null, generic SMTP sink)",
+          "howToDetect": "r.abroadKvkk == null and isGenericSmtp(sink)",
+          "byRound": {
+            "n": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r5": {
+              "tp": 0,
+              "fp": 0,
+              "unc": 1,
+              "precision": null,
+              "lower90": null
+            },
+            "r6": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r7": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r8": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 2,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 1,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 1
+        },
+        "TRF-01:unknown-location-host": {
+          "tp": 8,
+          "fp": 4,
+          "unc": 0,
+          "precision": 0.667,
+          "lower90": 0.431,
+          "repos": 7,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:internationalTransfers (abroadKvkk == null, raw HTTP host)",
+          "howToDetect": "r.abroadKvkk == null and the sink is a raw HTTP host / env URL (no catalogued vendor); check first-party host and k-anonymity APIs",
+          "byRound": {
+            "n": {
+              "tp": 4,
+              "fp": 3,
+              "unc": 0,
+              "precision": 0.571,
+              "lower90": 0.289
+            },
+            "r5": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r7": {
+              "tp": 1,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.121
+            },
+            "r8": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 3
+        },
+        "TRF-01:oauth-idp": {
+          "tp": 8,
+          "fp": 2,
+          "unc": 3,
+          "precision": 0.8,
+          "lower90": 0.541,
+          "repos": 8,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:internationalTransfers (r.oauth branch)",
+          "howToDetect": "r.oauth && !r.hosting",
+          "byRound": {
+            "r6": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r7": {
+              "tp": 3,
+              "fp": 0,
+              "unc": 3,
+              "precision": 1,
+              "lower90": 0.526
+            },
+            "r9": {
+              "tp": 3,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0.6,
+              "lower90": 0.272
+            }
+          },
+          "fpRepos": 1
+        },
+        "TRF-01:config-only": {
+          "tp": 2,
+          "fp": 3,
+          "unc": 1,
+          "precision": 0.4,
+          "lower90": 0.143,
+          "repos": 3,
+          "byRound": {
+            "r8": {
+              "tp": 1,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0.333,
+              "lower90": 0.078
+            },
+            "r9": {
+              "tp": 1,
+              "fp": 1,
+              "unc": 1,
+              "precision": 0.5,
+              "lower90": 0.121
+            }
+          },
+          "atReview": {
+            "tp": 2,
+            "fp": 3,
+            "unc": 1,
+            "precision": 0.4,
+            "lower90": 0.143
+          },
+          "fpRepos": 2
+        },
+        "TRF-01:vendor-untraced": {
+          "tp": 7,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.721,
+          "repos": 5,
+          "byRound": {
+            "r8": {
+              "tp": 5,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.649
+            },
+            "r9": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            }
+          },
+          "atReview": {
+            "tp": 7,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.721
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 0.874,
+      "lower90": 0.813
+    },
+    "AUD-DSR-01": {
+      "tp": 55,
+      "fp": 7,
+      "unc": 1,
+      "sub": {
+        "DSR-01:no-export": {
+          "tp": 49,
+          "fp": 1,
+          "unc": 1,
+          "precision": 0.98,
+          "lower90": 0.915,
+          "repos": 51,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:dataSubjectRights (no export flow)",
+          "howToDetect": "no data export flow found",
+          "byRound": {
+            "n": {
+              "tp": 5,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.833,
+              "lower90": 0.498
+            },
+            "r4": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.597
+            },
+            "r5": {
+              "tp": 3,
+              "fp": 0,
+              "unc": 1,
+              "precision": 1,
+              "lower90": 0.526
+            },
+            "r6": {
+              "tp": 3,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.526
+            },
+            "r7": {
+              "tp": 12,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.816
+            },
+            "r8": {
+              "tp": 12,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.816
+            },
+            "r9": {
+              "tp": 10,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.787
+            }
+          },
+          "atReview": {
+            "tp": 4,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.597
+          },
+          "fpRepos": 1
+        },
+        "DSR-01:no-rectification": {
+          "tp": 5,
+          "fp": 6,
+          "unc": 0,
+          "precision": 0.455,
+          "lower90": 0.242,
+          "repos": 11,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:dataSubjectRights (!canRectify)",
+          "howToDetect": "!canRectify(g, personal)",
+          "byRound": {
+            "n": {
+              "tp": 1,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.121
+            },
+            "r6": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r7": {
+              "tp": 3,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.75,
+              "lower90": 0.356
+            },
+            "r8": {
+              "tp": 0,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r9": {
+              "tp": 0,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 5,
+            "unc": 0,
+            "precision": 0.167,
+            "lower90": 0.038
+          },
+          "fpRepos": 6
+        },
+        "DSR-01:no-erasure": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "byRound": {
+            "r8": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 0.887,
+      "lower90": 0.804
+    },
+    "AUD-RET-01": {
+      "tp": 324,
+      "fp": 43,
+      "unc": 21,
+      "sub": {
+        "RET-01:record-user-ref-only": {
+          "tp": 115,
+          "fp": 7,
+          "unc": 5,
+          "precision": 0.943,
+          "lower90": 0.897,
+          "repos": 35,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:retention (record store)",
+          "howToDetect": "record store whose only elements are 'user_ref' / opaque JSON (linked to a user by FK)",
+          "byRound": {
+            "n": {
+              "tp": 19,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.875
+            },
+            "r4": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 1,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r5": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r6": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r7": {
+              "tp": 14,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.838
+            },
+            "r8": {
+              "tp": 44,
+              "fp": 3,
+              "unc": 2,
+              "precision": 0.936,
+              "lower90": 0.851
+            },
+            "r9": {
+              "tp": 33,
+              "fp": 4,
+              "unc": 2,
+              "precision": 0.892,
+              "lower90": 0.78
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 5
+        },
+        "RET-01:record-direct-identifier": {
+          "tp": 125,
+          "fp": 13,
+          "unc": 4,
+          "precision": 0.906,
+          "lower90": 0.857,
+          "repos": 51,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:retention (record store)",
+          "howToDetect": "record store whose elements include a direct/strong identifier (email, phone, password, token, IP, username, address, precise location, health, payment, device id, photo)",
+          "byRound": {
+            "n": {
+              "tp": 20,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.881
+            },
+            "r4": {
+              "tp": 5,
+              "fp": 0,
+              "unc": 1,
+              "precision": 1,
+              "lower90": 0.649
+            },
+            "r5": {
+              "tp": 8,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.889,
+              "lower90": 0.623
+            },
+            "r6": {
+              "tp": 12,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.816
+            },
+            "r7": {
+              "tp": 17,
+              "fp": 1,
+              "unc": 1,
+              "precision": 0.944,
+              "lower90": 0.785
+            },
+            "r8": {
+              "tp": 26,
+              "fp": 6,
+              "unc": 1,
+              "precision": 0.813,
+              "lower90": 0.676
+            },
+            "r9": {
+              "tp": 37,
+              "fp": 5,
+              "unc": 1,
+              "precision": 0.881,
+              "lower90": 0.775
+            }
+          },
+          "atReview": {
+            "tp": 2,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.425
+          },
+          "fpRepos": 8
+        },
+        "RET-01:log-store": {
+          "tp": 10,
+          "fp": 5,
+          "unc": 5,
+          "precision": 0.667,
+          "lower90": 0.455,
+          "repos": 20,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:retention (store:log:*)",
+          "howToDetect": "store.id startsWith 'store:log' (location = the write call)",
+          "byRound": {
+            "n": {
+              "tp": 3,
+              "fp": 1,
+              "unc": 1,
+              "precision": 0.75,
+              "lower90": 0.356
+            },
+            "r4": {
+              "tp": 0,
+              "fp": 2,
+              "unc": 1,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r5": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 1,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r6": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r7": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r8": {
+              "tp": 0,
+              "fp": 0,
+              "unc": 2,
+              "precision": null,
+              "lower90": null
+            },
+            "r9": {
+              "tp": 2,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.182
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 5
+        },
+        "RET-01:record-content": {
+          "tp": 59,
+          "fp": 9,
+          "unc": 5,
+          "precision": 0.868,
+          "lower90": 0.786,
+          "repos": 29,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:retention (record store)",
+          "howToDetect": "record store whose strongest elements are user content (free text, uploads)",
+          "byRound": {
+            "n": {
+              "tp": 6,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.689
+            },
+            "r4": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r5": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 1,
+              "precision": 1,
+              "lower90": 0.597
+            },
+            "r6": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r7": {
+              "tp": 9,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.769
+            },
+            "r8": {
+              "tp": 20,
+              "fp": 3,
+              "unc": 3,
+              "precision": 0.87,
+              "lower90": 0.715
+            },
+            "r9": {
+              "tp": 17,
+              "fp": 6,
+              "unc": 1,
+              "precision": 0.739,
+              "lower90": 0.569
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 1,
+            "unc": 0,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 6
+        },
+        "RET-01:bucket": {
+          "tp": 14,
+          "fp": 3,
+          "unc": 1,
+          "precision": 0.824,
+          "lower90": 0.631,
+          "repos": 10,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:retention (store.kind === 'bucket')",
+          "howToDetect": "store.kind === 'bucket' (bucketHoldsUserFiles true)",
+          "byRound": {
+            "n": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 1,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r5": {
+              "tp": 2,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.182
+            },
+            "r6": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r7": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r8": {
+              "tp": 6,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.689
+            },
+            "r9": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            }
+          },
+          "atReview": {
+            "tp": 2,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.425
+          },
+          "fpRepos": 2
+        },
+        "RET-01:record-name-or-inferred-only": {
+          "tp": 1,
+          "fp": 6,
+          "unc": 1,
+          "precision": 0.143,
+          "lower90": 0.033,
+          "repos": 5,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:retention (record store)",
+          "howToDetect": "record store whose only elements are full_name (from a bare 'name' column) or name-inferred categories (employment, order_history, ...)",
+          "byRound": {
+            "r5": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r6": {
+              "tp": 0,
+              "fp": 3,
+              "unc": 1,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r7": {
+              "tp": 1,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0.333,
+              "lower90": 0.078
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 2,
+            "unc": 0,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 4
+        }
+      },
+      "precision": 0.883,
+      "lower90": 0.852
+    },
+    "AUD-LB-01": {
+      "tp": 18,
+      "fp": 3,
+      "unc": 3,
+      "sub": {
+        "LB-01:asset-no-consent": {
+          "tp": 14,
+          "fp": 3,
+          "unc": 1,
+          "precision": 0.824,
+          "lower90": 0.631,
+          "repos": 16,
+          "emittedBy": "src/audit/legal/checks/consent.js:ungatedConsentVendors (third-party asset loc)",
+          "howToDetect": "loc for a font/CDN/maps asset loaded before consent; require a browser-side load (link/script/iframe), not a server fetch",
+          "byRound": {
+            "n": {
+              "tp": 1,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.121
+            },
+            "r4": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 1,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r5": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r6": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r7": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r8": {
+              "tp": 5,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.833,
+              "lower90": 0.498
+            },
+            "r9": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.597
+            }
+          },
+          "fpRepos": 3
+        },
+        "LB-01:tracker-init-no-consent": {
+          "tp": 4,
+          "fp": 0,
+          "unc": 2,
+          "precision": 1,
+          "lower90": 0.597,
+          "repos": 5,
+          "emittedBy": "src/audit/legal/checks/consent.js:ungatedConsentVendors (tracker init loc)",
+          "howToDetect": "loc for an analytics/ads SDK init ('rıza kontrolü olmadan başlatılıyor')",
+          "byRound": {
+            "n": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r4": {
+              "tp": 0,
+              "fp": 0,
+              "unc": 1,
+              "precision": null,
+              "lower90": null
+            },
+            "r9": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 1,
+              "precision": 1,
+              "lower90": 0.425
+            }
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 0.857,
+      "lower90": 0.691
+    },
+    "AUD-DEL-01": {
+      "tp": 117,
+      "fp": 11,
+      "unc": 2,
+      "sub": {
+        "DEL-01:headline-no-account-erasure": {
+          "tp": 33,
+          "fp": 3,
+          "unc": 0,
+          "precision": 0.917,
+          "lower90": 0.809,
+          "repos": 36,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:deletionCoverageCore (headline loc, file null)",
+          "howToDetect": "the first, file-less location of DEL-01 (m.hasFlow false)",
+          "byRound": {
+            "n": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.597
+            },
+            "r4": {
+              "tp": 2,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.667,
+              "lower90": 0.254
+            },
+            "r5": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r6": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r7": {
+              "tp": 8,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.889,
+              "lower90": 0.623
+            },
+            "r8": {
+              "tp": 7,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.721
+            },
+            "r9": {
+              "tp": 8,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.889,
+              "lower90": 0.623
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 1,
+            "unc": 0,
+            "precision": 0.5,
+            "lower90": 0.121
+          },
+          "fpRepos": 3
+        },
+        "DEL-01:record-level-evidence": {
+          "tp": 69,
+          "fp": 5,
+          "unc": 2,
+          "precision": 0.932,
+          "lower90": 0.868,
+          "repos": 22,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:deletionCoverageCore (recordFlows group locs)",
+          "howToDetect": "locations built from groupRecordFlows (label 'record-level delete: ...')",
+          "byRound": {
+            "n": {
+              "tp": 13,
+              "fp": 0,
+              "unc": 1,
+              "precision": 1,
+              "lower90": 0.828
+            },
+            "r4": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r5": {
+              "tp": 8,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.747
+            },
+            "r6": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r7": {
+              "tp": 7,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.721
+            },
+            "r8": {
+              "tp": 14,
+              "fp": 3,
+              "unc": 1,
+              "precision": 0.824,
+              "lower90": 0.631
+            },
+            "r9": {
+              "tp": 24,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0.923,
+              "lower90": 0.792
+            }
+          },
+          "fpRepos": 5
+        },
+        "DEL-01:account-created-never-deleted": {
+          "tp": 13,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0.929,
+          "lower90": 0.734,
+          "repos": 14,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:noErasurePathLocs -> deletionCoverage",
+          "howToDetect": "loc from noErasurePathLocs (account creation site, no delete call)",
+          "byRound": {
+            "r6": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r7": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.597
+            },
+            "r8": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.597
+            },
+            "r9": {
+              "tp": 3,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.75,
+              "lower90": 0.356
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 1
+        },
+        "DEL-01:derived-store-never-deleted": {
+          "tp": 0,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:neverDeletedLocs (row.neverDeleted, isDerivedTable)",
+          "howToDetect": "row.neverDeleted && row.derived (isDerivedTable on a table with an embedding column)",
+          "byRound": {
+            "r6": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 1
+        },
+        "DEL-01:dead-deletion-helper": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "byRound": {
+            "r8": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 0
+        },
+        "DEL-01:operator-only-evidence": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "byRound": {
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 0
+        },
+        "DEL-01:manual-erasure-channel": {
+          "tp": 0,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 1,
+          "byRound": {
+            "r9": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 1,
+            "unc": 0,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 1
+        }
+      },
+      "precision": 0.914,
+      "lower90": 0.864
+    },
+    "AUD-MIN-01": {
+      "tp": 4,
+      "fp": 30,
+      "unc": 0,
+      "sub": {
+        "MIN-01:unused-schema-field": {
+          "tp": 0,
+          "fp": 7,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 6,
+          "emittedBy": "src/audit/legal/checks/principles.js:unusedData (collects from a form / validation schema only)",
+          "howToDetect": "every collects edge is from a form or validation-schema Source (no endpoint body, no column)",
+          "byRound": {
+            "n": {
+              "tp": 0,
+              "fp": 3,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r6": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r7": {
+              "tp": 0,
+              "fp": 3,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 3,
+            "unc": 0,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 6
+        },
+        "MIN-01:unused-body-field": {
+          "tp": 1,
+          "fp": 14,
+          "unc": 0,
+          "precision": 0.067,
+          "lower90": 0.015,
+          "repos": 9,
+          "emittedBy": "src/audit/legal/checks/principles.js:unusedData (collects from an Endpoint body)",
+          "howToDetect": "collects edge from an Endpoint request body; check vendor-sink flows (sent to an LLM/OCR counts as use)",
+          "byRound": {
+            "n": {
+              "tp": 1,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.121
+            },
+            "r4": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r6": {
+              "tp": 0,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r8": {
+              "tp": 0,
+              "fp": 5,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r9": {
+              "tp": 0,
+              "fp": 5,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 10,
+            "unc": 0,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 8
+        },
+        "MIN-01:unused-column": {
+          "tp": 0,
+          "fp": 3,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 3,
+          "emittedBy": "src/audit/legal/checks/principles.js:unusedData (schema columns only)",
+          "howToDetect": "only represents edges from schema columns",
+          "byRound": {
+            "r6": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r7": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r8": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 2,
+            "unc": 0,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 3
+        },
+        "MIN-01:unused-device-permission": {
+          "tp": 3,
+          "fp": 2,
+          "unc": 0,
+          "precision": 0.6,
+          "lower90": 0.272,
+          "repos": 2,
+          "emittedBy": "src/audit/legal/checks/principles.js:min01Sub (device source)",
+          "howToDetect": "collects edge from a device permission Source (kind device)",
+          "byRound": {
+            "r7": {
+              "tp": 3,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.75,
+              "lower90": 0.356
+            },
+            "r9": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "atReview": {
+            "tp": 3,
+            "fp": 1,
+            "unc": 0,
+            "precision": 0.75,
+            "lower90": 0.356
+          },
+          "fpRepos": 2
+        },
+        "MIN-01:unread-sibling-column": {
+          "tp": 0,
+          "fp": 3,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 2,
+          "byRound": {
+            "r8": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r9": {
+              "tp": 0,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 2
+        },
+        "MIN-01:unused-form-stored-field": {
+          "tp": 0,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 1,
+          "byRound": {
+            "r8": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 1
+        }
+      },
+      "precision": 0.118,
+      "lower90": 0.054
+    },
+    "AUD-SEC-SECRET": {
+      "tp": 4,
+      "fp": 8,
+      "unc": 1,
+      "sub": {
+        "SEC-SECRET:provider-key": {
+          "tp": 2,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0.667,
+          "lower90": 0.254,
+          "repos": 3,
+          "emittedBy": "src/audit/legal/secrets.js:secretFindings (EXTRA_PATTERNS provider-prefixed keys)",
+          "howToDetect": "EXTRA_PATTERNS provider-prefixed key (re_, sk_live_, gsk_, xai-, ...)",
+          "byRound": {
+            "n": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r8": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 1
+        },
+        "SEC-SECRET:db-url-password": {
+          "tp": 0,
+          "fp": 3,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/secrets.js:secretFindings (legacy pattern src/rules/backend.js 'Database URL with password') / envFileLocs",
+          "howToDetect": "pattern label 'Database URL with password'; host and user are known (internal compose host, well-known default user such as guest)",
+          "byRound": {
+            "r6": {
+              "tp": 0,
+              "fp": 3,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 1
+        },
+        "SEC-SECRET:aws-access-key": {
+          "tp": 0,
+          "fp": 0,
+          "unc": 1,
+          "precision": null,
+          "lower90": null,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/secrets.js:secretFindings (legacy pattern src/rules.js 'AWS access key')",
+          "howToDetect": "pattern 'AKIA...' (check docstring/comment context)",
+          "byRound": {
+            "r6": {
+              "tp": 0,
+              "fp": 0,
+              "unc": 1,
+              "precision": null,
+              "lower90": null
+            }
+          },
+          "fpRepos": 0
+        },
+        "SEC-SECRET:gcp-service-account": {
+          "tp": 0,
+          "fp": 2,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/secrets.js:secretFindings (legacy pattern src/rules/backend.js 'Google service account')",
+          "howToDetect": "pattern '\"type\": \"service_account\"' without private_key material on the line/file",
+          "byRound": {
+            "r6": {
+              "tp": 0,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 1
+        },
+        "SEC-SECRET:ci-public-ip": {
+          "tp": 0,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/secrets.js:ciLocs",
+          "howToDetect": "ciLocs IPv4 match in a CI/deploy file",
+          "byRound": {
+            "r6": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 1
+        },
+        "SEC-SECRET:settings-signing-literal": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "byRound": {
+            "r8": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 0
+        },
+        "SEC-SECRET:settings-allowed-hosts": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "byRound": {
+            "r8": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 0
+        },
+        "SEC-SECRET:public-env-secret": {
+          "tp": 0,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 1,
+          "byRound": {
+            "r8": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 1
+        }
+      },
+      "precision": 0.333,
+      "lower90": 0.159
+    },
+    "AUD-SEC-03": {
+      "tp": 72,
+      "fp": 54,
+      "unc": 5,
+      "sub": {
+        "SEC-03:idor-body-subject": {
+          "tp": 35,
+          "fp": 11,
+          "unc": 0,
+          "precision": 0.761,
+          "lower90": 0.645,
+          "repos": 6,
+          "emittedBy": "src/audit/legal/checks/security.js:unauthenticatedEndpoints (ownershipCheck===false && ep.subjectIdFrom)",
+          "howToDetect": "ownership loc with ep.subjectIdFrom set (basis evidence)",
+          "byRound": {
+            "n": {
+              "tp": 24,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.899
+            },
+            "r6": {
+              "tp": 0,
+              "fp": 3,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r7": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r9": {
+              "tp": 10,
+              "fp": 8,
+              "unc": 0,
+              "precision": 0.556,
+              "lower90": 0.369
+            }
+          },
+          "fpRepos": 2
+        },
+        "SEC-03:idor-suspect": {
+          "tp": 7,
+          "fp": 25,
+          "unc": 0,
+          "precision": 0.219,
+          "lower90": 0.123,
+          "repos": 12,
+          "emittedBy": "src/audit/legal/checks/security.js:unauthenticatedEndpoints (ownershipCheck===false, no subjectIdFrom)",
+          "howToDetect": "ownership loc without ep.subjectIdFrom (basis 'absence'); clientId may be false",
+          "byRound": {
+            "n": {
+              "tp": 1,
+              "fp": 8,
+              "unc": 0,
+              "precision": 0.111,
+              "lower90": 0.025
+            },
+            "r7": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r8": {
+              "tp": 5,
+              "fp": 4,
+              "unc": 0,
+              "precision": 0.556,
+              "lower90": 0.303
+            },
+            "r9": {
+              "tp": 0,
+              "fp": 13,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "atReview": {
+            "tp": 6,
+            "fp": 17,
+            "unc": 0,
+            "precision": 0.261,
+            "lower90": 0.141
+          },
+          "fpRepos": 7
+        },
+        "SEC-03:no-auth": {
+          "tp": 20,
+          "fp": 13,
+          "unc": 3,
+          "precision": 0.606,
+          "lower90": 0.463,
+          "repos": 12,
+          "emittedBy": "src/audit/legal/checks/security.js:unauthenticatedEndpoints (els.length && ep.auth === false)",
+          "howToDetect": "no-auth loc without authUnused (basis 'absence')",
+          "byRound": {
+            "n": {
+              "tp": 3,
+              "fp": 5,
+              "unc": 2,
+              "precision": 0.375,
+              "lower90": 0.161
+            },
+            "r4": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r6": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r8": {
+              "tp": 4,
+              "fp": 2,
+              "unc": 1,
+              "precision": 0.667,
+              "lower90": 0.347
+            },
+            "r9": {
+              "tp": 11,
+              "fp": 5,
+              "unc": 0,
+              "precision": 0.688,
+              "lower90": 0.482
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 2,
+            "unc": 0,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 9
+        },
+        "SEC-03:unauth-bulk-mutation": {
+          "tp": 0,
+          "fp": 4,
+          "unc": 1,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 2,
+          "emittedBy": "src/audit/legal/checks/security.js:unauthMutationLocs",
+          "howToDetect": "loc produced by unauthMutationLocs (auth:false endpoint writing every user-scoped row / deleting user files)",
+          "byRound": {
+            "r7": {
+              "tp": 0,
+              "fp": 4,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r8": {
+              "tp": 0,
+              "fp": 0,
+              "unc": 1,
+              "precision": null,
+              "lower90": null
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 2,
+            "unc": 0,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 1
+        },
+        "SEC-03:open-proxy": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/checks/security.js:openProxyLocs",
+          "howToDetect": "server fetch of a request-supplied URL without an allow list, no session check",
+          "byRound": {
+            "r7": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 0
+        },
+        "SEC-03:other-person-row": {
+          "tp": 8,
+          "fp": 0,
+          "unc": 1,
+          "precision": 1,
+          "lower90": 0.747,
+          "repos": 1,
+          "byRound": {
+            "r9": {
+              "tp": 8,
+              "fp": 0,
+              "unc": 1,
+              "precision": 1,
+              "lower90": 0.747
+            }
+          },
+          "atReview": {
+            "tp": 8,
+            "fp": 0,
+            "unc": 1,
+            "precision": 1,
+            "lower90": 0.747
+          },
+          "fpRepos": 0
+        },
+        "SEC-03:client-identity": {
+          "tp": 1,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0.5,
+          "lower90": 0.121,
+          "repos": 1,
+          "byRound": {
+            "r9": {
+              "tp": 1,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.121
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 1,
+            "unc": 0,
+            "precision": 0.5,
+            "lower90": 0.121
+          },
+          "fpRepos": 1
+        }
+      },
+      "precision": 0.571,
+      "lower90": 0.498
+    },
+    "AUD-DPIA-01": {
+      "tp": 14,
+      "fp": 2,
+      "unc": 1,
+      "sub": {
+        "DPIA-01:innovative-tech": {
+          "tp": 5,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.649,
+          "repos": 5,
+          "emittedBy": "src/audit/legal/checks/transparency.js:dpia (criterion)",
+          "howToDetect": "criterion 'innovative technology (AI)'",
+          "byRound": {
+            "n": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r6": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r9": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            }
+          },
+          "fpRepos": 0
+        },
+        "DPIA-01:systematic-monitoring": {
+          "tp": 0,
+          "fp": 2,
+          "unc": 1,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 3,
+          "emittedBy": "src/audit/legal/checks/transparency.js:dpia (criterion)",
+          "howToDetect": "criterion 'systematic monitoring'",
+          "byRound": {
+            "n": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r6": {
+              "tp": 0,
+              "fp": 0,
+              "unc": 1,
+              "precision": null,
+              "lower90": null
+            },
+            "r8": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 2
+        },
+        "DPIA-01:special-or-large": {
+          "tp": 5,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.649,
+          "repos": 5,
+          "emittedBy": "src/audit/legal/checks/transparency.js:dpia (criterion)",
+          "howToDetect": "criterion 'special category / highly personal data'",
+          "byRound": {
+            "n": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r6": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r8": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r9": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            }
+          },
+          "fpRepos": 0
+        },
+        "DPIA-01:other-criterion": {
+          "tp": 4,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.597,
+          "repos": 3,
+          "emittedBy": "src/audit/legal/checks/transparency.js:dpia (criterion)",
+          "howToDetect": "criterion scoring/profiling or dataset matching",
+          "byRound": {
+            "n": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r9": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            }
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 0.875,
+      "lower90": 0.684
+    },
+    "AUD-SEC-08": {
+      "tp": 21,
+      "fp": 18,
+      "unc": 3,
+      "sub": {
+        "SEC-08:not-found-message": {
+          "tp": 7,
+          "fp": 10,
+          "unc": 0,
+          "precision": 0.412,
+          "lower90": 0.241,
+          "repos": 15,
+          "emittedBy": "src/audit/legal/checks/security.js:accountEnumeration (not-found message)",
+          "howToDetect": "'user not found' style message; skip when reached only after a token/credential check or from a third-party OAuth provider",
+          "byRound": {
+            "n": {
+              "tp": 1,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.121
+            },
+            "r4": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r5": {
+              "tp": 1,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.121
+            },
+            "r6": {
+              "tp": 1,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.121
+            },
+            "r7": {
+              "tp": 2,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.182
+            },
+            "r8": {
+              "tp": 2,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.182
+            },
+            "r9": {
+              "tp": 0,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 3,
+            "unc": 0,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 9
+        },
+        "SEC-08:signup-taken": {
+          "tp": 10,
+          "fp": 3,
+          "unc": 0,
+          "precision": 0.769,
+          "lower90": 0.542,
+          "repos": 11,
+          "emittedBy": "src/audit/legal/checks/security.js:accountEnumeration (sign-up message)",
+          "howToDetect": "sign-up flow message 'already exists' (consider whether usernames are public)",
+          "byRound": {
+            "n": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r5": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r6": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r7": {
+              "tp": 3,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.75,
+              "lower90": 0.356
+            },
+            "r8": {
+              "tp": 4,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.8,
+              "lower90": 0.435
+            },
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 3
+        },
+        "SEC-08:raw-provider-error": {
+          "tp": 3,
+          "fp": 2,
+          "unc": 3,
+          "precision": 0.6,
+          "lower90": 0.272,
+          "repos": 5,
+          "emittedBy": "src/audit/legal/checks/security.js:accountEnumeration (kind raw)",
+          "howToDetect": "raw auth-provider error text shown to the user",
+          "byRound": {
+            "r7": {
+              "tp": 3,
+              "fp": 2,
+              "unc": 1,
+              "precision": 0.6,
+              "lower90": 0.272
+            },
+            "r8": {
+              "tp": 0,
+              "fp": 0,
+              "unc": 1,
+              "precision": null,
+              "lower90": null
+            },
+            "r9": {
+              "tp": 0,
+              "fp": 0,
+              "unc": 1,
+              "precision": null,
+              "lower90": null
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 0,
+            "unc": 2,
+            "precision": null,
+            "lower90": null
+          },
+          "fpRepos": 2
+        },
+        "SEC-08:reset-oracle": {
+          "tp": 1,
+          "fp": 3,
+          "unc": 0,
+          "precision": 0.25,
+          "lower90": 0.058,
+          "repos": 3,
+          "emittedBy": "src/audit/legal/checks/security.js:accountEnumeration (kind oracle)",
+          "howToDetect": "reset / verify flow whose response differs when the account does not exist",
+          "byRound": {
+            "r7": {
+              "tp": 0,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r9": {
+              "tp": 1,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.121
+            }
+          },
+          "fpRepos": 3
+        }
+      },
+      "precision": 0.538,
+      "lower90": 0.409
+    },
+    "AUD-DEL-02": {
+      "tp": 26,
+      "fp": 36,
+      "unc": 8,
+      "sub": {
+        "DEL-02:vendor-copy": {
+          "tp": 4,
+          "fp": 3,
+          "unc": 0,
+          "precision": 0.571,
+          "lower90": 0.289,
+          "repos": 6,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:buildDeletionMatrixCore (recipient row, reason 'copy at <vendor> is not deleted') -> deletionCoverageCore",
+          "howToDetect": "row.sink set, row.implied false, reason branch 'copy at vendor not deleted'; split read-only IdP calls (OAuth userinfo) off before emitting",
+          "byRound": {
+            "n": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r5": {
+              "tp": 0,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r6": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r8": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 2
+        },
+        "DEL-02:vendor-sdk-ids": {
+          "tp": 0,
+          "fp": 4,
+          "unc": 1,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 3,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:buildDeletionMatrixCore (recipient row, implied SDK identifiers)",
+          "howToDetect": "row.sink set and row.implied true (identifiers the SDK collects itself)",
+          "byRound": {
+            "n": {
+              "tp": 0,
+              "fp": 0,
+              "unc": 1,
+              "precision": null,
+              "lower90": null
+            },
+            "r7": {
+              "tp": 0,
+              "fp": 3,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r8": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 4,
+            "unc": 0,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 2
+        },
+        "DEL-02:no-fk-link": {
+          "tp": 7,
+          "fp": 8,
+          "unc": 3,
+          "precision": 0.467,
+          "lower90": 0.277,
+          "repos": 7,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:buildDeletionMatrixCore (record row, no-FK branch)",
+          "howToDetect": "record store with no FK at all (else branch: userFkColumn or none); personAnchored not proven",
+          "byRound": {
+            "n": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r6": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 1,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r7": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r8": {
+              "tp": 4,
+              "fp": 4,
+              "unc": 1,
+              "precision": 0.5,
+              "lower90": 0.249
+            },
+            "r9": {
+              "tp": 0,
+              "fp": 3,
+              "unc": 1,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 3,
+            "unc": 1,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 3
+        },
+        "DEL-02:fk-no-cascade": {
+          "tp": 10,
+          "fp": 11,
+          "unc": 4,
+          "precision": 0.476,
+          "lower90": 0.31,
+          "repos": 8,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:buildDeletionMatrixCore (record row, toDeleted branch)",
+          "howToDetect": "record store whose FK points at a deleted table with onDelete not CASCADE/SET NULL (branch 'toDeleted'); carry the FK's source file and whether a later migration/schema.prisma redefines it",
+          "byRound": {
+            "r5": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r6": {
+              "tp": 0,
+              "fp": 4,
+              "unc": 1,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r8": {
+              "tp": 6,
+              "fp": 2,
+              "unc": 3,
+              "precision": 0.75,
+              "lower90": 0.46
+            },
+            "r9": {
+              "tp": 2,
+              "fp": 5,
+              "unc": 0,
+              "precision": 0.286,
+              "lower90": 0.1
+            }
+          },
+          "atReview": {
+            "tp": 2,
+            "fp": 5,
+            "unc": 0,
+            "precision": 0.286,
+            "lower90": 0.1
+          },
+          "fpRepos": 4
+        },
+        "DEL-02:fk-parent-not-deleted": {
+          "tp": 0,
+          "fp": 10,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 2,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:buildDeletionMatrixCore (record row, refs.length branch: parent never deleted)",
+          "howToDetect": "record store with FKs, none to a deleted/soft/subject table (branch 'refs.length'): the parent is a group/org entity no account flow deletes",
+          "byRound": {
+            "r6": {
+              "tp": 0,
+              "fp": 9,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r8": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 2
+        },
+        "DEL-02:soft-delete": {
+          "tp": 5,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.649,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/checks/lifecycle.js:deletionCoverageCore (softFlows) / buildDeletionMatrixCore (soft branch)",
+          "howToDetect": "soft-delete edge on the account flow",
+          "byRound": {
+            "r7": {
+              "tp": 5,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.649
+            }
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 0.419,
+      "lower90": 0.322
+    },
+    "AUD-MIN-02": {
+      "tp": 14,
+      "fp": 16,
+      "unc": 4,
+      "sub": {
+        "MIN-02:password": {
+          "tp": 3,
+          "fp": 4,
+          "unc": 1,
+          "precision": 0.429,
+          "lower90": 0.186,
+          "repos": 6,
+          "emittedBy": "src/audit/legal/checks/principles.js:overExposure",
+          "howToDetect": "risky elements include 'password'",
+          "byRound": {
+            "n": {
+              "tp": 1,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.121
+            },
+            "r8": {
+              "tp": 0,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r9": {
+              "tp": 2,
+              "fp": 1,
+              "unc": 1,
+              "precision": 0.667,
+              "lower90": 0.254
+            }
+          },
+          "fpRepos": 4
+        },
+        "MIN-02:token-other": {
+          "tp": 4,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0.8,
+          "lower90": 0.435,
+          "repos": 2,
+          "emittedBy": "src/audit/legal/checks/principles.js:overExposure",
+          "howToDetect": "only auth_token exposed by a read/update endpoint (check serializer/DTO stripping)",
+          "byRound": {
+            "n": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r6": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.597
+            }
+          },
+          "fpRepos": 1
+        },
+        "MIN-02:token-on-create": {
+          "tp": 0,
+          "fp": 3,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/checks/principles.js:overExposure",
+          "howToDetect": "only auth_token exposed, by a POST / create endpoint (one-time credential reveal)",
+          "byRound": {
+            "r6": {
+              "tp": 0,
+              "fp": 3,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 1
+        },
+        "MIN-02:special-category": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/checks/principles.js:overExposure",
+          "howToDetect": "risky elements include a special-category element",
+          "byRound": {
+            "r6": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 0
+        },
+        "MIN-02:relation-row": {
+          "tp": 0,
+          "fp": 3,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 2,
+          "byRound": {
+            "r8": {
+              "tp": 0,
+              "fp": 3,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 1,
+            "unc": 0,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 2
+        },
+        "MIN-02:other-sensitive": {
+          "tp": 5,
+          "fp": 5,
+          "unc": 3,
+          "precision": 0.5,
+          "lower90": 0.269,
+          "repos": 3,
+          "byRound": {
+            "r8": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r9": {
+              "tp": 5,
+              "fp": 4,
+              "unc": 3,
+              "precision": 0.556,
+              "lower90": 0.303
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 1,
+            "unc": 0,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 3
+        },
+        "MIN-02:other-person-row": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "byRound": {
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 0.467,
+      "lower90": 0.326
+    },
+    "AUD-SEC-09": {
+      "tp": 14,
+      "fp": 3,
+      "unc": 3,
+      "sub": {
+        "SEC-09:oauth-tokens-unencrypted": {
+          "tp": 5,
+          "fp": 2,
+          "unc": 0,
+          "precision": 0.714,
+          "lower90": 0.409,
+          "repos": 6,
+          "emittedBy": "src/audit/legal/checks/security.js:rawTokenStorage (OAuth account columns)",
+          "howToDetect": "OAuth token columns in schema; require a write path and no encrypt() on it",
+          "byRound": {
+            "n": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r4": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r6": {
+              "tp": 0,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r7": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 1
+        },
+        "SEC-09:reset-or-refresh-plaintext": {
+          "tp": 9,
+          "fp": 1,
+          "unc": 3,
+          "precision": 0.9,
+          "lower90": 0.652,
+          "repos": 5,
+          "emittedBy": "src/audit/legal/checks/security.js:rawTokenStorage (token written unhashed)",
+          "howToDetect": "reset/verify/refresh token written without hashing and looked up by value",
+          "byRound": {
+            "r5": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.597
+            },
+            "r8": {
+              "tp": 2,
+              "fp": 1,
+              "unc": 1,
+              "precision": 0.667,
+              "lower90": 0.254
+            },
+            "r9": {
+              "tp": 3,
+              "fp": 0,
+              "unc": 2,
+              "precision": 1,
+              "lower90": 0.526
+            }
+          },
+          "fpRepos": 1
+        }
+      },
+      "precision": 0.824,
+      "lower90": 0.631
+    },
+    "AUD-LB-04": {
+      "tp": 4,
+      "fp": 2,
+      "unc": 2,
+      "sub": {
+        "LB-04:no-consent-record-table": {
+          "tp": 4,
+          "fp": 2,
+          "unc": 2,
+          "precision": 0.667,
+          "lower90": 0.347,
+          "repos": 8,
+          "emittedBy": "src/audit/legal/checks/consent.js:consentRecords",
+          "howToDetect": "single signal: consent-based activity but no consent table",
+          "byRound": {
+            "n": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r5": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r6": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r8": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 2,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "atReview": {
+            "tp": 2,
+            "fp": 0,
+            "unc": 2,
+            "precision": 1,
+            "lower90": 0.425
+          },
+          "fpRepos": 2
+        }
+      },
+      "precision": 0.667,
+      "lower90": 0.347
+    },
+    "AUD-TRN-03": {
+      "tp": 1,
+      "fp": 4,
+      "unc": 1,
+      "sub": {
+        "TRN-03:scraping-tool": {
+          "tp": 0,
+          "fp": 4,
+          "unc": 1,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/checks/transparency.js:indirectCollection (scraping source)",
+          "howToDetect": "source kind 'web scraping'",
+          "byRound": {
+            "n": {
+              "tp": 0,
+              "fp": 4,
+              "unc": 1,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 1
+        },
+        "TRN-03:public-post-api": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/checks/transparency.js:indirectCollection (public post API)",
+          "howToDetect": "source kind 'public post API'",
+          "byRound": {
+            "n": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 0.2,
+      "lower90": 0.046
+    },
+    "AUD-TRN-02": {
+      "tp": 31,
+      "fp": 19,
+      "unc": 5,
+      "sub": {
+        "TRN-02:recipient-not-listed": {
+          "tp": 11,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0.917,
+          "lower90": 0.699,
+          "repos": 7,
+          "emittedBy": "src/audit/legal/checks/transparency.js:transparencyGap (recipients loop)",
+          "howToDetect": "vendor sink with data not matched by declaresVendor(declaredVendors, sink)",
+          "byRound": {
+            "n": {
+              "tp": 3,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.526
+            },
+            "r5": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r6": {
+              "tp": 1,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.121
+            },
+            "r7": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r9": {
+              "tp": 3,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.526
+            }
+          },
+          "fpRepos": 1
+        },
+        "TRN-02:category-missing": {
+          "tp": 19,
+          "fp": 9,
+          "unc": 4,
+          "precision": 0.679,
+          "lower90": 0.523,
+          "repos": 7,
+          "emittedBy": "src/audit/legal/checks/transparency.js:transparencyGap (undeclared loop)",
+          "howToDetect": "undeclared element (not password/auth_token/marketing_consent) not matched by declares(declaredData, e)",
+          "byRound": {
+            "n": {
+              "tp": 8,
+              "fp": 2,
+              "unc": 1,
+              "precision": 0.8,
+              "lower90": 0.541
+            },
+            "r6": {
+              "tp": 1,
+              "fp": 5,
+              "unc": 2,
+              "precision": 0.167,
+              "lower90": 0.038
+            },
+            "r7": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r9": {
+              "tp": 9,
+              "fp": 2,
+              "unc": 1,
+              "precision": 0.818,
+              "lower90": 0.573
+            }
+          },
+          "atReview": {
+            "tp": 2,
+            "fp": 2,
+            "unc": 1,
+            "precision": 0.5,
+            "lower90": 0.182
+          },
+          "fpRepos": 4
+        },
+        "TRN-02:category-missing-inferred": {
+          "tp": 1,
+          "fp": 9,
+          "unc": 1,
+          "precision": 0.1,
+          "lower90": 0.023,
+          "repos": 6,
+          "emittedBy": "src/audit/legal/checks/transparency.js:transparencyGap (undeclared loop)",
+          "howToDetect": "undeclared element whose name is in the name-inferred set (legal_record, body_metrics, income, preferences_profile, employment, order_history, activity_timestamp)",
+          "byRound": {
+            "n": {
+              "tp": 0,
+              "fp": 3,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r6": {
+              "tp": 0,
+              "fp": 3,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r7": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r9": {
+              "tp": 1,
+              "fp": 2,
+              "unc": 1,
+              "precision": 0.333,
+              "lower90": 0.078
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 3,
+            "unc": 1,
+            "precision": 0.25,
+            "lower90": 0.058
+          },
+          "fpRepos": 6
+        }
+      },
+      "precision": 0.62,
+      "lower90": 0.504
+    },
+    "AUD-PRF-01": {
+      "tp": 1,
+      "fp": 4,
+      "unc": 0,
+      "sub": {
+        "PRF-01:scraping-tool": {
+          "tp": 0,
+          "fp": 4,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/checks/transparency.js:thirdPartyProfiling (scraping source)",
+          "howToDetect": "source kind 'web scraping' (option strings / type annotations naming a scraper)",
+          "byRound": {
+            "n": {
+              "tp": 0,
+              "fp": 4,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 1
+        },
+        "PRF-01:public-post-api": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/checks/transparency.js:thirdPartyProfiling (public post API)",
+          "howToDetect": "source kind 'public post API (authors)'",
+          "byRound": {
+            "n": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 0.2,
+      "lower90": 0.046
+    },
+    "AUD-SPC-01": {
+      "tp": 8,
+      "fp": 3,
+      "unc": 1,
+      "sub": {
+        "SPC-01:special-to-log": {
+          "tp": 2,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0.667,
+          "lower90": 0.254,
+          "repos": 3,
+          "emittedBy": "src/audit/legal/checks/principles.js:specialCategoryFlows (log target)",
+          "howToDetect": "special/possible-special element flowing to a log store",
+          "byRound": {
+            "n": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r6": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 1
+        },
+        "SPC-01:special-public-column": {
+          "tp": 3,
+          "fp": 2,
+          "unc": 1,
+          "precision": 0.6,
+          "lower90": 0.272,
+          "repos": 2,
+          "emittedBy": "src/audit/legal/checks/principles.js:specialCategoryFlows (public column)",
+          "howToDetect": "special element in a publicly readable column",
+          "byRound": {
+            "r6": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 1,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r9": {
+              "tp": 2,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.182
+            }
+          },
+          "fpRepos": 1
+        },
+        "SPC-01:special-internal-store": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "byRound": {
+            "r8": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 0
+        },
+        "SPC-01:special-to-client-store": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "byRound": {
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 0
+        },
+        "SPC-01:special-to-vendor": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "byRound": {
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 0.727,
+      "lower90": 0.48
+    },
+    "AUD-SEC-14": {
+      "tp": 2,
+      "fp": 1,
+      "unc": 1,
+      "sub": {
+        "SEC-14:reset-keeps-sessions": {
+          "tp": 0,
+          "fp": 1,
+          "unc": 1,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 2,
+          "emittedBy": "src/audit/legal/checks/security.js:sessionRevocationCheck",
+          "howToDetect": "password reset/logout without session revocation (check deleteMany on sessions)",
+          "byRound": {
+            "n": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r4": {
+              "tp": 0,
+              "fp": 0,
+              "unc": 1,
+              "precision": null,
+              "lower90": null
+            }
+          },
+          "fpRepos": 1
+        },
+        "SEC-14:long-lived-token": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "byRound": {
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 0
+        },
+        "SEC-14:cookie-only-signout": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "byRound": {
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 0.667,
+      "lower90": 0.254
+    },
+    "AUD-SEC-13": {
+      "tp": 4,
+      "fp": 0,
+      "unc": 0,
+      "sub": {
+        "SEC-13:cookie-no-httponly": {
+          "tp": 4,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.597,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/checks/security.js:sessionCookieFlags",
+          "howToDetect": "single signal",
+          "byRound": {
+            "r4": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.597
+            }
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 1,
+      "lower90": 0.597
+    },
+    "AUD-LB-05": {
+      "tp": 15,
+      "fp": 2,
+      "unc": 3,
+      "sub": {
+        "LB-05:cdn-script-style": {
+          "tp": 15,
+          "fp": 0,
+          "unc": 3,
+          "precision": 1,
+          "lower90": 0.847,
+          "repos": 12,
+          "emittedBy": "src/audit/legal/checks/consent.js:thirdPartyResources (script/style)",
+          "howToDetect": "asset type script/stylesheet from a third-party host; skip markup inside JS string literals and the project's own domain",
+          "byRound": {
+            "r4": {
+              "tp": 3,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.526
+            },
+            "r5": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r6": {
+              "tp": 0,
+              "fp": 0,
+              "unc": 1,
+              "precision": null,
+              "lower90": null
+            },
+            "r7": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r8": {
+              "tp": 5,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.649
+            },
+            "r9": {
+              "tp": 5,
+              "fp": 0,
+              "unc": 2,
+              "precision": 1,
+              "lower90": 0.649
+            }
+          },
+          "fpRepos": 0
+        },
+        "LB-05:iframe": {
+          "tp": 0,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/checks/consent.js:thirdPartyResources (iframe)",
+          "howToDetect": "asset type iframe",
+          "byRound": {
+            "r6": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 1
+        },
+        "LB-05:cdn-image": {
+          "tp": 0,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 1,
+          "byRound": {
+            "r8": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 1
+        }
+      },
+      "precision": 0.882,
+      "lower90": 0.699
+    },
+    "AUD-SEC-20": {
+      "tp": 21,
+      "fp": 9,
+      "unc": 2,
+      "sub": {
+        "SEC-20:credential-endpoint-no-ratelimit": {
+          "tp": 16,
+          "fp": 9,
+          "unc": 2,
+          "precision": 0.64,
+          "lower90": 0.476,
+          "repos": 13,
+          "emittedBy": "src/audit/legal/checks/security.js:credentialRateLimit",
+          "howToDetect": "credential endpoint by path; require a password/OTP input (not a session relay)",
+          "byRound": {
+            "r5": {
+              "tp": 5,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.649
+            },
+            "r6": {
+              "tp": 1,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.121
+            },
+            "r7": {
+              "tp": 2,
+              "fp": 1,
+              "unc": 1,
+              "precision": 0.667,
+              "lower90": 0.254
+            },
+            "r8": {
+              "tp": 3,
+              "fp": 3,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.221
+            },
+            "r9": {
+              "tp": 5,
+              "fp": 4,
+              "unc": 1,
+              "precision": 0.556,
+              "lower90": 0.303
+            }
+          },
+          "atReview": {
+            "tp": 5,
+            "fp": 4,
+            "unc": 1,
+            "precision": 0.556,
+            "lower90": 0.303
+          },
+          "fpRepos": 6
+        },
+        "SEC-20:signup-no-ratelimit": {
+          "tp": 4,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.597,
+          "repos": 4,
+          "byRound": {
+            "r8": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r9": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            }
+          },
+          "fpRepos": 0
+        },
+        "SEC-20:recovery-no-ratelimit": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "byRound": {
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 0.7,
+      "lower90": 0.551
+    },
+    "AUD-SEC-02": {
+      "tp": 6,
+      "fp": 4,
+      "unc": 0,
+      "sub": {
+        "SEC-02:public-bucket": {
+          "tp": 4,
+          "fp": 2,
+          "unc": 0,
+          "precision": 0.667,
+          "lower90": 0.347,
+          "repos": 6,
+          "emittedBy": "src/audit/legal/checks/security.js:publicBuckets (public bucket)",
+          "howToDetect": "bucket public = true (check what it holds: user uploads vs app assets)",
+          "byRound": {
+            "r5": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r6": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r7": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r8": {
+              "tp": 1,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0.5,
+              "lower90": 0.121
+            },
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "atReview": {
+            "tp": 1,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.27
+          },
+          "fpRepos": 2
+        },
+        "SEC-02:policy-any-authenticated": {
+          "tp": 0,
+          "fp": 2,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/checks/security.js:publicBuckets (policy without owner)",
+          "howToDetect": "storage policy for authenticated without ownership condition (check auth.role()='service_role' clauses)",
+          "byRound": {
+            "r5": {
+              "tp": 0,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 1
+        },
+        "SEC-02:policy-anon": {
+          "tp": 2,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.425,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/checks/security.js:publicBuckets (policy to public/anon)",
+          "howToDetect": "storage policy TO public / anon without auth.uid()",
+          "byRound": {
+            "r6": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            }
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 0.6,
+      "lower90": 0.352
+    },
+    "AUD-SEC-19": {
+      "tp": 15,
+      "fp": 0,
+      "unc": 0,
+      "sub": {
+        "SEC-19:definer-no-search-path": {
+          "tp": 15,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.847,
+          "repos": 6,
+          "emittedBy": "src/audit/legal/checks/security.js:definerSearchPath",
+          "howToDetect": "single signal",
+          "byRound": {
+            "r5": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r7": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.597
+            },
+            "r8": {
+              "tp": 8,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.747
+            },
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 1,
+      "lower90": 0.847
+    },
+    "AUD-SEC-18": {
+      "tp": 10,
+      "fp": 0,
+      "unc": 0,
+      "sub": {
+        "SEC-18:next-no-headers": {
+          "tp": 10,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.787,
+          "repos": 10,
+          "emittedBy": "src/audit/legal/checks/security.js:securityHeaders",
+          "howToDetect": "single signal",
+          "byRound": {
+            "r5": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r6": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r7": {
+              "tp": 3,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.526
+            },
+            "r8": {
+              "tp": 3,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.526
+            },
+            "r9": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            }
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 1,
+      "lower90": 0.787
+    },
+    "AUD-SEC-11": {
+      "tp": 3,
+      "fp": 3,
+      "unc": 0,
+      "sub": {
+        "SEC-11:non-secret-named-fallback": {
+          "tp": 0,
+          "fp": 3,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 1,
+          "emittedBy": "src/audit/legal/checks/security.js:fallbackSecrets",
+          "howToDetect": "env var name is a cookie name / SameSite / header prefix or other non-secret setting",
+          "byRound": {
+            "r6": {
+              "tp": 0,
+              "fp": 3,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 1
+        },
+        "SEC-11:secret-named-fallback": {
+          "tp": 3,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.526,
+          "repos": 3,
+          "emittedBy": "src/audit/legal/checks/security.js:fallbackSecrets",
+          "howToDetect": "env var name looks like a secret (SECRET/KEY/TOKEN/PASSWORD/SALT)",
+          "byRound": {
+            "r6": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            },
+            "r9": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            }
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 0.5,
+      "lower90": 0.221
+    },
+    "AUD-SEC-21": {
+      "tp": 10,
+      "fp": 4,
+      "unc": 0,
+      "sub": {
+        "SEC-21:weak-password-policy": {
+          "tp": 8,
+          "fp": 3,
+          "unc": 0,
+          "precision": 0.727,
+          "lower90": 0.48,
+          "repos": 6,
+          "emittedBy": "src/audit/legal/checks/security.js:passwordPolicy (AUD-SEC-21)",
+          "howToDetect": "password minimum length below 8; check that the schema sets a credential and is not login input",
+          "byRound": {
+            "r7": {
+              "tp": 2,
+              "fp": 3,
+              "unc": 0,
+              "precision": 0.4,
+              "lower90": 0.143
+            },
+            "r8": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            },
+            "r9": {
+              "tp": 4,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.597
+            }
+          },
+          "fpRepos": 1
+        },
+        "SEC-21:no-policy": {
+          "tp": 2,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.425,
+          "repos": 2,
+          "byRound": {
+            "r9": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            }
+          },
+          "atReview": {
+            "tp": 2,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.425
+          },
+          "fpRepos": 0
+        },
+        "SEC-21:length-check": {
+          "tp": 0,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 1,
+          "byRound": {
+            "r9": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 1,
+            "unc": 0,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 1
+        }
+      },
+      "precision": 0.714,
+      "lower90": 0.494
+    },
+    "AUD-MIN-03": {
+      "tp": 1,
+      "fp": 0,
+      "unc": 0,
+      "sub": {
+        "MIN-03:unmapped": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "byRound": {
+            "r7": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 1,
+      "lower90": 0.27
+    },
+    "AUD-SEC-15": {
+      "tp": 2,
+      "fp": 0,
+      "unc": 0,
+      "sub": {
+        "SEC-15:committed-database": {
+          "tp": 2,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.425,
+          "repos": 2,
+          "byRound": {
+            "r8": {
+              "tp": 2,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.425
+            }
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 1,
+      "lower90": 0.425
+    },
+    "AUD-SEC-07": {
+      "tp": 3,
+      "fp": 1,
+      "unc": 0,
+      "sub": {
+        "SEC-07:token-in-url": {
+          "tp": 0,
+          "fp": 1,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 1,
+          "byRound": {
+            "r8": {
+              "tp": 0,
+              "fp": 1,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "fpRepos": 1
+        },
+        "SEC-07:pii-in-query": {
+          "tp": 3,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.526,
+          "repos": 1,
+          "byRound": {
+            "r9": {
+              "tp": 3,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.526
+            }
+          },
+          "atReview": {
+            "tp": 3,
+            "fp": 0,
+            "unc": 0,
+            "precision": 1,
+            "lower90": 0.526
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 0.75,
+      "lower90": 0.356
+    },
+    "AUD-SEC-24": {
+      "tp": 1,
+      "fp": 0,
+      "unc": 0,
+      "sub": {
+        "SEC-24:framework-debug": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "byRound": {
+            "r8": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 1,
+      "lower90": 0.27
+    },
+    "AUD-SEC-06": {
+      "tp": 0,
+      "fp": 8,
+      "unc": 0,
+      "sub": {
+        "SEC-06:plaintext-password": {
+          "tp": 0,
+          "fp": 8,
+          "unc": 0,
+          "precision": 0,
+          "lower90": 0,
+          "repos": 4,
+          "byRound": {
+            "r8": {
+              "tp": 0,
+              "fp": 2,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            },
+            "r9": {
+              "tp": 0,
+              "fp": 6,
+              "unc": 0,
+              "precision": 0,
+              "lower90": 0
+            }
+          },
+          "atReview": {
+            "tp": 0,
+            "fp": 6,
+            "unc": 0,
+            "precision": 0,
+            "lower90": 0
+          },
+          "fpRepos": 4
+        }
+      },
+      "precision": 0,
+      "lower90": 0
+    },
+    "AUD-ADM-01": {
+      "tp": 1,
+      "fp": 0,
+      "unc": 0,
+      "sub": {
+        "ADM-01:unmapped": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "byRound": {
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 1,
+      "lower90": 0.27
+    },
+    "AUD-ACC-01": {
+      "tp": 1,
+      "fp": 0,
+      "unc": 0,
+      "sub": {
+        "ACC-01:unmapped": {
+          "tp": 1,
+          "fp": 0,
+          "unc": 0,
+          "precision": 1,
+          "lower90": 0.27,
+          "repos": 1,
+          "byRound": {
+            "r9": {
+              "tp": 1,
+              "fp": 0,
+              "unc": 0,
+              "precision": 1,
+              "lower90": 0.27
+            }
+          },
+          "fpRepos": 0
+        }
+      },
+      "precision": 1,
+      "lower90": 0.27
+    }
+  },
+  "modifiers": {
+    "element:name-inferred-only": {
+      "tp": 6,
+      "fp": 27,
+      "unc": 3,
+      "precision": 0.182,
+      "lower90": 0.097,
+      "repos": 14
+    },
+    "path:nonprod-file": {
+      "tp": 2,
+      "fp": 9,
+      "unc": 2,
+      "precision": 0.182,
+      "lower90": 0.062,
+      "repos": 4
+    },
+    "TRN-02 notice-anchor:non-policy-path": {
+      "tp": 5,
+      "fp": 6,
+      "unc": 1,
+      "precision": 0.455,
+      "lower90": 0.242,
+      "repos": 2
+    },
+    "TRN-02 notice-anchor:policy-path": {
+      "tp": 26,
+      "fp": 13,
+      "unc": 4,
+      "precision": 0.667,
+      "lower90": 0.535,
+      "repos": 7
+    }
+  },
+  "hReposRound3": {
+    "total": {
+      "tp": 80,
+      "fp": 2,
+      "unc": 1,
+      "precision": 0.976,
+      "lower90": 0.929
+    },
+    "rules": {
+      "AUD-SEC-08": {
+        "tp": 5,
+        "fp": 0,
+        "unc": 0,
+        "precision": 1
+      },
+      "AUD-SEC-09": {
+        "tp": 4,
+        "fp": 0,
+        "unc": 0,
+        "precision": 1
+      },
+      "AUD-SEC-13": {
+        "tp": 2,
+        "fp": 0,
+        "unc": 0,
+        "precision": 1
+      },
+      "AUD-TRN-01": {
+        "tp": 4,
+        "fp": 0,
+        "unc": 0,
+        "precision": 1
+      },
+      "AUD-TRF-01": {
+        "tp": 12,
+        "fp": 1,
+        "unc": 0,
+        "precision": 0.923
+      },
+      "AUD-DSR-01": {
+        "tp": 5,
+        "fp": 0,
+        "unc": 0,
+        "precision": 1
+      },
+      "AUD-RET-01": {
+        "tp": 21,
+        "fp": 0,
+        "unc": 1,
+        "precision": 1
+      },
+      "AUD-LB-01": {
+        "tp": 2,
+        "fp": 0,
+        "unc": 0,
+        "precision": 1
+      },
+      "AUD-DEL-01": {
+        "tp": 5,
+        "fp": 1,
+        "unc": 0,
+        "precision": 0.833
+      },
+      "AUD-SEC-03": {
+        "tp": 6,
+        "fp": 0,
+        "unc": 0,
+        "precision": 1
+      },
+      "AUD-SEC-15": {
+        "tp": 1,
+        "fp": 0,
+        "unc": 0,
+        "precision": 1
+      },
+      "AUD-SEC-14": {
+        "tp": 1,
+        "fp": 0,
+        "unc": 0,
+        "precision": 1
+      },
+      "AUD-SEC-04": {
+        "tp": 2,
+        "fp": 0,
+        "unc": 0,
+        "precision": 1
+      },
+      "AUD-AGE-01": {
+        "tp": 1,
+        "fp": 0,
+        "unc": 0,
+        "precision": 1
+      },
+      "AUD-SEC-02": {
+        "tp": 1,
+        "fp": 0,
+        "unc": 0,
+        "precision": 1
+      },
+      "AUD-DEL-02": {
+        "tp": 8,
+        "fp": 0,
+        "unc": 0,
+        "precision": 1
+      }
+    }
+  }
+}
