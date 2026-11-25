@@ -6,6 +6,7 @@ import { collectAnswers } from './answers.js';
 import { TR_DOCS } from './tr.js';
 import { EN_DOCS, privacyPolicy } from './en.js';
 import { ASSESSMENTS } from './assessments.js';
+import { finalize } from './finalize.js';
 
 /**
  * Generate privacy documents from a scan result.
@@ -13,7 +14,8 @@ import { ASSESSMENTS } from './assessments.js';
  * and the organisational audit are written as well. Without it the pattern scan alone is used.
  * The organisational answers (`org`) live in <project>/kvkk-answers.json only, so there is one copy to keep up to date.
  * @param {{result:object, answers?:object, outDir:string, lang?:'tr'|'en', interactive?:boolean, audit?:object|null}} opts
- * @returns {Promise<{files:string[], facts:object}>}
+ * Every document goes through finalize.js: draft warning, tagged placeholders, list of open fields.
+ * @returns {Promise<{files:string[], facts:object, open:number}>}  open: placeholders left in all documents
  */
 export async function generateDocs({ result, answers = {}, outDir, lang = 'tr', interactive = false, audit = null }) {
   outDir = path.resolve(outDir);
@@ -23,19 +25,22 @@ export async function generateDocs({ result, answers = {}, outDir, lang = 'tr', 
   const finalAnswers = await collectAnswers({ result, answers, outDir, lang, interactive, detected });
   const facts = buildFacts(result, finalAnswers, audit);
 
-  const docs = lang === 'en' ? [...EN_DOCS] : [...TR_DOCS, ['privacy-policy.md', privacyPolicy]];
+  const docs = lang === 'en' ? [...EN_DOCS] : [...TR_DOCS, ['privacy-policy.md', privacyPolicy, 'en']];
   if (audit) for (const [l, name, render] of ASSESSMENTS) if (l === lang) docs.push([name, (f) => render(f, lang)]);
   const files = [];
-  for (const [name, render] of docs) {
+  let open = 0;
+  for (const [name, render, docLang = lang] of docs) {
     const file = path.join(outDir, name);
-    fs.writeFileSync(file, scrubCredentials(render(facts)));
+    const done = finalize(name, scrubCredentials(render(facts)), docLang);
+    for (const m of Object.values(done.open)) for (const n of m.values()) open += n;
+    fs.writeFileSync(file, done.text);
     files.push(file);
   }
   const { org: _org, ...companyAnswers } = finalAnswers;
   const answersFile = path.join(outDir, 'kvkk-answers.json');
   fs.writeFileSync(answersFile, JSON.stringify(companyAnswers, null, 2) + '\n');
   files.push(answersFile);
-  return { files, facts };
+  return { files, facts, open };
 }
 
 /** `org` of <dir>/kvkk-answers.json; null when absent or unreadable (the CLI reports a broken file itself). */

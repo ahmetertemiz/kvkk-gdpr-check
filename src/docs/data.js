@@ -138,6 +138,21 @@ const SPECIAL_DEFAULTS = {
 };
 for (const c of Object.values(DATA_CATEGORIES)) if (c.special) Object.assign(c, { ...SPECIAL_DEFAULTS, ...c });
 
+// Purposes, legal bases, data subjects and retention periods are generic defaults: the code cannot show them, so each is marked.
+const DEFAULT_MARK = {
+  tr: { purposes: 'varsayılan amaç', basis: 'varsayılan hukuki sebep', subjects: 'varsayılan kişi grubu', retention: 'varsayılan saklama süresi' },
+  en: { purposes: 'default purpose', basis: 'default legal basis', subjects: 'default data subjects', retention: 'default retention period' },
+};
+const mark = (s, lang, what) => (/\[\[/.test(s) ? s : `${s} [[${lang === 'tr' ? 'kontrol' : 'check'}: ${DEFAULT_MARK[lang][what]}]]`);
+for (const [id, c] of Object.entries(DATA_CATEGORIES)) {
+  for (const what of ['purposes', 'basis', 'subjects', 'retention']) {
+    const src = c[what];
+    const v = {};
+    for (const lang of ['tr', 'en']) v[lang] = what === 'purposes' ? (src[lang].some((x) => /\[\[/.test(x)) ? src[lang] : [...src[lang].slice(0, -1), mark(src[lang].at(-1), lang, what)]) : mark(src[lang], lang, what);
+    DATA_CATEGORIES[id][what] = v;
+  }
+}
+
 /** Field name / label → category id. First match wins. */
 export const FIELD_MAP = [
   [/(health|saglik|sağlık|diagnos|teshis|teşhis|medical|disease|hastal|blood|kan_?grubu|medication|prescription|re[çc]ete|mental|therap|terapi|pregnan|hamile|disabilit|engellilik)/i, 'saglik'],

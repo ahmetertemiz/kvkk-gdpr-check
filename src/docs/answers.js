@@ -55,7 +55,7 @@ export async function collectAnswers({ result, answers = {}, outDir, lang, inter
   if (interactive) {
     const { createInterface } = await import('node:readline/promises');
     const rl = createInterface({ input: process.stdin, output: process.stdout });
-    console.log(lang === 'en' ? '\n  A few questions for the documents (Enter = keep default, blank = placeholder):\n' : '\n  Dokümanlar için birkaç soru (Enter = varsayılanı kullan, boş = [[...]] bırak):\n');
+    console.log(lang === 'en' ? '\n  A few questions for the documents (Enter = keep default, blank = placeholder):\n' : '\n  Dokümanlar için birkaç soru (Enter = varsayılanı kullan, boş = [DOLDURULMALI: ...] bırak):\n');
     try {
       for (const q of QUESTIONS) {
         if (q.when && !q.when(merged)) continue;

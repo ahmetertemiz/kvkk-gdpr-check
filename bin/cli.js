@@ -14,7 +14,7 @@ Kullanım:
   kvkk-check [dizin] --url <URL>             Kod + canlı siteyi birlikte tara
   kvkk-check url <URL> [seçenekler]          Sadece canlı siteyi tara
   kvkk-check docs [dizin] [--url <URL>]      Aydınlatma metni, çerez politikası,
-                                             veri envanteri vb. dokümanları üret
+                                             veri envanteri vb. taslaklarını üret (BETA)
   kvkk-check ui [--port 4477]                Yerel web arayüzünü aç
   kvkk-check anket [dizin]                   Koddan anlaşılamayan soruları sor, cevapları
                                              kvkk-answers.json dosyasına yaz (-y: yalnızca şablon)
@@ -47,7 +47,7 @@ Doküman seçenekleri:
                                       varsayılan: <dizin>/kvkk-answers.json)
       --no-audit                      Derin denetimi çalıştırma (DPIA/LIA/TIA taslakları üretilmez)
       --out <dizin>                   Çıktı dizini (varsayılan: ./privacy-docs)
-  -y, --yes                           Soru sorma, bilinmeyenleri [[...]] bırak
+  -y, --yes                           Soru sorma, bilinmeyenleri [DOLDURULMALI: ...] bırak
 
 Yapılandırma: proje kökünde .kvkkcheckrc.json → { "ignore": [...], "disable": [...] }
 Satır bazlı susturma: // kvkk-ignore   veya   // kvkk-ignore SEC013
@@ -223,8 +223,10 @@ async function main() {
     if (warning) process.stderr.write(`  ! ${warning}\n`);
     warnProblems(audit?.organization, args.lang);
     const out = args.out || path.join(args.dir, 'privacy-docs');
-    const { files } = await generateDocs({ result, answers, outDir: out, lang: args.lang, interactive: !args.yes && process.stdin.isTTY, audit });
-    console.log(args.lang === 'en' ? `\n  ✔ ${files.length} documents written to ${out}` : `\n  ✔ ${files.length} doküman yazıldı: ${out}`);
+    const { files, open } = await generateDocs({ result, answers, outDir: out, lang: args.lang, interactive: !args.yes && process.stdin.isTTY, audit });
+    console.log(args.lang === 'en'
+      ? `\n  ✔ ${files.length} files written to ${out}\n  ⚠ BETA: these are automatically generated drafts, not legal advice. Their accuracy on real projects has not been measured.\n    Do not publish before a lawyer has reviewed them. ${open} fields are marked [TO FILL IN] or [TO VERIFY].`
+      : `\n  ✔ ${files.length} dosya yazıldı: ${out}\n  ⚠ BETA: bunlar otomatik üretilmiş taslaklardır, hukuki danışmanlık değildir. Gerçek projelerdeki isabetleri ölçülmedi.\n    Bir hukukçu incelemeden yayımlamayın. ${open} alan [DOLDURULMALI] ya da [DOĞRULANMALI] olarak işaretli.`);
     for (const f of files) {
       const rel = path.relative(process.cwd(), f);
       console.log(`    - ${rel.startsWith('..') ? f : rel}`);

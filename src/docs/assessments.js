@@ -24,8 +24,8 @@ function limits(f, lang) {
   const a = f.audit;
   const gaps = Object.entries(a.layers || {}).filter(([, l]) => l && (l.gaps || []).length).map(([k]) => k);
   return W(lang,
-    `> **Dayanak:** kaynak kodun otomatik denetimi. Çalışan sistem, gerçek veri hacmi ve sözleşmeler görülmedi. ${gaps.length ? `Şu katmanlar tam okunamadı: ${gaps.join(', ')}. ` : ''}Araç gerçek sorunların bir bölümünü kaçırır (docs/ACCURACY.md). Köşeli parantezli yerleri siz doldurursunuz; bir hukukçuya inceletin.`,
-    `> **Basis:** automated audit of the source code. The running system, real volumes and contracts were not seen. ${gaps.length ? `These layers were not fully read: ${gaps.join(', ')}. ` : ''}The tool misses some real issues (docs/ACCURACY.md). Fill in everything in brackets and have a lawyer review it.`);
+    `> **Dayanak:** kaynak kodun otomatik denetimi. Çalışan sistem, gerçek veri hacmi ve sözleşmeler görülmedi. ${gaps.length ? `Şu katmanlar tam okunamadı: ${gaps.join(', ')}. ` : ''}Araç gerçek sorunların bir bölümünü kaçırır (docs/ACCURACY.md). Değerlendirme ve karar yerlerini siz doldurursunuz.`,
+    `> **Basis:** automated audit of the source code. The running system, real volumes and contracts were not seen. ${gaps.length ? `These layers were not fully read: ${gaps.join(', ')}. ` : ''}The tool misses some real issues (docs/ACCURACY.md). You fill in every assessment and decision.`);
 }
 const elName = (f, lang) => (n) => { const e = (f.audit.model.inventory || []).find((x) => x.name === n); return e ? L(e.label, lang) : n; };
 
@@ -47,7 +47,7 @@ export function dpia(f, lang) {
     W(lang, '## 1. Gereklilik', '## 1. Is a DPIA needed?'), state, mdTable([W(lang, 'Ölçüt (WP248)', 'Criterion (WP248)'), W(lang, 'Durum', 'Status')], rows),
     W(lang, '## 2. İşlemenin tanımı (koddan)', '## 2. Description of the processing (from the code)'),
     mdTable([W(lang, 'Faaliyet / amaç', 'Activity / purpose'), W(lang, 'Veri', 'Data'), W(lang, 'Önerilen hukuki sebep', 'Suggested basis'), W(lang, 'Alıcılar', 'Recipients'), W(lang, 'Saklama', 'Retention')],
-      (m.activities || []).map((a) => [L(a.purpose, lang), (a.elements || []).map(name).join(', ') || '—', (a.legalBasis || []).map((b) => `${L(b.label, lang)} (${b.kvkk})`).join(' / '), (a.recipients || []).join(', ') || '—', a.retention === 'missing' ? W(lang, 'kodda yok [[süre]]', 'none in code [[period]]') : W(lang, '[[kontrol]]', '[[check]]')])),
+      (m.activities || []).map((a) => [L(a.purpose, lang), (a.elements || []).map(name).join(', ') || W(lang, 'koddan görülmedi [[kontrol: veri]]', 'not seen in the code [[check: data]]'), (a.legalBasis || []).map((b) => `${L(b.label, lang)} (${b.kvkk})`).join(' / '), (a.recipients || []).join(', ') || W(lang, 'koddan görülmedi [[kontrol: alıcılar]]', 'not seen in the code [[check: recipients]]'), a.retention === 'missing' ? W(lang, 'kodda yok [[süre]]', 'none in code [[period]]') : W(lang, '[[kontrol]]', '[[check]]')])),
     W(lang, '[[İşlemenin amacı, kapsamı, kişi sayısı, coğrafyası ve süresi: sizin anlatımınız]]', '[[Purpose, scope, number of people, area and duration in your own words]]'),
     W(lang, '## 3. Gereklilik ve ölçülülük', '## 3. Necessity and proportionality'),
     [
@@ -80,10 +80,10 @@ export function lia(f, lang) {
       return [
         `## ${i + 1}. ${L(a.purpose, lang)}`,
         mdTable([W(lang, 'Olgu (koddan)', 'Fact (from code)'), W(lang, 'Değer', 'Value')], [
-          [W(lang, 'Veri', 'Data'), (a.elements || []).map(name).join(', ') || '—'],
-          [W(lang, 'Alıcılar', 'Recipients'), (a.recipients || []).join(', ') || '—'],
-          [W(lang, 'Yurt dışı aktarım', 'Transfer abroad'), a.transferAbroad ? W(lang, 'Evet', 'Yes') : W(lang, 'Görülmedi', 'Not seen')],
-          [W(lang, 'Saklama süresi', 'Retention'), a.retention === 'missing' ? W(lang, 'Kodda yok', 'None in code') : W(lang, '[[kontrol]]', '[[check]]')],
+          [W(lang, 'Veri', 'Data'), (a.elements || []).map(name).join(', ') || W(lang, 'koddan görülmedi [[kontrol: veri]]', 'not seen in the code [[check: data]]')],
+          [W(lang, 'Alıcılar', 'Recipients'), (a.recipients || []).join(', ') || W(lang, 'koddan görülmedi [[kontrol: alıcılar]]', 'not seen in the code [[check: recipients]]')],
+          [W(lang, 'Yurt dışı aktarım', 'Transfer abroad'), a.transferAbroad ? W(lang, 'Evet', 'Yes') : W(lang, 'Görülmedi [[kontrol]]', 'Not seen [[check]]')],
+          [W(lang, 'Saklama süresi', 'Retention'), a.retention === 'missing' ? W(lang, 'Kodda yok [[süre]]', 'None in code [[period]]') : W(lang, '[[kontrol]]', '[[check]]')],
           [W(lang, 'Diğer önerilen sebepler', 'Other suggested bases'), (a.legalBasis || []).filter((b) => b.key !== 'legitimate-interest').map((b) => L(b.label, lang)).join(', ') || '—'],
         ]),
         sp.length ? W(lang, `> ⚠️ **Özel nitelikli veri var (${sp.map(name).join(', ')}).** Meşru menfaat bu veriler için hukuki sebep değildir (KVKK md.6, GDPR Art.9).`, `> ⚠️ **Special-category data (${sp.map(name).join(', ')}).** Legitimate interest is not a basis for it (KVKK Art.6, GDPR Art.9).`) : null,
@@ -114,7 +114,7 @@ export function tia(f, lang) {
           [W(lang, 'Ülke (katalog)', 'Country (catalogue)'), `${v.country}${v.regionSelectable ? W(lang, ' (bölge seçilebilir)', ' (region selectable)') : ''}`],
           [W(lang, 'Seçilen bölge (beyan)', 'Selected region (declared)'), P(a.region, W(lang, 'bölge', 'region'))],
           [W(lang, 'Aktarılan veri (koddan)', 'Data transferred (from code)'), v.elements.map((e) => L(e.label, lang) || e.name).join(', ') || W(lang, '[[kontrol]]', '[[check]]')],
-          [W(lang, 'Özel nitelikli veri', 'Special-category data'), v.special ? W(lang, '**Evet**', '**Yes**') : W(lang, 'Görülmedi', 'Not seen')],
+          [W(lang, 'Özel nitelikli veri', 'Special-category data'), v.special ? W(lang, '**Evet**', '**Yes**') : W(lang, 'Görülmedi [[kontrol]]', 'Not seen [[check]]')],
           [W(lang, 'Kanıt', 'Evidence'), ev(v.evidence)],
           [W(lang, 'Beyan edilen durum', 'Declared status'), it ? `${L(STATUS[it.status], lang)}: ${L(it.detail, lang)}` : '—'],
         ]),

@@ -66,7 +66,7 @@ for (const lang of ['tr', 'en']) {
 
     const dpia = read(drafts[0]);
     assert.match(dpia, /health_logs|route\.ts:\d+|AUD-/);
-    assert.ok((dpia.match(/\[\[/g) || []).length > 15, 'judgements are left to a person');
+    assert.ok((dpia.match(/\[(?:DOLDURULMALI|DOĞRULANMALI|TO FILL IN|TO VERIFY): /g) || []).length > 15, 'judgements are left to a person');
     assert.ok(!/(hukuka uygundur|ölçülüdür|is lawful|is proportionate)/i.test(dpia));
     const tia = read(drafts[2]);
     for (const v of ['OpenAI', 'Stripe', 'Supabase', 'PostHog']) assert.match(tia, new RegExp(`## \\d+\\. ${v}`));

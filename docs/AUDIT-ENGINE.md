@@ -213,7 +213,7 @@ Motor, gerçek açık kaynak projelerde ölçülerek geliştirildi. Sonuçlar, y
 
 **Faz 2 durumu (24.11.2026):** işleme faaliyetleri, hukuki sebep, ROPA, risk ve beyan↔gerçek zaten vardı. Eklenenler:
 
-- `docs` komutu denetim modelini kullanır (`src/docs/from-audit.js`); izlenemeyen alıcılar "almıyor" diye yazılmaz, `[[kontrol]]` olur.
+- `docs` komutu denetim modelini kullanır (`src/docs/from-audit.js`); izlenemeyen alıcılar "almıyor" diye yazılmaz, `[DOĞRULANMALI: …]` olur.
 - Organizasyon anketi: `src/audit/legal/org.js` (kurallar) ve `questionnaire.js` (`anket` komutu). Rapor bölümü ve JSON'da `organization`. Bulguları ve skoru değiştirmez.
 - DPIA / LIA / TIA taslakları: `src/docs/assessments.js`. Hiçbir değerlendirme sonucu önerilmez.
 - Mağaza beyanı: AUD-TRN-05 (`checks/store-declarations.js`), depodaki Apple gizlilik bildirimi ile cihaz dışına giden veri. Ölçülmediği için yalnızca "Doğrulanmalı" listesinde görünür. Android karşılığı depoda yoktur (Play formu çevrimiçi doldurulur); ankette sorulur. Apple veri türü listesi resmî sayfadan doğrulanamadı.

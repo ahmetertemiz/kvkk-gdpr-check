@@ -8,9 +8,9 @@ const EU = /^(AT|BE|BG|HR|CY|CZ|DK|EE|FI|FR|DE|GR|HU|IE|IT|LV|LT|LU|MT|NL|PL|PT|
 
 const appName = (a) => P(a.appName, 'App name');
 const company = (a) => P(a.companyName, 'Company / person name');
-const contactEmail = (a) => P(a.email, 'privacy@domain.com');
+const contactEmail = (a) => P(a.email, 'privacy contact email');
 const fname = (c, k) => c.en?.get(k) || ({ 'çerez / çevrimiçi tanımlayıcılar': 'cookies / online identifiers', 'ileti tercihleri': 'messaging preferences' })[k] || k;
-const fieldList = (c) => [...c.fields.keys()].map((k) => fname(c, k)).join(', ') || '—';
+const fieldList = (c) => [...c.fields.keys()].map((k) => fname(c, k)).join(', ') || '[[check: which data of this category is processed?]]';
 
 function duration(c) {
   if (c.estimated) return '[[check]]';
@@ -52,20 +52,20 @@ export function privacyPolicy(f) {
     f.vendors.length
       ? mdTable(['Recipient', 'Purpose', 'Location', 'Transfer safeguard'], f.vendors.map((v) => [v.name, v.purpose?.en || '[[check]]', v.country || '[[check]]', f.isAbroad(v.country) ? safeguard(v) : '—']))
       : 'We do not share personal data with third parties except where required by law. [[check]]',
-    'All processors act under data processing agreements (Art.28). We do not sell your personal data.',
+    'All processors act under data processing agreements (Art.28). We do not sell your personal data. [[check: are both statements true, and is the list of recipients complete?]]',
     f.ai.length ? `**AI features.** Content you submit to AI-powered features is sent to ${f.ai.map((v) => v.name).join(', ')} to generate a response. [[check: confirm providers do not train on API data and their retention period]] We do not make decisions based solely on automated processing that produce legal or similarly significant effects. [[check]]` : null,
     '## 4. Cookies',
     f.consentVendors.length
-      ? `We use non-essential cookies (${f.consentVendors.map((v) => v.name).join(', ')}) only after you consent. You can change your choice at any time via "Cookie settings". See our cookie policy.`
+      ? `We use non-essential cookies (${f.consentVendors.map((v) => v.name).join(', ')}) only after you consent. You can change your choice at any time via "Cookie settings". See our cookie policy. [[check: are these really blocked before consent, and does the link exist?]]`
       : 'We only use strictly necessary cookies. [[check]]',
     '## 5. Your rights',
-    `You have the right to access (Art.15), rectify (Art.16), erase (Art.17), restrict (Art.18) and port (Art.20) your data, to object (Art.21), and to withdraw consent at any time without affecting prior processing. ${f.hasAccounts ? 'You can delete your account in **Settings → Delete account**. ' : ''}Contact ${contactEmail(a)}; we respond within one month. You may also lodge a complaint with your local supervisory authority${a.country === 'TR' || !a.country ? ' (in Turkey: the Personal Data Protection Authority, kvkk.gov.tr)' : ''}.`,
+    `You have the right to access (Art.15), rectify (Art.16), erase (Art.17), restrict (Art.18) and port (Art.20) your data, to object (Art.21), and to withdraw consent at any time without affecting prior processing. ${f.hasAccounts ? 'You can delete your account in **Settings → Delete account** [[check: does the app have this?]]. ' : ''}Contact ${contactEmail(a)}; we respond within one month. You may also lodge a complaint with your local supervisory authority${a.country === 'TR' || !a.country ? ' (in Turkey: the Personal Data Protection Authority, kvkk.gov.tr)' : ''}.`,
     '## 6. Children',
     a.children ? `${appName(a)} is not intended for children under ${typeof a.children === 'number' ? a.children : 16}. [[check]]` : `${appName(a)} is not directed at children under [[16]]. [[check]]`,
     '## 7. Security',
     'We protect your data with encryption in transit (TLS), access controls and least-privilege permissions. [[check: add encryption at rest, backups, logging]]',
     '## 8. Changes',
-    'We will notify you of material changes in the app or by email.',
+    'We will notify you of material changes in the app or by email. [[check: how do you notify?]]',
   );
 }
 
@@ -95,7 +95,7 @@ export function cookiePolicy(f) {
 export function consentTexts(f) {
   const a = f.answers;
   const blocks = [];
-  if (f.marketing) blocks.push('## Marketing messages', `- [ ] I agree to receive news and offers from ${company(a)} by **email / SMS**. I can unsubscribe at any time.`, '> Must be unticked by default and not a condition of sign-up.');
+  if (f.marketing) blocks.push('## Marketing messages', `- [ ] I agree to receive news and offers from ${company(a)} by **email / SMS** [[check: channels used]]. I can unsubscribe at any time.`, '> Must be unticked by default and not a condition of sign-up.');
   if (f.consentVendors.length) blocks.push('## Analytics & marketing cookies', `- [ ] I agree to the use of analytics and marketing cookies (${f.consentVendors.map((v) => v.name).join(', ')}).`, '> Collect per category in the cookie banner; "Reject all" must be as prominent as "Accept all"; do not load these scripts before consent.');
   if (f.special.length) blocks.push('## Special category data', `- [ ] I explicitly consent to the processing of my ${f.special.map((c) => c.def.en.toLowerCase()).join(', ')} for [[purpose]].`, '> Keep separate from other consents (GDPR Art.9(2)(a)).');
   if (!blocks.length) blocks.push('No processing requiring consent was detected. [[check]]');
@@ -108,11 +108,11 @@ function recipientCell(f, catId) {
   const r = recipientsOf(f, catId);
   const out = [...new Set((r ? r.known : f.vendors).map((v) => v.group?.en).filter(Boolean))];
   if (r?.unknown.length) out.push(`[[check: recipients whose data could not be traced: ${r.unknown.map((v) => v.name).join(', ')}]]`);
-  return out.join('; ') || '—';
+  return out.join('; ') || 'Not seen in the code [[check: recipients]]';
 }
 function abroadCell(f, catId) {
   const r = recipientsOf(f, catId, f.abroad);
-  if (!r) return f.abroad.length ? `Yes (${f.abroad.map((v) => v.name).join(', ')})` : 'No';
+  if (!r) return f.abroad.length ? `Yes (${f.abroad.map((v) => v.name).join(', ')}) [[check: which category reaches which recipient?]]` : 'None detected [[check]]';
   if (r.known.length) return `Yes (${r.known.map((v) => v.name).join(', ')})`;
   return r.unknown.length ? `[[check: ${r.unknown.map((v) => v.name).join(', ')}]]` : 'Not seen in the code [[check]]';
 }
@@ -121,14 +121,14 @@ function inventoryRows(f) {
   const a = f.answers;
   return f.categories.map((c) => [
     c.def.en + (c.def.special ? ' (special)' : ''),
-    [...c.fields.entries()].map(([k, v]) => (v.length ? `${fname(c, k)} (${v.slice(0, 2).join(', ')})` : fname(c, k))).join('; ') || '—',
+    [...c.fields.entries()].map(([k, v]) => (v.length ? `${fname(c, k)} (${v.slice(0, 2).join(', ')})` : fname(c, k))).join('; ') || '[[check: which data of this category is processed?]]',
     c.def.purposes.en.join('; '),
     c.def.basis.en,
     c.def.subjects.en,
     (a.retention && a.retention[c.id]) || c.def.retention.en,
     recipientCell(f, c.id),
     abroadCell(f, c.id),
-    c.def.special ? 'Encryption at rest, access logging, least privilege' : 'Access control, TLS, backups',
+    `${c.def.special ? 'Encryption at rest, access logging, least privilege' : 'Access control, TLS, backups'} [[check: are these measures in place? Not derived from the code]]`,
   ]);
 }
 
@@ -144,7 +144,7 @@ export function transfers(f) {
   return join(
     header('en', f, 'International Data Transfers'),
     f.abroad.length
-      ? mdTable(['Vendor', 'Company', 'Country', 'Data sent', 'Safeguard', 'DPA'], f.abroad.map((v) => [v.name, v.company || '—', v.country, dataSent(v, 'en', (DATA_SENT[v.category] || { en: '[[check]]' }).en), safeguard(v), '[[DPA link]]']))
+      ? mdTable(['Vendor', 'Company', 'Country', 'Data sent', 'Safeguard', 'DPA'], f.abroad.map((v) => [v.name, v.company || '[[check: company]]', `${v.country} [[check: selected region]]`, dataSent(v, 'en', `${(DATA_SENT[v.category] || { en: '' }).en} [[check: data sent could not be traced; default text]]`), safeguard(v), '[[DPA link]]']))
       : 'No international transfers detected. [[check]]',
     '## Turkey (KVKK md.9)',
     'If you are a Turkish controller: there is no adequacy decision to rely on in most cases [[check]], so use the Board\'s **standard contract** and notify the Authority within **5 business days** of signing.',

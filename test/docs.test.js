@@ -42,7 +42,7 @@ test('TR docs from code scan: all files, vendors, sensitive data, placeholders',
   assert.match(ayd, /health_notes/);
   assert.match(ayd, /TC Kimlik No/);
   assert.match(ayd, /Örnek Yazılım A\.Ş\./);
-  assert.match(ayd, /\[\[Açık adres\]\]/, 'missing answers become placeholders');
+  assert.match(ayd, /\[DOLDURULMALI: Açık adres\]/, 'missing answers become placeholders');
   assert.ok(!/- \[ \]/.test(ayd), 'consent checkboxes must not be inside the aydınlatma metni');
 
   const riza = read(out, 'acik-riza-metni.md');
@@ -57,9 +57,12 @@ test('TR docs from code scan: all files, vendors, sensitive data, placeholders',
 
   const csv = parseCsv(read(out, 'veri-envanteri.csv').replace(/^﻿/, ''));
   assert.ok(read(out, 'veri-envanteri.csv').startsWith('﻿'), 'CSV has BOM');
-  assert.equal(csv[0].length, 9);
-  assert.ok(csv.length >= 5);
-  for (const r of csv) assert.equal(r.length, 9);
+  // warning row, table (header + rows), open fields
+  const table = csv.filter((r) => r.length > 1);
+  assert.match(csv[0][0], /TASLAK/);
+  assert.equal(csv[1], table[0]);
+  assert.ok(table.length >= 5);
+  for (const r of table) assert.equal(r.length, 9);
 
   assert.match(read(out, 'ihlal-mudahale-plani.md'), /service_role/);
   assert.match(read(out, 'uyum-yol-haritasi.md'), /SEC002/);

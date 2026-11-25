@@ -6,7 +6,7 @@ Vibecode'ladığın (Cursor, Claude Code, Lovable, Bolt, v0…) ya da elle yazd�
 ```bash
 npx kvkk-gdpr-check                          # kaynak kodu tara
 npx kvkk-gdpr-check url https://siten.com    # canlı siteyi gerçek tarayıcıyla tara
-npx kvkk-gdpr-check docs                     # aydınlatma metni, çerez politikası, VERBİS envanteri… üret
+npx kvkk-gdpr-check docs                     # (beta) aydınlatma metni, çerez politikası, VERBİS envanteri… taslağı
 npx kvkk-gdpr-check ui                       # yerel web arayüzü
 ```
 
@@ -82,7 +82,9 @@ npx kvkk-gdpr-check . --url https://siten.com   # kod + canlı, tek rapor
 npx kvkk-gdpr-check url https://siten.com --no-browser  # bağımlılıksız hafif HTTP modu
 ```
 
-### 3. 📝 Doküman üretici
+### 3. 📝 Doküman taslakları (beta)
+
+> **Beta.** Üretilen her belge otomatik bir taslaktır ve hukuki danışmanlık değildir; bir hukukçu incelemeden yayımlamayın. Gerçek projelerdeki isabeti **ölçülmedi**. Her belgenin başında bu uyarı, sonunda doldurulmamış alanların listesi bulunur. Koddan çıkarılamayan ya da ankette cevaplanmayan alanlar `[DOLDURULMALI: …]`, varsayılan veya tespit edilmiş ama teyit gerektirenler `[DOĞRULANMALI: …]` olarak işaretlenir.
 
 Tarama sonuçlarından (tespit edilen veri alanları, servisler, gerçek çerezler) **uygulamana özel** taslaklar üretir:
 
@@ -105,7 +107,7 @@ npx kvkk-gdpr-check docs --url https://siten.com --answers sirket.json -y --out 
 npx kvkk-gdpr-check docs --lang en            # İngilizce set
 ```
 
-`docs` veriyi derin denetimin veri akışı grafiğinden alır: hangi veri, nerede, hangi alıcıya gidiyor (`--no-audit` ile yalnızca desen taraması). Ayrıca şu **taslakları** üretir: DPIA, LIA (meşru menfaate dayanabilecek faaliyetler), TIA (her yurt dışı alıcı) ve organizasyon denetimi. Araç yalnızca olguları ve kanıtı yazar; değerlendirme ve karar yerleri `[[...]]` olarak boştur. **Bir hukukçu okumadan kullanmayın.**
+`docs` veriyi derin denetimin veri akışı grafiğinden alır: hangi veri, nerede, hangi alıcıya gidiyor (`--no-audit` ile yalnızca desen taraması). Ayrıca şu **taslakları** üretir: DPIA, LIA (meşru menfaate dayanabilecek faaliyetler), TIA (her yurt dışı alıcı) ve organizasyon denetimi. Araç yalnızca olguları ve kanıtı yazar; değerlendirme ve karar yerleri `[DOLDURULMALI: …]` olarak boştur. **Bir hukukçu okumadan kullanmayın.**
 
 `anket` VERBİS yükümlülüğü, rolünüz, aktarım araçları (standart sözleşmede 5 iş günü), saklama, erişim, çocuklar ve ölçek gibi soruları sorar (`-y`: yalnızca şablon yazar). Cevaplar `audit` ve `docs` sonuçlarını değiştirir, ama kod bulgularını ve skoru değiştirmez; her sonuç "beyana dayalı" olarak işaretlenir. VERBİS eşikleri 24.11.2026'da ikincil kaynaklardan alındı; resmî tatiller iş günü hesabında yoktur.
 

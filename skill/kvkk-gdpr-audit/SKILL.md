@@ -71,9 +71,9 @@ If `DOC001`/`DOC002`/`WEB006`/`WEB007`/`WEB008` fired, offer to generate the doc
 npx -y kvkk-gdpr-check docs . --url https://THE-SITE --answers kvkk-answers.json -y --out privacy-docs
 ```
 
-Answers the code cannot give (VERBİS, role, transfer mechanism per recipient, retention policy, minors, scale) go under `org` in `kvkk-answers.json`: run `npx -y kvkk-gdpr-check anket . -y` for the template, ask the user, fill in, re-run. Never invent an answer; leave `null`. `docs` also writes DPIA / LIA / TIA drafts: keep every `[[...]]` that needs a human decision, and tell the user a lawyer must review them.
+Answers the code cannot give (VERBİS, role, transfer mechanism per recipient, retention policy, minors, scale) go under `org` in `kvkk-answers.json`: run `npx -y kvkk-gdpr-check anket . -y` for the template, ask the user, fill in, re-run. Never invent an answer; leave `null`. `docs` also writes DPIA / LIA / TIA drafts: keep every `[DOLDURULMALI: …]` / `[DOĞRULANMALI: …]` that needs a human decision, and tell the user a lawyer must review them.
 
-This drafts aydınlatma metni, açık rıza metni, çerez politikası (with real cookies when `--url` is given), VERBİS-style data inventory (md + csv), international transfer register, breach response plan, data subject request form, compliance roadmap and an English GDPR privacy policy. Then review and improve the drafts with what you learned in step 2 (the generator only knows what the scanner saw), replace remaining `[[...]]` placeholders you can answer from the codebase, and add the pages to the app with a link next to the sign-up form and in the footer.
+This drafts aydınlatma metni, açık rıza metni, çerez politikası (with real cookies when `--url` is given), VERBİS-style data inventory (md + csv), international transfer register, breach response plan, data subject request form, compliance roadmap and an English GDPR privacy policy. Then review and improve the drafts with what you learned in step 2 (the generator only knows what the scanner saw), replace remaining `[DOLDURULMALI: …]` placeholders you can answer from the codebase, and add the pages to the app with a link next to the sign-up form and in the footer.
 
 ## 6. Close
 

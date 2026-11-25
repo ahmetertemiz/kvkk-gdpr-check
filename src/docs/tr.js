@@ -7,8 +7,8 @@ const SEV = { critical: 'KRİTİK', high: 'YÜKSEK', medium: 'ORTA', low: 'DÜŞ
 
 const appName = (a) => P(a.appName, 'Uygulama adı');
 const company = (a) => P(a.companyName, 'Şirket unvanı / şahıs adı soyadı');
-const contactEmail = (a) => P(a.email, 'kvkk@alanadi.com');
-const fieldList = (c) => [...c.fields.keys()].join(', ') || '—';
+const contactEmail = (a) => P(a.email, 'KVKK başvuru e-postası');
+const fieldList = (c) => [...c.fields.keys()].join(', ') || '[[kontrol: bu kategoride hangi veriler işleniyor?]]';
 const yesNo = (b) => (b ? 'Evet' : 'Hayır');
 const countryTr = (c) => (c ? c.replace('bölge seçilebilir', 'bölge seçilebilir') : '[[kontrol]]');
 
@@ -47,7 +47,7 @@ export function aydinlatma(f) {
     'Kişisel verileriniz; uygulama/web sitesi üzerindeki formlar ve hesap ekranları aracılığıyla doğrudan sizden,',
     'uygulamanın kullanımı sırasında sunucu kayıtları (log) ile otomatik olarak',
     f.consentVendors.length ? 've rızanız olması halinde çerezler ve benzeri teknolojiler aracılığıyla' : null,
-    'elektronik ortamda toplanmaktadır.',
+    'elektronik ortamda toplanmaktadır. [[kontrol: toplama yöntemleri]]',
   ]
     .filter(Boolean)
     .join(' ');
@@ -63,19 +63,19 @@ export function aydinlatma(f) {
     f.special.length
       ? `**Özel nitelikli kişisel veriler:** ${f.special.map((c) => c.def.tr).join(', ')} verileriniz yalnızca KVKK md.6'da öngörülen şartlarla ve Kurul'un belirlediği yeterli önlemler alınarak işlenir. [[kontrol: bu verinin işlenmesi gerçekten zorunlu mu? Değilse toplamayı bırakın.]]`
       : null,
-    'Açık rızanıza dayanan işlemeler (ör. pazarlama iletileri, analitik/pazarlama çerezleri) için rızanız bu metinden **ayrı olarak** alınır ve dilediğiniz zaman geri alınabilir.',
+    'Açık rızanıza dayanan işlemeler (ör. pazarlama iletileri, analitik/pazarlama çerezleri) için rızanız bu metinden **ayrı olarak** alınır ve dilediğiniz zaman geri alınabilir. [[kontrol: rıza gerçekten ayrı alınıyor ve geri alınabiliyor mu?]]',
     '## 3. Kişisel verilerin toplanma yöntemi',
     collection,
     '## 4. Kişisel verilerin aktarılması',
     f.vendors.length
-      ? `Kişisel verileriniz, yukarıdaki amaçlarla sınırlı olarak ve KVKK md.8 ve md.9'a uygun şekilde aşağıdaki alıcı gruplarına aktarılabilir:`
+      ? `Kişisel verileriniz, yukarıdaki amaçlarla sınırlı olarak ve KVKK md.8 ve md.9'a uygun şekilde aşağıdaki alıcı gruplarına aktarılabilir: [[kontrol: alıcı listesi tam mı, aktarım amaçları ve ülkeler doğru mu?]]`
       : 'Kişisel verileriniz, hukuki yükümlülükler kapsamında yetkili kamu kurum ve kuruluşları dışında üçüncü kişilere aktarılmamaktadır. [[kontrol]]',
     mdTable(['Alıcı grubu', 'Sağlayıcı', 'Aktarım amacı', 'Ülke', 'Yurt dışı'], [...recipientRows(f), ['Yetkili kamu kurum ve kuruluşları', '—', 'Hukuki yükümlülüklerin yerine getirilmesi', 'TR', 'Hayır']]),
     f.abroad.length
       ? `Yurt dışına yapılan aktarımlar KVKK md.9 kapsamında [[kontrol: yeterlilik kararı / Kurul'a bildirilmiş standart sözleşme / bağlayıcı şirket kuralları / taahhütname]] güvencesine dayanılarak gerçekleştirilmektedir. Ayrıntılar için bkz. yurt-disi-aktarim.md.`
       : null,
     '## 5. Saklama süresi',
-    'Kişisel verileriniz işleme amacının gerektirdiği süre ve ilgili mevzuatta öngörülen süreler boyunca saklanır; sürenin sona ermesiyle Kişisel Verilerin Silinmesi, Yok Edilmesi veya Anonim Hale Getirilmesi Hakkında Yönetmelik uyarınca silinir, yok edilir veya anonim hale getirilir.',
+    'Kişisel verileriniz işleme amacının gerektirdiği süre ve ilgili mevzuatta öngörülen süreler boyunca saklanır; sürenin sona ermesiyle Kişisel Verilerin Silinmesi, Yok Edilmesi veya Anonim Hale Getirilmesi Hakkında Yönetmelik uyarınca silinir, yok edilir veya anonim hale getirilir. [[kontrol: süre dolunca imha gerçekten yapılıyor mu?]]',
     mdTable(['Veri kategorisi', 'Saklama süresi'], f.categories.map((c) => [c.def.tr, (a.retention && a.retention[c.id]) || c.def.retention.tr])),
     '## 6. KVKK md.11 kapsamındaki haklarınız',
     [
@@ -94,7 +94,7 @@ export function aydinlatma(f) {
       'haklarına sahipsiniz.',
     ].join('\n'),
     '## 7. Başvuru yöntemi',
-    `Taleplerinizi Veri Sorumlusuna Başvuru Usul ve Esasları Hakkında Tebliğ'e uygun olarak yazılı şekilde ${P(a.address, 'adres')} adresine, kayıtlı elektronik posta (KEP) ile${a.kep ? ` ${a.kep} adresine` : ''}, güvenli elektronik imza / mobil imza ile ya da sistemimizde kayıtlı e-posta adresinizden ${contactEmail(a)} adresine iletebilirsiniz${f.hasAccounts ? '; ayrıca uygulama içindeki **Ayarlar → Gizlilik** bölümünü kullanabilirsiniz' : ''}. Başvuru formu için bkz. basvuru-formu.md. Başvurular niteliğine göre en kısa sürede ve en geç **30 gün** içinde ücretsiz olarak sonuçlandırılır.`,
+    `Taleplerinizi Veri Sorumlusuna Başvuru Usul ve Esasları Hakkında Tebliğ'e uygun olarak yazılı şekilde ${P(a.address, 'adres')} adresine, kayıtlı elektronik posta (KEP) ile ${P(a.kep, 'KEP adresi; yoksa bu yolu silin')} adresine, güvenli elektronik imza / mobil imza ile ya da sistemimizde kayıtlı e-posta adresinizden ${contactEmail(a)} adresine iletebilirsiniz${f.hasAccounts ? '; ayrıca uygulama içindeki **Ayarlar → Gizlilik** bölümünü kullanabilirsiniz [[kontrol: uygulamada böyle bir bölüm var mı?]]' : ''}. Başvuru formu için bkz. basvuru-formu.md. Başvurular niteliğine göre en kısa sürede ve en geç **30 gün** içinde ücretsiz olarak sonuçlandırılır.`,
   );
 }
 
@@ -104,7 +104,7 @@ export function acikRiza(f) {
   if (f.marketing) {
     blocks.push(
       '## Ticari elektronik ileti ve pazarlama',
-      `- [ ] ${company(a)} tarafından kampanya, duyuru ve tanıtımlar hakkında tarafıma **e-posta / SMS / telefon** yoluyla ticari elektronik ileti gönderilmesine ve bu amaçla iletişim bilgilerimin işlenmesine onay veriyorum.`,
+      `- [ ] ${company(a)} tarafından kampanya, duyuru ve tanıtımlar hakkında tarafıma **e-posta / SMS / telefon** [[kontrol: kullanılan kanallar]] yoluyla ticari elektronik ileti gönderilmesine ve bu amaçla iletişim bilgilerimin işlenmesine onay veriyorum.`,
       '> Uygulama notu: Kutu varsayılan olarak **boş** olmalı, üyelik şartına bağlanmamalı, kanal bazında ayrı seçim sunulmalı ve onaylar 6563 s. Kanun kapsamında İleti Yönetim Sistemi\'ne (İYS) kaydedilmelidir. Her iletide ret (opt-out) imkânı bulunmalıdır.',
     );
   }
@@ -118,7 +118,7 @@ export function acikRiza(f) {
   if (f.special.length) {
     blocks.push(
       '## Özel nitelikli kişisel veriler',
-      `- [ ] ${f.special.map((c) => c.def.tr).join(', ')} verilerimin ${P(null, 'kontrol: hangi özellik/amaç')} amacıyla ${company(a)} tarafından işlenmesine açık rıza veriyorum.`,
+      `- [ ] ${f.special.map((c) => c.def.tr).join(', ')} verilerimin ${P(null, 'hangi özellik/amaç')} amacıyla ${company(a)} tarafından işlenmesine açık rıza veriyorum.`,
       '> Uygulama notu: Özel nitelikli veri için rıza belirli bir konuya ilişkin, bilgilendirmeye dayanan ve özgür iradeyle verilmiş olmalıdır; diğer onaylardan ayrı tutulmalıdır. KVKK md.6/3\'teki diğer şartlardan biri uygulanıyorsa rızaya gerek olmayabilir. [[kontrol]]',
     );
   }
@@ -133,7 +133,7 @@ export function acikRiza(f) {
   }
   return join(
     header('tr', f, 'Açık Rıza Metinleri'),
-    `Bu metinler, Aydınlatma Metni'nden **ayrı** olarak sunulmalıdır. Açık rıza vermemeniz ${appName(a)} temel hizmetlerinden yararlanmanıza engel değildir ve rızanızı dilediğiniz zaman ${contactEmail(a)} adresine yazarak veya uygulama ayarlarından geri alabilirsiniz.`,
+    `Bu metinler, Aydınlatma Metni'nden **ayrı** olarak sunulmalıdır. Açık rıza vermemeniz ${appName(a)} temel hizmetlerinden yararlanmanıza engel değildir ve rızanızı dilediğiniz zaman ${contactEmail(a)} adresine yazarak veya uygulama ayarlarından geri alabilirsiniz. [[kontrol: rıza vermeyen kullanıcı hizmeti kullanabiliyor ve rızasını ayarlardan geri alabiliyor mu?]]`,
     blocks,
   );
 }
@@ -176,9 +176,9 @@ export function cerez(f) {
         )
       : 'Zorunlu çerezler dışında çerez tespit edilmedi. [[kontrol]]',
     '## Hukuki sebep',
-    'Zorunlu çerezler KVKK md.5/2-c (sözleşmenin ifası) ve md.5/2-f (meşru menfaat) kapsamında; işlevsel, analitik ve pazarlama çerezleri ise yalnızca **açık rızanız** (KVKK md.5/1) ile kullanılır. Rıza vermediğiniz kategorilere ait çerezler cihazınıza yerleştirilmez.',
+    'Zorunlu çerezler KVKK md.5/2-c (sözleşmenin ifası) ve md.5/2-f (meşru menfaat) kapsamında; işlevsel, analitik ve pazarlama çerezleri ise yalnızca **açık rızanız** (KVKK md.5/1) ile kullanılır. Rıza vermediğiniz kategorilere ait çerezler cihazınıza yerleştirilmez. [[kontrol: çerezler gerçekten rızadan önce engelleniyor mu?]]',
     f.abroad.some((v) => v.consentRequired)
-      ? 'Bazı çerez sağlayıcıları yurt dışında yerleşiktir; bu aktarımlar KVKK md.9 kapsamında gerçekleştirilir. Bkz. aydinlatma-metni.md.'
+      ? 'Bazı çerez sağlayıcıları yurt dışında yerleşiktir; bu aktarımlar KVKK md.9 kapsamında gerçekleştirilir [[kontrol: aktarım aracı]]. Bkz. aydinlatma-metni.md.'
       : null,
     '## Tercihlerinizi nasıl yönetebilirsiniz?',
     [
@@ -196,12 +196,12 @@ function measures(c) {
   if (c.def.special) base.push('Ayrı ve şifreli saklama (at-rest)', 'Erişim logları', 'Kurul\'un özel nitelikli veri tedbirleri (2018/10)');
   if (c.id === 'islem_guvenligi') base.push('Log bütünlüğü ve erişim kısıtı');
   if (c.id === 'finans') base.push('Tokenizasyon (kart verisi saklanmaz)');
-  return base.join('; ');
+  return `${base.join('; ')} [[kontrol: bu tedbirler gerçekten uygulanıyor mu? Koddan çıkarılmadı]]`;
 }
 
 function abroadCell(f, catId) {
   const r = recipientsOf(f, catId, f.abroad);
-  if (!r) return f.abroad.length ? `Evet (${f.abroad.map((v) => v.name).join(', ')})` : 'Hayır';
+  if (!r) return f.abroad.length ? `Evet (${f.abroad.map((v) => v.name).join(', ')}) [[kontrol: hangi kategori hangi alıcıya gidiyor?]]` : 'Tespit edilmedi [[kontrol]]';
   if (r.known.length) return `Evet (${r.known.map((v) => v.name).join(', ')})`;
   return r.unknown.length ? `[[kontrol: ${r.unknown.map((v) => v.name).join(', ')}]]` : 'Koddan görülmedi [[kontrol]]';
 }
@@ -215,12 +215,12 @@ function inventoryRows(f) {
     const locs = [...c.fields.entries()].map(([k, v]) => (v.length ? `${k} (${v.slice(0, 2).join(', ')})` : k)).join('; ');
     return [
       c.def.tr + (c.def.special ? ' (özel nitelikli)' : ''),
-      locs || '—',
+      locs || '[[kontrol: bu kategoride hangi veriler işleniyor?]]',
       c.def.purposes.tr.join('; '),
       c.def.basis.tr,
       c.def.subjects.tr,
       (a.retention && a.retention[c.id]) || c.def.retention.tr,
-      recipients.join('; ') || '—',
+      recipients.join('; ') || 'Koddan görülmedi [[kontrol: alıcılar]]',
       abroadCell(f, c.id),
       measures(c),
     ];
@@ -246,9 +246,9 @@ export function envanterCsv(f) {
 export function yurtDisi(f) {
   const rows = f.abroad.map((v) => [
     v.name,
-    v.company || '—',
-    countryTr(v.country),
-    dataSent(v, 'tr', (DATA_SENT[v.category] || { tr: '[[kontrol]]' }).tr),
+    v.company || '[[kontrol: şirket]]',
+    `${countryTr(v.country)} [[kontrol: seçilen bölge]]`,
+    dataSent(v, 'tr', `${(DATA_SENT[v.category] || { tr: '' }).tr} [[kontrol: aktarılan veri koddan izlenemedi; varsayılan metin]]`),
     'Standart sözleşme (imza + 5 iş günü içinde Kurum\'a bildirim) [[kontrol]]',
     v.privacyUrl ? `[[DPA linki]] / ${v.privacyUrl}` : '[[DPA linki]]',
   ]);
