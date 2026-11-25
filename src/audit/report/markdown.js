@@ -1,5 +1,6 @@
 import { pendingTop, S, L, SEVS, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText } from './common.js';
 import { reasonTexts } from '../../score-gate.js';
+import { displayRoot } from '../../display-root.js';
 import { supportNotice } from '../../support-notice.js';
 import { basisNote } from '../../data/legal-basis.js';
 import { CONTROLLER_QUESTIONS } from '../legal/knowledge.js';
@@ -23,7 +24,7 @@ export function auditMarkdown(result, { lang = 'tr' } = {}) {
   const notice = supportNotice(result, lang);
   if (notice) o.push(`> ⚠️ **${cell(notice.text)}**`, '');
   const sv = scoreView(result);
-  o.push(`**${t.score}: ${sv.reliable ? sv.text : t.scoreNA}**${sv.reliable ? '' : ` _(${t.scoreNAHint})_`} · ${result.root || result.url || ''} · ${result.filesScanned || 0} ${t.files}`, '');
+  o.push(`**${t.score}: ${sv.reliable ? sv.text : t.scoreNA}**${sv.reliable ? '' : ` _(${t.scoreNAHint})_`} · ${displayRoot(result.root) || result.url || ''} · ${result.filesScanned || 0} ${t.files}`, '');
   for (const x of reasonTexts(result, lang)) o.push(`- ${t.scoreWhy}: ${cell(x)}`);
   if (reasonTexts(result, lang).length) o.push('');
   const cov = coverageNote(result, t);

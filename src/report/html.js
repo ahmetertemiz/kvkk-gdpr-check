@@ -1,5 +1,6 @@
 import { supportNotice } from '../support-notice.js';
 import { scoreShown, reasonTexts } from '../score-gate.js';
+import { displayRoot } from '../display-root.js';
 import { basisNote } from '../data/legal-basis.js';
 import { CATEGORIES, CATEGORY_ORDER } from '../data/categories.js';
 import { REPORT_STRINGS, SEV_LABEL, L, loc, scoreGrade, HEADER_NAMES, isNonEssentialCookie, liveSummary } from '../report.js';
@@ -438,10 +439,10 @@ export function toHtml(result, { lang = 'tr' } = {}) {
   const counts = result.counts || {};
   const date = new Date();
   const dateStr = date.toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' });
-  const reportKey = (result.root || result.url || 'report').replace(/[^\w.:/-]/g, '').slice(-120);
+  const reportKey = (displayRoot(result.root) || result.url || 'report').replace(/[^\w.:/-]/g, '').slice(-120);
 
   const meta = [];
-  if (result.root) meta.push(`<span>${esc(t.project)}: <b>${esc(result.root)}</b></span>`);
+  if (result.root) meta.push(`<span>${esc(t.project)}: <b>${esc(displayRoot(result.root))}</b></span>`);
   if (result.url) meta.push(`<span>${esc(t.site)}: <b>${esc(result.url)}</b></span>`);
   meta.push(`<span>${esc(t.date)}: <b>${esc(dateStr)}</b></span>`);
   if (result.filesScanned) meta.push(`<span><b>${esc(result.filesScanned)}</b> ${esc(t.files)}</span>`);

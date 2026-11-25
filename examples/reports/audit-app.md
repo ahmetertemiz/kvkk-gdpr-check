@@ -2,7 +2,7 @@
 
 _Veri akışı analizi ve ilke bazlı hukuki değerlendirme_
 
-**Uyum skoru: 0/100 (F)** · examples/audit-app · 17 dosya
+**Uyum skoru: 0/100 (F)** · audit-app · 17 dosya
 
 **Kapsam notları:**
 

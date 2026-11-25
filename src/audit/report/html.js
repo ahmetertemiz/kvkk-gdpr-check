@@ -1,5 +1,6 @@
 import { pendingTop, S, L, SEVS, grade, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText } from './common.js';
 import { reasonTexts } from '../../score-gate.js';
+import { displayRoot } from '../../display-root.js';
 import { supportNotice } from '../../support-notice.js';
 import { basisNote } from '../../data/legal-basis.js';
 import { CONTROLLER_QUESTIONS } from '../legal/knowledge.js';
@@ -172,7 +173,7 @@ export function auditHtml(result, { lang = 'tr' } = {}) {
 
   const dv = dpiaView(m.dpia, t, lang);
   const dpia = `<p class="${dv.state === 'required' ? 'bad' : dv.state === 'below' ? 'sev-medium' : 'muted'}">${dv.state === 'required' ? '● ' : ''}${esc(dv.head)}</p>${dv.labels.length ? `<ul>${dv.labels.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}`;
-  const meta = [result.root ? `<span>${esc(t.project)}: <b>${esc(result.root)}</b></span>` : '', result.url ? `<span>${esc(t.site)}: <b>${esc(result.url)}</b></span>` : '', `<span>${esc(t.date)}: ${date}</span>`, `<span>${esc(result.filesScanned || 0)} ${esc(t.files)}</span>`].join('');
+  const meta = [result.root ? `<span>${esc(t.project)}: <b>${esc(displayRoot(result.root))}</b></span>` : '', result.url ? `<span>${esc(t.site)}: <b>${esc(result.url)}</b></span>` : '', `<span>${esc(t.date)}: ${date}</span>`, `<span>${esc(result.filesScanned || 0)} ${esc(t.files)}</span>`].join('');
   const sv = scoreView(result);
   const cov = coverageNote(result, t);
   const warns = result.warnings || [];

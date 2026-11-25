@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** Writes examples/reports/audit-app.{md,html}: the audit of examples/audit-app, without any path of this machine. */
+/** Writes examples/reports/audit-app.{md,html}: the audit of examples/audit-app. */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,7 +9,6 @@ import { renderAudit } from '../src/audit/report/index.js';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const NAME = 'audit-app';
 const result = await audit(path.join(ROOT, 'examples', NAME), { lang: 'tr' });
-result.root = `examples/${NAME}`;
 const out = path.join(ROOT, 'examples/reports');
 fs.mkdirSync(out, { recursive: true });
 for (const format of ['md', 'html']) {

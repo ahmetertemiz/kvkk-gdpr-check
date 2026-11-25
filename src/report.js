@@ -1,6 +1,7 @@
 import { CATEGORIES, CATEGORY_ORDER } from './data/categories.js';
 import { supportNotice } from './support-notice.js';
 import { scoreShown, reasonTexts } from './score-gate.js';
+import { displayRoot } from './display-root.js';
 import { basisNote, unverifiedBasis } from './data/legal-basis.js';
 
 export const SEV_LABEL = {
@@ -140,7 +141,7 @@ export function liveSummary(live) {
 
 function headerLines(result, t) {
   const parts = [];
-  if (result.root) parts.push(`${t.project}: ${result.root}`);
+  if (result.root) parts.push(`${t.project}: ${displayRoot(result.root)}`);
   if (result.url) parts.push(`${t.site}: ${result.url}`);
   return parts;
 }
@@ -316,7 +317,7 @@ export function toJSON(result, { lang = 'tr' } = {}) {
       ...(scoreShown(result) ? {} : { scoreRaw: result.score }),
       scoreReliable: scoreShown(result),
       scoreReasons: (result.scoreReasons || []).map((r) => ({ code: r.code, text: r[lang] || r.tr, ...(r.stacks ? { stacks: r.stacks } : {}), ...(r.layers ? { layers: r.layers } : {}) })),
-      root: result.root || null,
+      root: displayRoot(result.root),
       url: result.url || null,
       filesScanned: result.filesScanned,
       counts: result.counts,

@@ -1,5 +1,6 @@
 import { pendingTop, S, L, SEVS, scoreView, coverageNote, coverageNotes, transferFlag, transferFlagLabel, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText } from './common.js';
 import { reasonTexts } from '../../score-gate.js';
+import { displayRoot } from '../../display-root.js';
 import { supportNotice } from '../../support-notice.js';
 import { basisNote } from '../../data/legal-basis.js';
 import { CONTROLLER_QUESTIONS } from '../legal/knowledge.js';
@@ -20,7 +21,7 @@ export function auditText(result, { lang = 'tr', color = false, verbose = false 
   const hr = () => o.push(k.d('  ' + '─'.repeat(72)));
 
   o.push('');
-  o.push(k.b(`  ${t.title}`) + k.d(`  ·  ${result.root || result.url || ''}  ·  ${result.filesScanned || 0} ${t.files}`));
+  o.push(k.b(`  ${t.title}`) + k.d(`  ·  ${displayRoot(result.root) || result.url || ''}  ·  ${result.filesScanned || 0} ${t.files}`));
   o.push(k.d(`  ${t.subtitle}`));
   const notice = supportNotice(result, lang);
   if (notice) o.push(k.yellow(k.b(`  ⚠ ${notice.text}`)));

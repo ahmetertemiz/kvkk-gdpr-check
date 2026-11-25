@@ -1,4 +1,5 @@
 /** Shared strings and helpers for audit reports. */
+import { hideRoot } from '../../display-root.js';
 import { buildAuditModel, serializeModel } from '../legal/index.js';
 import { CATEGORIES, CATEGORY_ORDER } from '../../data/categories.js';
 import { CATEGORIES as DATA_CATS } from '../classify/pii.js';
@@ -503,7 +504,7 @@ export function viewResult(result) {
   const r = result && typeof result === 'object' ? result : {};
   const findings = (Array.isArray(r.findings) ? r.findings : []).filter((f) => f && typeof f === 'object' && f.rule).map(viewFinding);
   const review = (Array.isArray(r.review) ? r.review : []).filter((f) => f && typeof f === 'object' && f.rule).map(viewFinding);
-  return { ...r, findings, review, warnings: Array.isArray(r.warnings) ? r.warnings : [] };
+  return { ...r, findings, review, warnings: (Array.isArray(r.warnings) ? r.warnings : []).map((w) => hideRoot(w, r.root)) };
 }
 
 /* ---------- layer coverage + review (round 4) ---------- */

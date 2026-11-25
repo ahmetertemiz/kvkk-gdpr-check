@@ -1,6 +1,7 @@
 /**
  * renderAudit(result, { lang, format: 'text'|'md'|'json'|'html', color, verbose }) → string
  */
+import { displayRoot } from '../../display-root.js';
 import { supportNotice } from '../../support-notice.js';
 import { unverifiedBasis } from '../../data/legal-basis.js';
 import { auditText } from './text.js';
@@ -57,7 +58,7 @@ export function auditJson(result, { lang = 'tr' } = {}) {
     {
       tool: 'kvkk-gdpr-check',
       kind: 'audit',
-      root: result.root || null,
+      root: displayRoot(result.root),
       url: result.url || null,
       // An unreliable score is not a number anyone should act on: null, with the computed value kept as scoreRaw.
       score: result.scoreReliable === false ? null : result.score,
