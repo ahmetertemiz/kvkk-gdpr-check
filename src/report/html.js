@@ -1,4 +1,5 @@
 import { supportNotice } from '../support-notice.js';
+import { basisNote } from '../data/legal-basis.js';
 import { CATEGORIES, CATEGORY_ORDER } from '../data/categories.js';
 import { SEV_LABEL, L, loc, scoreGrade, HEADER_NAMES, isNonEssentialCookie, liveSummary } from '../report.js';
 
@@ -172,7 +173,7 @@ function findingCard(f, t, lang, idx) {
     ${locationList(f, t, lang)}
     <div class="block"><h4>${esc(t.why)}</h4><p>${esc(rule.desc[lang])}</p></div>
     <div class="block fix"><h4>${esc(t.fix)}</h4><p>${esc(rule.fix[lang])}</p></div>
-    <p class="refs">${esc(t.refs)}: ${rule.refs.map((r) => `<span>${esc(r)}</span>`).join('')}</p>
+    <p class="refs">${esc(t.refs)}: ${rule.refs.map((r) => `<span>${esc(r)}</span>`).join('')}</p>${basisNote(rule, lang) ? `<p class="refs">⚠ ${esc(basisNote(rule, lang))}</p>` : ''}
   </div>
 </details>`;
 }

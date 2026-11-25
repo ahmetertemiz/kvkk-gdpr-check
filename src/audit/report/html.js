@@ -1,5 +1,6 @@
 import { pendingTop, S, L, SEVS, grade, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText } from './common.js';
 import { supportNotice } from '../../support-notice.js';
+import { basisNote } from '../../data/legal-basis.js';
 import { CONTROLLER_QUESTIONS } from '../legal/knowledge.js';
 import { ORG_STATUS, ORG_TEXT } from '../legal/org.js';
 import { buildDataMap } from './datamap.js';
@@ -137,7 +138,7 @@ ${l.risk?.explain || conf ? `<div class="small muted">${[l.risk?.explain ? esc(L
 function orgHtml(org, lang) {
   if (!org?.provided) return '';
   const cls = { action: 'bad', open: 'sev-medium', ok: 'muted', na: 'muted' };
-  return `<div class="card"><h2>${esc(L(ORG_TEXT.title, lang))} (${org.answered}/${org.total})</h2><p class="muted">${esc(L(ORG_TEXT.hint, lang))}</p>${org.dpia.changed ? `<p class="bad">● ${esc(L(ORG_TEXT.dpiaChanged, lang))}</p>` : ''}<ul>${org.items.map((x) => `<li><b class="${cls[x.status]}">${esc(L(ORG_STATUS[x.status], lang))}</b> ${esc(L(x.title, lang))}<br><span class="small muted">${esc(L(x.detail, lang))} (${esc(x.refs.join(', '))})</span></li>`).join('')}</ul></div>`;
+  return `<div class="card"><h2>${esc(L(ORG_TEXT.title, lang))} (${org.answered}/${org.total})</h2><p class="muted">${esc(L(ORG_TEXT.hint, lang))}</p>${org.dpia.changed ? `<p class="bad">● ${esc(L(ORG_TEXT.dpiaChanged, lang))}</p>` : ''}<ul>${org.items.map((x) => `<li><b class="${cls[x.status]}">${esc(L(ORG_STATUS[x.status], lang))}</b> ${esc(L(x.title, lang))}<br><span class="small muted">${esc(L(x.detail, lang))} (${esc(x.refs.join(', '))})${basisNote(x, lang) ? ` ⚠ ${esc(basisNote(x, lang))}` : ''}</span></li>`).join('')}</ul></div>`;
 }
 
 export function auditHtml(result, { lang = 'tr' } = {}) {
@@ -157,7 +158,7 @@ export function auditHtml(result, { lang = 'tr' } = {}) {
   const findingsHtml = groupFindings(result.findings).map(([cat, list]) => `<h3 class="catttl">${esc(catLabel(cat, lang))}</h3>${list.map(viewFinding).map((f, i) => `
 <details class="f"${['critical', 'high'].includes(f.severity) && i < 3 ? ' open' : ''}><summary><span class="badge b-${esc(f.severity)}">${esc(t.sev[f.severity])}</span><b>${esc(L(f.rule.title, lang))}</b>${findingLowConfidence(f) ? `<span class="lowc">${esc(t.lowConfFinding)}</span>` : ''}<span class="id">${esc(f.rule.id)} · ${f.locations.length}</span></summary>
 <div class="body">${f.locations.slice(0, 30).map((l) => locHtml(l, t, lang, findingLowConfidence(f))).join('')}
-<p><b>${esc(t.why)}:</b> ${esc(L(f.rule.desc, lang))}</p><p><b>${esc(t.fix)}:</b> ${esc(L(f.rule.fix, lang))}</p><p class="refs">${esc(t.refs)}: ${esc((f.rule.refs || []).join(' · '))}</p></div></details>`).join('')}`).join('') || `<div class="card">✅ ${esc(t.noFindings)}</div>`;
+<p><b>${esc(t.why)}:</b> ${esc(L(f.rule.desc, lang))}</p><p><b>${esc(t.fix)}:</b> ${esc(L(f.rule.fix, lang))}</p><p class="refs">${esc(t.refs)}: ${esc((f.rule.refs || []).join(' · '))}</p>${basisNote(f.rule, lang) ? `<p class="refs">⚠ ${esc(basisNote(f.rule, lang))}</p>` : ''}</div></details>`).join('')}`).join('') || `<div class="card">✅ ${esc(t.noFindings)}</div>`;
 
   const inv = `<div class="tablewrap"><table><thead><tr><th>${esc(t.element)}</th><th>${esc(t.category)}</th><th>${esc(t.sensitivity)}</th><th>${esc(t.sources)}</th><th>${esc(t.stores)}</th><th>${esc(t.sinks)}</th><th>${esc(t.used)}</th></tr></thead><tbody>${m.inventory.map((e) => `<tr><td><b${e.sensitivity === 'special' ? ' class="special"' : ''}>${esc(L(e.label, lang))}</b></td><td>${esc(dataCatLabel(e.category, lang))}</td><td>${esc(t.sens[e.sensitivity] || e.sensitivity)}</td><td>${esc(e.sources.join(', ') || '—')}</td><td>${esc(e.stores.join(', ') || '—')}</td><td>${esc(e.sinks.join(', ') || '—')}</td><td>${usedState(e) === 'yes' ? '<span class="ok">✓</span>' : usedState(e) === 'no' ? `<span class="sev-medium" title="${esc(t.unusedNotDetected)}">⚠</span> <span class="small muted">${esc(t.unusedNotDetected)}</span>` : '?'}</td></tr>`).join('')}</tbody></table></div>`;
 
@@ -186,7 +187,7 @@ export function auditHtml(result, { lang = 'tr' } = {}) {
     : '';
   const reviewLoc = (l) => locHtml({ ...l, label: reviewLabel(l, t, lang) }, t, lang, true) + (reviewRateText(l, t) ? `<p class="small muted rrate">≈ ${esc(reviewRateText(l, t))}</p>` : '') + (l.reviewReason ? `<p class="small"><b>${esc(t.reviewWhy)}:</b> ${esc(L(l.reviewReason, lang))}</p>` : '');
   const reviewHtml = result.review.length
-    ? `<h3 class="catttl">${esc(t.review)}</h3><p class="small muted">${esc(t.reviewHint)}</p>${reviewSummaryText(result, t) ? `<p class="small"><b>${result.review.reduce((n, f) => n + f.locations.length, 0)}:</b> ${esc(reviewSummaryText(result, t))}</p>` : ''}${reviewGroups(result, t).map((g) => `${g.band ? `<h4 class="rband rband-${g.band}">${esc(g.label)} (${g.count})</h4>` : ''}${g.entries.map((f) => `<details class="f"><summary><span class="lowc">?</span><b>${esc(L(f.rule.title, lang))}</b><span class="id">${esc(f.rule.id)} · ${f.locations.length}</span></summary><div class="body">${f.locations.map(reviewLoc).join('')}</div></details>`).join('')}`).join('')}`
+    ? `<h3 class="catttl">${esc(t.review)}</h3><p class="small muted">${esc(t.reviewHint)}</p>${reviewSummaryText(result, t) ? `<p class="small"><b>${result.review.reduce((n, f) => n + f.locations.length, 0)}:</b> ${esc(reviewSummaryText(result, t))}</p>` : ''}${reviewGroups(result, t).map((g) => `${g.band ? `<h4 class="rband rband-${g.band}">${esc(g.label)} (${g.count})</h4>` : ''}${g.entries.map((f) => `<details class="f"><summary><span class="lowc">?</span><b>${esc(L(f.rule.title, lang))}</b><span class="id">${esc(f.rule.id)} · ${f.locations.length}</span></summary><div class="body">${f.locations.map(reviewLoc).join('')}${basisNote(f.rule, lang) ? `<p class="refs">⚠ ${esc(basisNote(f.rule, lang))}</p>` : ''}</div></details>`).join('')}`).join('')}`
     : '';
   const supTxt = reviewSuppressedText(result, t, lang);
   const suppressedHtml = supTxt ? `<p class="small muted">${esc(supTxt)}</p>` : '';

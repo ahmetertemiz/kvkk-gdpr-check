@@ -109,7 +109,7 @@ npx kvkk-gdpr-check docs --lang en            # İngilizce set
 
 `docs` veriyi derin denetimin veri akışı grafiğinden alır: hangi veri, nerede, hangi alıcıya gidiyor (`--no-audit` ile yalnızca desen taraması). Ayrıca şu **taslakları** üretir: DPIA, LIA (meşru menfaate dayanabilecek faaliyetler), TIA (her yurt dışı alıcı) ve organizasyon denetimi. Araç yalnızca olguları ve kanıtı yazar; değerlendirme ve karar yerleri `[DOLDURULMALI: …]` olarak boştur. **Bir hukukçu okumadan kullanmayın.**
 
-`anket` VERBİS yükümlülüğü, rolünüz, aktarım araçları (standart sözleşmede 5 iş günü), saklama, erişim, çocuklar ve ölçek gibi soruları sorar (`-y`: yalnızca şablon yazar). Cevaplar `audit` ve `docs` sonuçlarını değiştirir, ama kod bulgularını ve skoru değiştirmez; her sonuç "beyana dayalı" olarak işaretlenir. VERBİS eşikleri 24.11.2026'da ikincil kaynaklardan alındı; resmî tatiller iş günü hesabında yoktur.
+`anket` VERBİS yükümlülüğü, rolünüz, aktarım araçları (standart sözleşmede 5 iş günü), saklama, erişim, çocuklar ve ölçek gibi soruları sorar (`-y`: yalnızca şablon yazar). Cevaplar `audit` ve `docs` sonuçlarını değiştirir, ama kod bulgularını ve skoru değiştirmez; her sonuç "beyana dayalı" olarak işaretlenir. VERBİS eşikleri 25.11.2026'da kvkk.gov.tr duyurularından okundu ([docs/hukuki-dayanaklar.md](docs/hukuki-dayanaklar.md)); resmî tatiller iş günü hesabında yoktur.
 
 ### 4. 📊 HTML rapor & web arayüzü
 
@@ -151,7 +151,7 @@ Yöntem ve tur tur sonuçlar: [docs/ACCURACY.md](docs/ACCURACY.md). Ölçüm eti
 - Sözleşmeleri, çalışan sistemi, gerçek veriyi ve idari tedbirleri görmez. Sızma testinin yerine geçmez.
 - Skor bir üst sınırdır: doğrulanmayı bekleyen yüksek önemli maddeler skora girmez.
 - "Kapsam ok" güvence değildir: son iki turda 12 projenin 4'ünde skor güvenilir görünürken açıklanmamış temel bir eksik vardı.
-- Kuralların hukuki dayanaklarını bir hukukçu incelemedi.
+- Kuralların hukuki dayanaklarını bir hukukçu incelemedi. Hangisinin birincil kaynaktan okunduğu, hangisinin doğrulanamadığı: [docs/hukuki-dayanaklar.md](docs/hukuki-dayanaklar.md). Doğrulanmayanlar raporda "doğrulanmamış dayanak" notuyla çıkar.
 - Belge taslakları ve anket ölçülmedi; hukukçu incelemesi olmadan kullanılmamalıdır.
 
 ---

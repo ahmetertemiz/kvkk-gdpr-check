@@ -6,6 +6,7 @@
  */
 import { join, mdTable, header, P } from './util.js';
 import { assessOrg, recipientsAbroad, ORG_QUESTIONS, VENDOR_QUESTIONS } from '../audit/legal/org.js';
+import { basisNote } from '../data/legal-basis.js';
 import { DPIA_CRITERIA, TRANSFER_MECHANISMS } from '../audit/legal/knowledge.js';
 
 const STATUS = {
@@ -140,7 +141,7 @@ export function orgAudit(f, lang) {
     header(lang, f, title),
     W(lang, `${o.total} sorudan ${o.answered} tanesi cevaplandı. Sonuçlar **beyana dayanır**, araç doğrulamaz. Cevaplar proje kökündeki \`kvkk-answers.json\` dosyasının \`org\` alanındadır (\`kvkk-check anket\`); değiştirip komutu yeniden çalıştırın.`, `${o.answered} of ${o.total} questions answered. Conclusions **rest on declarations** and are not verified. Answers are in \`kvkk-answers.json\`, key \`org\`.`),
     o.problems.length ? W(lang, `> Geçersiz türde oldukları için sayılmayan cevaplar: ${o.problems.join(', ')}`, `> Ignored because of a wrong type: ${o.problems.join(', ')}`) : null,
-    mdTable([W(lang, 'Durum', 'Status'), W(lang, 'Konu', 'Topic'), W(lang, 'Açıklama', 'Detail'), W(lang, 'Dayanak', 'Basis')], o.items.map((i) => [L(STATUS[i.status], lang), L(i.title, lang), L(i.detail, lang), i.refs.join(', ')])),
+    mdTable([W(lang, 'Durum', 'Status'), W(lang, 'Konu', 'Topic'), W(lang, 'Açıklama', 'Detail'), W(lang, 'Dayanak', 'Basis')], o.items.map((i) => [L(STATUS[i.status], lang), L(i.title, lang), L(i.detail, lang), `${i.refs.join(', ')}${basisNote(i, lang) ? ` ⚠️ ${basisNote(i, lang)}` : ''}`])),
     o.unanswered.length ? join(W(lang, '## Cevaplanmayan sorular', '## Unanswered questions'), o.unanswered.map(q).join('\n')) : null,
   );
 }

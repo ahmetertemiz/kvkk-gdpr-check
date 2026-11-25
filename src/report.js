@@ -1,5 +1,6 @@
 import { CATEGORIES, CATEGORY_ORDER } from './data/categories.js';
 import { supportNotice } from './support-notice.js';
+import { basisNote, unverifiedBasis } from './data/legal-basis.js';
 
 export const SEV_LABEL = {
   tr: { critical: 'KRİTİK', high: 'YÜKSEK', medium: 'ORTA', low: 'DÜŞÜK', info: 'BİLGİ' },
@@ -188,6 +189,7 @@ export function toText(result, { lang = 'tr', color = true, verbose = false } = 
     out.push(`   ${k.bold(t.why + ':')} ${rule.desc[lang]}`);
     out.push(`   ${k.bold(t.fix + ':')} ${k.green(rule.fix[lang])}`);
     out.push(`   ${k.dim(t.refs + ': ' + rule.refs.join(' · '))}`);
+    if (basisNote(rule, lang)) out.push(`   ${k.yellow('⚠ ' + basisNote(rule, lang))}`);
     out.push('');
   }
 
@@ -284,6 +286,7 @@ export function toMarkdown(result, { lang = 'tr' } = {}) {
       out.push(`**${t.fix}:** ${rule.fix[lang]}`);
       out.push('');
       out.push(`<sub>${t.refs}: ${rule.refs.join(' · ')}</sub>`);
+      if (basisNote(rule, lang)) out.push('', `<sub>⚠️ ${basisNote(rule, lang)}</sub>`);
       out.push('');
     }
   }
@@ -313,6 +316,7 @@ export function toJSON(result, { lang = 'tr' } = {}) {
         description: f.rule.desc[lang],
         fix: f.rule.fix[lang],
         refs: f.rule.refs,
+        unverifiedBasis: unverifiedBasis(f.rule, lang),
         locations: f.locations.map((l) => ({ file: l.file ?? null, url: l.url ?? null, line: l.line ?? null, label: L(l.label, lang) || null, snippet: l.snippet ?? null, count: l.count ?? 1 })),
       })),
     },
@@ -330,7 +334,7 @@ export function toSarif(result, { lang = 'tr' } = {}) {
     name: f.rule.id,
     shortDescription: { text: f.rule.title[lang] },
     fullDescription: { text: f.rule.desc[lang] },
-    help: { text: `${f.rule.fix[lang]}\n\n${f.rule.refs.join(' · ')}` },
+    help: { text: `${f.rule.fix[lang]}\n\n${f.rule.refs.join(' · ')}${basisNote(f.rule, lang) ? `\n⚠ ${basisNote(f.rule, lang)}` : ''}` },
     properties: { tags: ['privacy', 'kvkk', 'gdpr', f.rule.category], 'problem.severity': SARIF_LEVEL[f.severity] },
   }));
   const results = [];

@@ -216,7 +216,7 @@ Motor, gerçek açık kaynak projelerde ölçülerek geliştirildi. Sonuçlar, y
 - `docs` komutu denetim modelini kullanır (`src/docs/from-audit.js`); izlenemeyen alıcılar "almıyor" diye yazılmaz, `[DOĞRULANMALI: …]` olur.
 - Organizasyon anketi: `src/audit/legal/org.js` (kurallar) ve `questionnaire.js` (`anket` komutu). Rapor bölümü ve JSON'da `organization`. Bulguları ve skoru değiştirmez.
 - DPIA / LIA / TIA taslakları: `src/docs/assessments.js`. Hiçbir değerlendirme sonucu önerilmez.
-- Mağaza beyanı: AUD-TRN-05 (`checks/store-declarations.js`), depodaki Apple gizlilik bildirimi ile cihaz dışına giden veri. Ölçülmediği için yalnızca "Doğrulanmalı" listesinde görünür. Android karşılığı depoda yoktur (Play formu çevrimiçi doldurulur); ankette sorulur. Apple veri türü listesi resmî sayfadan doğrulanamadı.
+- Mağaza beyanı: AUD-TRN-05 (`checks/store-declarations.js`), depodaki Apple gizlilik bildirimi ile cihaz dışına giden veri. Ölçülmediği için yalnızca "Doğrulanmalı" listesinde görünür. Android karşılığı depoda yoktur (Play formu çevrimiçi doldurulur); ankette sorulur. Apple veri türü listesi 25.11.2026'da resmî sayfadan doğrulandı; bir çelişki için [hukuki-dayanaklar.md](hukuki-dayanaklar.md).
 
 Doğrulanmayanlar: bu bölümün hukuki doğruluğu bir hukukçu tarafından incelenmedi; taslakların ve anketin gerçek projelerde isabeti ölçülmedi.
 

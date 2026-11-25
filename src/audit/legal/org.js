@@ -11,7 +11,8 @@
  *             'na'      does not apply according to the answers
  *
  * Every conclusion rests on a declaration and says so. Nothing here changes a code finding or the score.
- * Legal thresholds (checked on 24.11.2026 against secondary sources, not against the Board's own text; verify before relying):
+ * Legal thresholds (read on 25.11.2026 on kvkk.gov.tr, the Authority's own announcements; docs/hukuki-dayanaklar.md; not reviewed
+ * by a lawyer):
  *   VERBİS exemption  Board decisions 2018/87 (as amended) and 2025/1572: fewer than 50 employees AND balance sheet total below
  *                     TRY 100 million; main activity special-category data: fewer than 10 AND below TRY 10 million.
  *                     Decision 2025/2393: without balance-sheet bookkeeping only the employee criterion counts.
@@ -20,7 +21,7 @@
 
 export const VERBIS_LIMITS = { general: { employees: 50, balance: 100e6 }, special: { employees: 10, balance: 10e6 } };
 export const NOTIFY_BUSINESS_DAYS = 5;
-export const THRESHOLDS_CHECKED = '2026-11-24';
+export const THRESHOLDS_CHECKED = '2026-11-25';
 
 const T = (tr, en) => ({ tr, en });
 
@@ -123,8 +124,8 @@ function verbis(a, hasSpecial) {
   else if (a.balanceSheetBooks === true && known(a.balanceSheetTRY)) exempt = a.balanceSheetTRY < lim.balance;
   if (exempt === null) return it('open', 'medium', 'Defter tutma usulü ve bilanço toplamı cevaplanmadı.', 'Bookkeeping basis and balance sheet total are not answered.');
   const m = (n) => `${n / 1e6}`;
-  const rule = T(`Ölçüt: ${a.mainActivitySpecial ? 'ana faaliyet özel nitelikli veri' : 'genel'}; ${lim.employees}'den az çalışan${a.balanceSheetBooks === false ? '' : ` ve ${m(lim.balance)} milyon TL'den az bilanço`} (eşikler ${THRESHOLDS_CHECKED} tarihinde ikincil kaynaklardan kontrol edildi; güncel Kurul kararını doğrulayın).`,
-    `Criterion: ${a.mainActivitySpecial ? 'main activity special-category data' : 'general'}; fewer than ${lim.employees} employees${a.balanceSheetBooks === false ? '' : ` and a balance sheet below TRY ${m(lim.balance)} million`} (thresholds checked ${THRESHOLDS_CHECKED} in secondary sources; verify the current Board decision).`);
+  const rule = T(`Ölçüt: ${a.mainActivitySpecial ? 'ana faaliyet özel nitelikli veri' : 'genel'}; ${lim.employees}'den az çalışan${a.balanceSheetBooks === false ? '' : ` ve ${m(lim.balance)} milyon TL'den az bilanço`} (eşikler ${THRESHOLDS_CHECKED} tarihinde kvkk.gov.tr duyurularından okundu; güncel Kurul kararını doğrulayın).`,
+    `Criterion: ${a.mainActivitySpecial ? 'main activity special-category data' : 'general'}; fewer than ${lim.employees} employees${a.balanceSheetBooks === false ? '' : ` and a balance sheet below TRY ${m(lim.balance)} million`} (thresholds read ${THRESHOLDS_CHECKED} on kvkk.gov.tr; verify the current Board decision).`);
   if (exempt) {
     const warn = hasSpecial && !a.mainActivitySpecial ? T(' Kodda özel nitelikli veri bulundu; "ana faaliyet değil" cevabını doğrulayın.', ' Special-category data was found in the code; confirm that it is not your main activity.') : T('', '');
     return it(warn.tr ? 'open' : 'na', 'low', `Beyana göre kayıttan istisna görünüyorsunuz. ${rule.tr} İstisna yalnızca VERBİS kaydını kapsar; aydınlatma, güvenlik ve saklama yükümlülükleri sürer.${warn.tr}`, `According to the answers you appear exempt. ${rule.en} The exemption covers registration only.${warn.en}`);

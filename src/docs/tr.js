@@ -235,7 +235,7 @@ export function envanterMd(f) {
     'VERBİS kaydı ve Kişisel Veri Saklama ve İmha Politikası için temel oluşturur. Excel için aynı tablo `veri-envanteri.csv` dosyasındadır.',
     mdTable(INV_HEADERS, inventoryRows(f)),
     '## VERBİS notu',
-    'Cevaplarınıza göre değerlendirme `organizasyon-denetimi.md` dosyasındadır (derin denetim çalıştıysa). Genel ölçüt: yıllık çalışan sayısı 50\'den az **ve** yıllık mali bilanço toplamı 100 milyon TL\'den az olan, ana faaliyeti özel nitelikli veri işlemek olmayan yurt içi yerleşik veri sorumluları kayıttan istisnadır; ana faaliyet özel nitelikli veri işlemekse 10\'dan az çalışan **ve** 10 milyon TL\'den az bilanço aranır (Kurul 2025/1572). Bilanço esasına göre defter tutmayanlarda yalnızca çalışan sayısına bakılır (Kurul 2025/2393). [[kontrol: eşikler 24.11.2026\'da ikincil kaynaklardan alındı; verbis.kvkk.gov.tr üzerinden doğrulayın]] Yurt dışında yerleşik veri sorumluları için ayrı kurallar geçerlidir. İstisna yalnızca VERBİS kaydını kapsar.',
+    'Cevaplarınıza göre değerlendirme `organizasyon-denetimi.md` dosyasındadır (derin denetim çalıştıysa). Genel ölçüt: yıllık çalışan sayısı 50\'den az **ve** yıllık mali bilanço toplamı 100 milyon TL\'den az olan, ana faaliyeti özel nitelikli veri işlemek olmayan yurt içi yerleşik veri sorumluları kayıttan istisnadır; ana faaliyet özel nitelikli veri işlemekse 10\'dan az çalışan **ve** 10 milyon TL\'den az bilanço aranır (Kurul 2025/1572). Bilanço esasına göre defter tutmayanlarda yalnızca çalışan sayısına bakılır (Kurul 2025/2393). [[kontrol: eşikler 25.11.2026\'da kvkk.gov.tr duyurularından okundu; güncel olduklarını doğrulayın]] Yurt dışında yerleşik veri sorumluları için ayrı kurallar geçerlidir. İstisna yalnızca VERBİS kaydını kapsar.',
   );
 }
 

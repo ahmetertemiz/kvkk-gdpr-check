@@ -2,6 +2,7 @@
  * renderAudit(result, { lang, format: 'text'|'md'|'json'|'html', color, verbose }) → string
  */
 import { supportNotice } from '../../support-notice.js';
+import { unverifiedBasis } from '../../data/legal-basis.js';
 import { auditText } from './text.js';
 import { auditMarkdown } from './markdown.js';
 import { auditHtml } from './html.js';
@@ -30,6 +31,7 @@ function jsonFinding(f, lang) {
     description: f.rule.desc?.[lang],
     fix: f.rule.fix?.[lang],
     refs: f.rule.refs,
+    unverifiedBasis: unverifiedBasis(f.rule, lang),
     lowConfidence: findingLowConfidence(f),
     locations: f.locations.map((l) => ({
       file: l.file || null, line: l.line || null, label: txt(l.label, lang),

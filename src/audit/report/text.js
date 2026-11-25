@@ -1,5 +1,6 @@
 import { pendingTop, S, L, SEVS, scoreView, coverageNote, coverageNotes, transferFlag, transferFlagLabel, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText } from './common.js';
 import { supportNotice } from '../../support-notice.js';
+import { basisNote } from '../../data/legal-basis.js';
 import { CONTROLLER_QUESTIONS } from '../legal/knowledge.js';
 import { ORG_STATUS, ORG_TEXT } from '../legal/org.js';
 
@@ -102,6 +103,7 @@ export function auditText(result, { lang = 'tr', color = false, verbose = false 
       o.push(`     ${k.b(t.why + ':')} ${L(f.rule.desc, lang)}`);
       o.push(`     ${k.b(t.fix + ':')} ${k.green(L(f.rule.fix, lang))}`);
       o.push(k.d(`     ${t.refs}: ${(f.rule.refs || []).join(' · ')}`));
+      if (basisNote(f.rule, lang)) o.push(k.yellow(`     ⚠ ${basisNote(f.rule, lang)}`));
     }
   }
   o.push('');
@@ -127,6 +129,7 @@ export function auditText(result, { lang = 'tr', color = false, verbose = false 
           if (rc) o.push(k.d(`        ◦ ${t.calLbl}: ${rc}`));
         }
         if (f.locations.length > max) o.push(k.d(`     … +${f.locations.length - max}`));
+        if (basisNote(f.rule, lang)) o.push(k.yellow(`     ⚠ ${basisNote(f.rule, lang)}`));
       }
     }
     o.push('');
@@ -183,6 +186,7 @@ export function auditText(result, { lang = 'tr', color = false, verbose = false 
       const tag = L(ORG_STATUS[i.status], lang);
       o.push(`   ${i.status === 'action' ? k.red(tag) : i.status === 'open' ? k.yellow(tag) : k.d(tag)}  ${k.b(L(i.title, lang))}`);
       o.push(k.d(`       ${L(i.detail, lang)} (${i.refs.join(', ')})`));
+      if (basisNote(i, lang)) o.push(k.yellow(`       ⚠ ${basisNote(i, lang)}`));
     }
   }
   o.push('');

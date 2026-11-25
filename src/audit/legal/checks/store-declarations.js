@@ -9,8 +9,7 @@
  * What is compared: only the manifest in the repository. The App Store privacy label and the Google Play Data safety form are
  * filled in online and are not in the code; they stay a question (legal/org.js storeForms).
  * Only under-declaration is reported: a declared type the engine did not see is no evidence of anything.
- * The list of Apple data types below is from memory of Apple's documentation (the page could not be read on 24.11.2026); types
- * without a clear counterpart (passwords, tokens, IP, gender, birth date …) are not compared.
+ * Data types: Apple's documentation, read on 25.11.2026 (docs/hukuki-dayanaklar.md). Types without a clear counterpart (passwords, tokens, IP, gender, birth date …) are not compared.
  */
 import path from 'node:path';
 import { finding, loc, T, isRecordStore } from './_util.js';

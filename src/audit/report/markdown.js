@@ -1,5 +1,6 @@
 import { pendingTop, S, L, SEVS, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText } from './common.js';
 import { supportNotice } from '../../support-notice.js';
+import { basisNote } from '../../data/legal-basis.js';
 import { CONTROLLER_QUESTIONS } from '../legal/knowledge.js';
 import { ORG_STATUS, ORG_TEXT } from '../legal/org.js';
 import { buildDataMap, toMermaid } from './datamap.js';
@@ -82,6 +83,7 @@ export function auditMarkdown(result, { lang = 'tr' } = {}) {
       }
       if (f.locations.length > 15) o.push(`- … +${f.locations.length - 15}`);
       o.push('', `**${t.why}:** ${L(f.rule.desc, lang)}`, '', `**${t.fix}:** ${L(f.rule.fix, lang)}`, '', `<sub>${t.refs}: ${(f.rule.refs || []).join(' · ')}</sub>`, '');
+      if (basisNote(f.rule, lang)) o.push(`<sub>⚠️ ${basisNote(f.rule, lang)}</sub>`, '');
     }
   }
 
@@ -101,6 +103,7 @@ export function auditMarkdown(result, { lang = 'tr' } = {}) {
           const rc = calibrationText(l, t, lang);
           if (rc) o.push(`  - ${t.calLbl}: ${rc}`);
         }
+        if (basisNote(f.rule, lang)) o.push('', `<sub>⚠️ ${basisNote(f.rule, lang)}</sub>`);
         o.push('');
       }
     }
@@ -130,7 +133,7 @@ export function auditMarkdown(result, { lang = 'tr' } = {}) {
     o.push('', `## ${L(ORG_TEXT.title, lang)} (${org.answered}/${org.total})`, '', `_${L(ORG_TEXT.hint, lang)}_`, '');
     if (org.dpia.changed) o.push(`**${L(ORG_TEXT.dpiaChanged, lang)}**`, '');
     o.push('| | | |', '|---|---|---|');
-    for (const i of org.items) o.push(`| ${L(ORG_STATUS[i.status], lang)} | ${cell(L(i.title, lang))} | ${cell(L(i.detail, lang))} _(${cell(i.refs.join(', '))})_ |`);
+    for (const i of org.items) o.push(`| ${L(ORG_STATUS[i.status], lang)} | ${cell(L(i.title, lang))} | ${cell(L(i.detail, lang))} _(${cell(i.refs.join(', '))})_${basisNote(i, lang) ? ` ⚠️ ${cell(basisNote(i, lang))}` : ''} |`);
   }
   const warns = result.warnings || [];
   if (warns.length) {
