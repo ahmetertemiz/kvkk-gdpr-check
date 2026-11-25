@@ -49,6 +49,14 @@
     "kisisel-veri"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ahmetertemiz/kvkk-gdpr-check.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ahmetertemiz/kvkk-gdpr-check/issues"
+  },
+  "homepage": "https://github.com/ahmetertemiz/kvkk-gdpr-check#readme",
   "devDependencies": {
     "playwright-core": "^1.56.1"
   },
