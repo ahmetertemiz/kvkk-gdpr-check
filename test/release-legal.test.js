@@ -2,6 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { RULES } from '../src/rules.js';
@@ -11,6 +12,8 @@ import { toHtml } from '../src/report/html.js';
 import { audit } from '../src/audit/index.js';
 import { renderAudit } from '../src/audit/report/index.js';
 import { citationStatus, unverifiedBasis, basisNote, SOURCES, RULE_CLAIMS, OTHER_CLAIMS } from '../src/data/legal-basis.js';
+import { assessOrg } from '../src/audit/legal/org.js';
+import { generateDocs } from '../src/docs/index.js';
 import { render, rulesWithRefs } from '../scripts/legal-basis.js';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -41,6 +44,30 @@ test('every rule cites something, and docs/hukuki-dayanaklar.md is up to date', 
   assert.match(md, /hiçbir hukukçu doğrulamadı/);
 });
 
+test('corrected texts: no statement the sources do not support', () => {
+  const read = (f) => fs.readFileSync(path.join(root, f), 'utf8');
+  const all = ['src/rules.js', 'src/live/rules.js', 'src/audit/legal/checks/consent.js', 'src/audit/legal/checks/security.js', 'src/audit/legal/checks/transparency.js', 'src/audit/legal/org.js', 'src/docs/tr.js', 'src/docs/en.js'].map(read).join('\n');
+  for (const re of [/doğrudan kişisel veri ihlalidir/, /direct personal data breach/, /Bu bir veri ihlalidir ve 72/, /hukuki sebepleri yalnızca açık rıza olabilir/, /consent is the only valid basis/, /TMK md\.16/, /Rehberi?,? reddetmenin kabul etmek kadar kolay/, /\(2022\)/]) assert.ok(!re.test(all), String(re));
+  assert.equal([...OTHER_CLAIMS, ...Object.values(RULE_CLAIMS).flat()].filter((c) => c.status === 'conflict').length, 0);
+});
+
+test('criminal convictions and appearance: GDPR Art.10 and no Art.9 consent in the English set', async () => {
+  const cat = (name, category) => ({ name, label: { tr: name, en: name }, category, confidence: 0.9, stores: [`t.${name}`], sources: [] });
+  const a = { model: { inventory: [cat('criminal_record', 'criminal'), cat('dress', 'appearance'), cat('health', 'health')], transfers: [], activities: [], dpia: { criteria: [] } }, findings: [], review: [], layers: {}, organization: assessOrg({}, null) };
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'kvkk-legal-'));
+  await generateDocs({ result: scan(path.join(root, 'examples/clean-app')), outDir: out, lang: 'en', audit: a });
+  const pp = fs.readFileSync(path.join(out, 'privacy-policy.md'), 'utf8');
+  const row = (re) => pp.split('\n').find((l) => l.startsWith('|') && re.test(l));
+  assert.match(row(/Criminal convictions/), /GDPR Art\.10/);
+  assert.ok(!/special category\)|Art\.9/.test(row(/Criminal convictions/)));
+  assert.ok(!/Art\.9/.test(row(/Appearance/)));
+  assert.match(row(/Health data/), /special category\).*Art\.9\(2\)\(a\)/);
+  assert.match(pp, /only under official authority/);
+  const consent = fs.readFileSync(path.join(out, 'consent-texts.md'), 'utf8');
+  assert.match(consent, /health data/);
+  assert.ok(!/criminal|appearance/i.test(consent.slice(0, consent.indexOf('## Open fields'))));
+});
+
 test('scan reports: the note appears exactly on findings with an unverified basis', () => {
   const r = scan(path.join(root, 'examples/vibe-app'));
   const weak = r.findings.filter((f) => unverifiedBasis(f.rule).length);
@@ -52,12 +79,11 @@ test('scan reports: the note appears exactly on findings with an unverified basi
   assert.match(toText(r, { lang: 'en', color: false }), /unverified basis:/);
 });
 
-test('audit reports: scored findings, items awaiting verification and organisational items carry it', async () => {
+test('audit reports: scored findings and items awaiting verification carry it', async () => {
   const r = await audit(path.join(root, 'examples/audit-app'), { lang: 'tr', org: { minors: true } });
   const n = [...r.findings, ...r.review].filter((f) => unverifiedBasis(f.rule).length).length;
   assert.ok(n > 2);
   for (const format of ['text', 'md', 'html']) assert.ok((renderAudit(r, { lang: 'tr', format, color: false, verbose: true }).match(/doğrulanmamış dayanak:/g) || []).length >= n, format);
-  assert.match(renderAudit(r, { lang: 'tr', format: 'text', color: false }), /doğrulanmamış dayanak: “Çocuklar için veli onayı/);
   const j = JSON.parse(renderAudit(r, { lang: 'tr', format: 'json' }));
   assert.ok(j.findings.every((f) => Array.isArray(f.unverifiedBasis)));
   assert.equal(basisNote({ id: 'X', refs: ['KVKK md.12'] }), '');

@@ -112,7 +112,7 @@ export function acikRiza(f) {
     blocks.push(
       '## Analitik ve pazarlama çerezleri',
       `- [ ] Sitede/uygulamada analitik ve pazarlama amaçlı çerezler ve benzeri teknolojiler kullanılmasına ve bu kapsamda çevrimiçi tanımlayıcılarımın ${f.consentVendors.map((v) => v.name).join(', ')} ile paylaşılmasına açık rıza veriyorum.`,
-      '> Uygulama notu: Bu onay çerez banner\'ında **kategori bazında** alınmalı; "Reddet" seçeneği "Kabul et" ile aynı katmanda ve aynı belirginlikte olmalı; rıza verilmeden ilgili scriptler yüklenmemelidir (KVKK Çerez Uygulamaları Hakkında Rehber).',
+      '> Uygulama notu: Bu onay çerez banner\'ında **kategori bazında** alınmalı; rıza gerektiren scriptler rızadan önce yüklenmemelidir. KVKK Çerez Uygulamaları Hakkında Rehber (2025) eşit belirginlikte "kabul et", "reddet" ve "tercihler" butonlarını iyi uygulama örneği olarak gösterir; yalnızca kitle ölçümüyle sınırlı birinci taraf analitiğin açık rıza dışında değerlendirilebileceğini de söyler (5.9).',
     );
   }
   if (f.special.length) {
@@ -176,7 +176,7 @@ export function cerez(f) {
         )
       : 'Zorunlu çerezler dışında çerez tespit edilmedi. [[kontrol]]',
     '## Hukuki sebep',
-    'Zorunlu çerezler KVKK md.5/2-c (sözleşmenin ifası) ve md.5/2-f (meşru menfaat) kapsamında; işlevsel, analitik ve pazarlama çerezleri ise yalnızca **açık rızanız** (KVKK md.5/1) ile kullanılır. Rıza vermediğiniz kategorilere ait çerezler cihazınıza yerleştirilmez. [[kontrol: çerezler gerçekten rızadan önce engelleniyor mu?]]',
+    'Zorunlu çerezler KVKK md.5/2-c (sözleşmenin ifası) ve md.5/2-f (meşru menfaat) kapsamında; pazarlama çerezleri ile rıza gerektiren işlevsel ve analitik çerezler yalnızca **açık rızanız** (KVKK md.5/1) ile kullanılır. [[kontrol: hangi analitik/işlevsel çerezler rızaya tabi? Çerez Rehberi 2025, bölüm 5]] Rıza vermediğiniz kategorilere ait çerezler cihazınıza yerleştirilmez. [[kontrol: çerezler gerçekten rızadan önce engelleniyor mu?]]',
     f.abroad.some((v) => v.consentRequired)
       ? 'Bazı çerez sağlayıcıları yurt dışında yerleşiktir; bu aktarımlar KVKK md.9 kapsamında gerçekleştirilir [[kontrol: aktarım aracı]]. Bkz. aydinlatma-metni.md.'
       : null,
@@ -235,7 +235,7 @@ export function envanterMd(f) {
     'VERBİS kaydı ve Kişisel Veri Saklama ve İmha Politikası için temel oluşturur. Excel için aynı tablo `veri-envanteri.csv` dosyasındadır.',
     mdTable(INV_HEADERS, inventoryRows(f)),
     '## VERBİS notu',
-    'Cevaplarınıza göre değerlendirme `organizasyon-denetimi.md` dosyasındadır (derin denetim çalıştıysa). Genel ölçüt: yıllık çalışan sayısı 50\'den az **ve** yıllık mali bilanço toplamı 100 milyon TL\'den az olan, ana faaliyeti özel nitelikli veri işlemek olmayan yurt içi yerleşik veri sorumluları kayıttan istisnadır; ana faaliyet özel nitelikli veri işlemekse 10\'dan az çalışan **ve** 10 milyon TL\'den az bilanço aranır (Kurul 2025/1572). Bilanço esasına göre defter tutmayanlarda yalnızca çalışan sayısına bakılır (Kurul 2025/2393). [[kontrol: eşikler 25.11.2026\'da kvkk.gov.tr duyurularından okundu; güncel olduklarını doğrulayın]] Yurt dışında yerleşik veri sorumluları için ayrı kurallar geçerlidir. İstisna yalnızca VERBİS kaydını kapsar.',
+    'Cevaplarınıza göre değerlendirme `organizasyon-denetimi.md` dosyasındadır (derin denetim çalıştıysa). Genel ölçüt: yıllık çalışan sayısı 50\'den az **ve** yıllık mali bilanço toplamı 100 milyon TL\'den az olan, ana faaliyeti özel nitelikli veri işlemek olmayan yurt içi yerleşik veri sorumluları kayıttan istisnadır; ana faaliyet özel nitelikli veri işlemekse 10\'dan az çalışan **ve** 10 milyon TL\'den az bilanço aranır (Kurul 2025/1572). Bilanço esasına göre defter tutmayanlarda yalnızca çalışan sayısına bakılır (Kurul 2025/2393). [[kontrol: eşikler 25.11.2026\'da kvkk.gov.tr duyurularından okundu; güncel olduklarını doğrulayın]] Yurt dışında yerleşik veri sorumlularında bu ölçütler dikkate alınmaz; Türkiye\'de temsilci atanarak kayıt yapılır. İstisna yalnızca VERBİS kaydını kapsar.',
   );
 }
 

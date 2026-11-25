@@ -198,13 +198,11 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 - 🔴 orders: RLS kapalı — anon anahtarı ile okunabilir/yazılabilir (Adres, Ödeme kaydı) — `supabase/migrations/0001_init.sql:29`
   - Kalibrasyon: yetersiz veri (1/0)
 
-**Neden önemli:** Bu tablolarda RLS kapalı ya da politika sahiplik kontrolü yapmıyor. Supabase'de anon anahtarı istemci kodunda herkese açıktır; yani bu satırları herkes okuyabilir. Bu bir veri ihlalidir ve 72 saat içinde bildirim gerektirebilir.
+**Neden önemli:** Bu tablolarda RLS kapalı ya da politika sahiplik kontrolü yapmıyor. Supabase'de anon anahtarı istemci kodunda herkese açıktır; yani bu satırları herkes okuyabilir. Yetkisiz erişim gerçekleştiyse bu bir veri ihlalidir (KVKK md.12/5, GDPR Art.4(12)) ve 72 saat içinde bildirim gerekebilir; erişim kayıtlarını inceleyin.
 
 **Ne yapmalı:** ALTER TABLE … ENABLE ROW LEVEL SECURITY; ve USING (auth.uid() = user_id) gibi sahiplik politikaları yazın. Herkese açık olması gereken veriyi ayrı bir tabloya/view'a taşıyın.
 
 <sub>Dayanak: KVKK md.12/1 · KVKK md.12/5 · GDPR Art.25 · GDPR Art.32 · GDPR Art.33</sub>
-
-<sub>⚠️ doğrulanmamış dayanak: “Herkese açık tablo "bir veri ihlalidir ve 72 saat içinde bildirim gerektirebilir"” (docs/hukuki-dayanaklar.md)</sub>
 
 #### 🛑 Yetkisiz erişime açık uç noktalar `AUD-SEC-03`
 
@@ -243,13 +241,13 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 - 🟠 Çerez banner'ı: "Kabul et" var, "Reddet" yok — `src/components/CookieBanner.tsx:5`
   - Kalibrasyon: ölçülmedi
 
-**Neden önemli:** KVKK Çerez Rehberi ve AB uygulaması, reddetmenin kabul etmek kadar kolay olmasını ister. Sadece "Kabul et" sunan bir banner özgür irade ile verilmiş rıza sağlamaz.
+**Neden önemli:** KVKK Çerez Rehberi eşit belirginlikte "kabul et", "reddet" ve "tercihler" butonlarını iyi uygulama örneği olarak gösterir, zorunluluk olarak yazmaz. Yalnızca "Kabul et" sunan bir banner'da rızanın özgür iradeyle verildiği tartışmalıdır; GDPR Art.7(3) rızayı geri almanın vermek kadar kolay olmasını ister.
 
 **Ne yapmalı:** İlk katmana aynı görünürlükte "Reddet" ve "Tercihler" butonları ekleyin.
 
-<sub>Dayanak: KVKK Çerez Rehberi (2022) · GDPR Art.7(3) · EDPB Cookie Banner Taskforce Report (2023)</sub>
+<sub>Dayanak: KVKK Çerez Rehberi (2025) · GDPR Art.7(3) · EDPB Cookie Banner Taskforce Report (2023)</sub>
 
-<sub>⚠️ doğrulanmamış dayanak: EDPB Cookie Banner Taskforce Report (2023); “Rehber reddetmenin kabul etmek kadar kolay olmasını ister” (docs/hukuki-dayanaklar.md)</sub>
+<sub>⚠️ doğrulanmamış dayanak: EDPB Cookie Banner Taskforce Report (2023) (docs/hukuki-dayanaklar.md)</sub>
 
 #### 🟠 Pazarlama rızası varsayılan olarak verilmiş `AUD-LB-03`
 
@@ -415,13 +413,11 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 - 🔴 PostHog rıza kontrolü olmadan başlatılıyor; gönderilen veri: E-posta, Telefon — `src/components/Analytics.tsx:7`
   - Kalibrasyon: yetersiz veri (4/0)
 
-**Neden önemli:** Bu araçlar zorunlu olmayan çerez/cihaz tanımlayıcısı kullanır; hukuki sebepleri yalnızca açık rıza olabilir. SDK, kullanıcı onay vermeden önce başlatılıyor (init rıza kontrolünün dışında). Banner olsa bile izleme onaydan önce başlamış olur.
+**Neden önemli:** Bu araçlar çerez/cihaz tanımlayıcısı kullanır; reklam ve davranış izleme açık rıza gerektirir, kesinlikle gerekli olmayan diğerleri için de ePrivacy rıza arar. KVKK Çerez Rehberi (2025, 5.9), yalnızca kitle ölçümüyle sınırlı, siteler arası takip yapmayan birinci taraf analitiğin açık rıza dışında değerlendirilebileceğini söyler; aracın tespit ettiği sağlayıcının bu koşulları taşıyıp taşımadığını siz değerlendirmelisiniz. SDK, kullanıcı onay vermeden önce başlatılıyor (init rıza kontrolünün dışında). Banner olsa bile izleme onaydan önce başlamış olur.
 
 **Ne yapmalı:** SDK init çağrısını rıza durumunu kontrol eden koşulun içine taşıyın (ör. if (consent.analytics) analytics.init(...)) veya SDK'yı devre dışı (opt-out) başlatıp onaydan sonra etkinleştirin.
 
-<sub>Dayanak: KVKK md.5/1 · KVKK Çerez Rehberi (2022) · GDPR Art.6(1)(a) · GDPR Art.7 · ePrivacy Art.5(3)</sub>
-
-<sub>⚠️ doğrulanmamış dayanak: “Analitik araç rıza alınmadan başlatılamaz” (docs/hukuki-dayanaklar.md)</sub>
+<sub>Dayanak: KVKK md.5/1 · KVKK Çerez Rehberi (2025) · GDPR Art.6(1)(a) · GDPR Art.7 · ePrivacy Art.5(3)</sub>
 
 ### 🗑️ Silme kapsamı
 

@@ -146,14 +146,14 @@ export const RULES = [
       en: 'Analytics / advertising tracker detected',
     },
     desc: {
-      tr: 'Bu izleyiciler çerez/cihaz tanımlayıcısı yazar ve kişisel veri (IP, cihaz ID, davranış) toplar. Zorunlu olmayan çerezler için KVKK Çerez Rehberi ve ePrivacy uyarınca ÖNCEDEN açık rıza gerekir; ayrıca veriler genellikle yurt dışına (ABD) aktarılır.',
-      en: 'These trackers set cookies/device identifiers and collect personal data (IP, device ID, behaviour). Non-essential cookies require PRIOR consent under ePrivacy and the KVKK cookie guideline; data is usually transferred to the US.',
+      tr: 'Bu izleyiciler çerez/cihaz tanımlayıcısı yazar ve kişisel veri (IP, cihaz ID, davranış) toplar. Reklam ve davranış izleme çerezleri için KVKK Çerez Rehberi ve ePrivacy uyarınca ÖNCEDEN açık rıza gerekir; kesinlikle gerekli olmayan diğerleri için de ePrivacy rıza arar. KVKK Çerez Rehberi (2025, 5.9), yalnızca kitle ölçümüyle sınırlı, siteler arası takip yapmayan birinci taraf analitiğin açık rıza dışında değerlendirilebileceğini söyler; aracın tespit ettiği sağlayıcının bu koşulları taşıyıp taşımadığını siz değerlendirmelisiniz. Veriler genellikle yurt dışına (ABD) aktarılır.',
+      en: 'These trackers set cookies/device identifiers and collect personal data (IP, device ID, behaviour). Advertising and behavioural tracking cookies require PRIOR consent under the KVKK cookie guideline and ePrivacy; ePrivacy also asks for consent for others that are not strictly necessary. The KVKK cookie guideline (2025, 5.9) accepts that first-party analytics limited to audience measurement and without cross-site tracking may be assessed outside explicit consent; whether the detected provider meets those conditions is for you to assess. Data is usually transferred to the US.',
     },
     fix: {
       tr: 'Script\'i ancak kullanıcı "Kabul et" dedikten sonra yükle (Google Consent Mode v2 default: denied). Çerez politikasında izleyiciyi, amacını ve saklama süresini listele.',
       en: 'Load the script only after the user clicks "Accept" (Google Consent Mode v2 default: denied). List the tracker, its purpose and retention in your cookie policy.',
     },
-    refs: ['KVKK md.5', 'KVKK Çerez Rehberi (2022)', 'GDPR Art.6–7', 'ePrivacy Art.5(3)'],
+    refs: ['KVKK md.5', 'KVKK Çerez Rehberi (2025)', 'GDPR Art.6–7', 'ePrivacy Art.5(3)'],
   },
   {
     id: 'CNS002',
@@ -479,8 +479,8 @@ export const RULES = [
       en: 'Firebase security rules allow public access',
     },
     desc: {
-      tr: 'Veritabanı/depolama kimlik doğrulaması olmadan okunabilir veya yazılabilir. Bu doğrudan kişisel veri ihlalidir.',
-      en: 'The database/storage can be read or written without authentication. That is a direct personal data breach.',
+      tr: 'Veritabanı/depolama kimlik doğrulaması olmadan okunabilir veya yazılabilir. Bu ciddi bir güvenlik açığıdır; yetkisiz erişim gerçekleştiyse kişisel veri ihlalidir (KVKK md.12/5, GDPR Art.4(12)). Erişim kayıtlarını inceleyin.',
+      en: 'The database/storage can be read or written without authentication. That is a serious security hole; if unauthorised access took place it is a personal data breach (KVKK Art.12/5, GDPR Art.4(12)). Review the access logs.',
     },
     fix: {
       tr: 'Kuralları kullanıcı bazlı yaz: allow read, write: if request.auth != null && request.auth.uid == userId;',
@@ -646,10 +646,10 @@ export const RULES = [
       en: 'Analytics/ad trackers are used but no cookie banner or consent manager was found. Trackers likely run without consent.',
     },
     fix: {
-      tr: 'Bir consent çözümü ekle (ör. vanilla-cookieconsent, Klaro — açık kaynak; Cookiebot/OneTrust — ticari). "Reddet" butonu "Kabul et" kadar görünür olmalı, zorunlu dışı çerezler onaydan önce yüklenmemeli.',
-      en: 'Add a consent solution (e.g. vanilla-cookieconsent, Klaro — open source; Cookiebot/OneTrust — commercial). "Reject" must be as prominent as "Accept"; non-essential cookies must not load before consent.',
+      tr: 'Bir consent çözümü ekle (ör. vanilla-cookieconsent, Klaro — açık kaynak; Cookiebot/OneTrust — ticari). Rehberin iyi uygulama örneği: eşit görünürlükte "Kabul et", "Reddet" ve "Tercihler". Rıza gerektiren çerezler onaydan önce yüklenmemeli.',
+      en: 'Add a consent solution (e.g. vanilla-cookieconsent, Klaro — open source; Cookiebot/OneTrust — commercial). The guideline\'s good-practice example: equally prominent "Accept", "Reject" and "Preferences". Cookies that need consent must not load before it.',
     },
-    refs: ['KVKK Çerez Rehberi (2022)', 'GDPR Art.7', 'ePrivacy Art.5(3)'],
+    refs: ['KVKK Çerez Rehberi (2025)', 'GDPR Art.7', 'ePrivacy Art.5(3)'],
   },
   {
     id: 'DOC001',

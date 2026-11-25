@@ -152,7 +152,7 @@ const kindOf = (s) => (CONTENT_CATS.has(s.category) ? s.category : 'tracking');
 
 const LB01_TEXT = {
   tracking: {
-    desc: T('Bu araçlar zorunlu olmayan çerez/cihaz tanımlayıcısı kullanır; hukuki sebepleri yalnızca açık rıza olabilir. SDK, kullanıcı onay vermeden önce başlatılıyor (init rıza kontrolünün dışında). Banner olsa bile izleme onaydan önce başlamış olur.', 'These tools use non-essential cookies/identifiers, so consent is the only valid basis. The SDK is initialised before the user agrees (init is outside any consent check), so tracking starts even if a banner exists.'),
+    desc: T('Bu araçlar çerez/cihaz tanımlayıcısı kullanır; reklam ve davranış izleme açık rıza gerektirir, kesinlikle gerekli olmayan diğerleri için de ePrivacy rıza arar. KVKK Çerez Rehberi (2025, 5.9), yalnızca kitle ölçümüyle sınırlı, siteler arası takip yapmayan birinci taraf analitiğin açık rıza dışında değerlendirilebileceğini söyler; aracın tespit ettiği sağlayıcının bu koşulları taşıyıp taşımadığını siz değerlendirmelisiniz. SDK, kullanıcı onay vermeden önce başlatılıyor (init rıza kontrolünün dışında). Banner olsa bile izleme onaydan önce başlamış olur.', 'These tools use cookies/identifiers; advertising and behavioural tracking need consent, and ePrivacy asks for consent for others that are not strictly necessary. The KVKK cookie guideline (2025, 5.9) accepts that first-party analytics limited to audience measurement and without cross-site tracking may be assessed outside explicit consent; whether the detected provider meets those conditions is for you to assess. The SDK is initialised before the user agrees (init is outside any consent check), so tracking starts even if a banner exists.'),
     fix: T('SDK init çağrısını rıza durumunu kontrol eden koşulun içine taşıyın (ör. if (consent.analytics) analytics.init(...)) veya SDK\'yı devre dışı (opt-out) başlatıp onaydan sonra etkinleştirin.', 'Move the SDK init inside the consent check (if (consent.analytics) analytics.init(...)) or start it opted-out and enable it after consent.'),
   },
   fonts: {
@@ -226,7 +226,7 @@ export function ungatedConsentVendors(g, model, lang) {
       : T('Rıza gerektiren işleme rıza alınmadan başlıyor', 'Consent-based processing starts without consent'),
     desc: { tr: join('desc', 'tr'), en: join('desc', 'en') },
     fix: { tr: join('fix', 'tr'), en: join('fix', 'en') },
-    refs: ['KVKK md.5/1', 'KVKK Çerez Rehberi (2022)', 'GDPR Art.6(1)(a)', 'GDPR Art.7', 'ePrivacy Art.5(3)', ...(kinds.has('fonts') ? ['LG München I, 3 O 17493/20'] : [])],
+    refs: ['KVKK md.5/1', 'KVKK Çerez Rehberi (2025)', 'GDPR Art.6(1)(a)', 'GDPR Art.7', 'ePrivacy Art.5(3)', ...(kinds.has('fonts') ? ['LG München I, 3 O 17493/20'] : [])],
   }, locs);
 }
 
@@ -297,9 +297,9 @@ export function consentUiQuality(g, model, lang) {
   return finding({
     id: 'AUD-LB-02', category: 'consent', severity: 'medium',
     title: T('Rıza arayüzünde "Reddet" seçeneği yok', 'Consent UI without a reject option'),
-    desc: T('KVKK Çerez Rehberi ve AB uygulaması, reddetmenin kabul etmek kadar kolay olmasını ister. Sadece "Kabul et" sunan bir banner özgür irade ile verilmiş rıza sağlamaz.', 'Rejecting must be as easy as accepting. A banner offering only "Accept" does not obtain freely given consent.'),
+    desc: T('KVKK Çerez Rehberi eşit belirginlikte "kabul et", "reddet" ve "tercihler" butonlarını iyi uygulama örneği olarak gösterir, zorunluluk olarak yazmaz. Yalnızca "Kabul et" sunan bir banner\'da rızanın özgür iradeyle verildiği tartışmalıdır; GDPR Art.7(3) rızayı geri almanın vermek kadar kolay olmasını ister.', 'The KVKK cookie guideline presents equally prominent accept, reject and preferences buttons as good practice, not as an obligation. With a banner offering only "Accept" it is questionable whether consent is freely given; GDPR Art.7(3) requires withdrawing to be as easy as giving.'),
     fix: T('İlk katmana aynı görünürlükte "Reddet" ve "Tercihler" butonları ekleyin.', 'Add equally prominent "Reject" and "Preferences" buttons on the first layer.'),
-    refs: ['KVKK Çerez Rehberi (2022)', 'GDPR Art.7(3)', 'EDPB Cookie Banner Taskforce Report (2023)'],
+    refs: ['KVKK Çerez Rehberi (2025)', 'GDPR Art.7(3)', 'EDPB Cookie Banner Taskforce Report (2023)'],
   }, locs);
 }
 
@@ -385,7 +385,7 @@ export function replayRecorders(g, model, lang) {
     title: T('Rıza gerektiren işleme rıza alınmadan başlıyor', 'Consent-based processing starts without consent'),
     desc: T('Oturum kaydı (session replay) ziyaretçinin ekranını, tıklamalarını ve yazdıklarını kaydeder. Zorunlu olmayan bir izleme olduğu için açık rıza gerekir; maskeleme riski azaltır ama rızanın yerine geçmez.', 'Session replay records the visitor\'s screen, clicks and input. It is non-essential tracking and needs consent; masking lowers the risk but does not replace consent.'),
     fix: T('Kaydı yalnızca rızadan sonra başlatın; maskAllInputs ve metin maskelemeyi varsayılan açık tutun, kayıtlara kısa bir saklama süresi koyun ve aydınlatma metninde belirtin.', 'Start recording only after consent; keep input and text masking on by default, set a short retention period and disclose it in the privacy notice.'),
-    refs: ['KVKK md.5/1', 'KVKK Çerez Rehberi (2022)', 'GDPR Art.6(1)(a)', 'GDPR Art.35', 'ePrivacy Art.5(3)'],
+    refs: ['KVKK md.5/1', 'KVKK Çerez Rehberi (2025)', 'GDPR Art.6(1)(a)', 'GDPR Art.35', 'ePrivacy Art.5(3)'],
   }, locs);
 }
 

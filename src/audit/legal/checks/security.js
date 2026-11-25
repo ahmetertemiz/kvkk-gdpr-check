@@ -346,7 +346,7 @@ export function tableAccess(g, model, lang) {
   return finding({
     id: 'AUD-SEC-01', category: 'security', severity: 'high',
     title: T('Kişisel veri tutan tablolar herkese açık', 'Tables holding personal data are publicly accessible'),
-    desc: T('Bu tablolarda RLS kapalı ya da politika sahiplik kontrolü yapmıyor. Supabase\'de anon anahtarı istemci kodunda herkese açıktır; yani bu satırları herkes okuyabilir. Bu bir veri ihlalidir ve 72 saat içinde bildirim gerektirebilir.', 'These tables have RLS disabled or policies without an ownership condition. The Supabase anon key is public in client code, so anyone can read these rows — a data breach that may require notification within 72 hours.'),
+    desc: T('Bu tablolarda RLS kapalı ya da politika sahiplik kontrolü yapmıyor. Supabase\'de anon anahtarı istemci kodunda herkese açıktır; yani bu satırları herkes okuyabilir. Yetkisiz erişim gerçekleştiyse bu bir veri ihlalidir (KVKK md.12/5, GDPR Art.4(12)) ve 72 saat içinde bildirim gerekebilir; erişim kayıtlarını inceleyin.', 'These tables have RLS disabled or policies without an ownership condition. The Supabase anon key is public in client code, so anyone can read these rows. If unauthorised access took place it is a data breach (KVKK Art.12/5, GDPR Art.4(12)) that may require notification within 72 hours; review the access logs.'),
     fix: T('ALTER TABLE … ENABLE ROW LEVEL SECURITY; ve USING (auth.uid() = user_id) gibi sahiplik politikaları yazın. Herkese açık olması gereken veriyi ayrı bir tabloya/view\'a taşıyın.', 'Enable RLS and write owner policies like USING (auth.uid() = user_id); move truly public data to a separate table/view.'),
     refs: ['KVKK md.12/1', 'KVKK md.12/5', 'GDPR Art.25', 'GDPR Art.32', 'GDPR Art.33'],
   }, locs);

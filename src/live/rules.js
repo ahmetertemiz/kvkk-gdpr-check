@@ -5,15 +5,15 @@
  */
 import { PRIVACY_ELEMENTS, formCollectsPII, isSessionLike } from './util.js';
 
-const COOKIE_GUIDE = 'KVKK Çerez Uygulamaları Hakkında Rehber (2022)';
+const COOKIE_GUIDE = 'KVKK Çerez Uygulamaları Hakkında Rehber (2025)';
 
 export const LIVE_RULES = [
   {
     id: 'WEB001', category: 'tracking', severity: 'high',
     title: { tr: 'Rıza alınmadan zorunlu olmayan çerez/depolama kullanılıyor', en: 'Non-essential cookies/storage set before consent' },
     desc: {
-      tr: 'Site açılır açılmaz, kullanıcı hiçbir seçim yapmadan analitik/pazarlama çerezleri veya tarayıcı depolaması yazılıyor. Zorunlu olmayan çerezler için önceden açık rıza gerekir; pazarlama çerezleri en ağır ihlal türüdür.',
-      en: 'Analytics/marketing cookies or browser storage are written as soon as the page loads, before the user makes any choice. Non-essential cookies require prior consent; marketing cookies are the most serious case.',
+      tr: 'Site açılır açılmaz, kullanıcı hiçbir seçim yapmadan analitik/pazarlama çerezleri veya tarayıcı depolaması yazılıyor. Davranışsal reklam çerezleri açık rıza gerektirir; kesinlikle gerekli olmayan diğerleri için de ePrivacy rıza arar. KVKK Çerez Rehberi (2025, 5.9), yalnızca kitle ölçümüyle sınırlı, siteler arası takip yapmayan birinci taraf analitiğin açık rıza dışında değerlendirilebileceğini söyler; aracın tespit ettiği sağlayıcının bu koşulları taşıyıp taşımadığını siz değerlendirmelisiniz.',
+      en: 'Analytics/marketing cookies or browser storage are written as soon as the page loads, before the user makes any choice. Behavioural advertising cookies require consent; ePrivacy also asks for consent for others that are not strictly necessary. The KVKK cookie guideline (2025, 5.9) accepts that first-party analytics limited to audience measurement and without cross-site tracking may be assessed outside explicit consent; whether the detected provider meets those conditions is for you to assess.',
     },
     fix: {
       tr: 'İlgili script\'leri consent yöneticisi üzerinden "type=text/plain" + data-category ile engelle ya da Google Consent Mode v2\'de tüm depolamayı varsayılan "denied" başlat; yalnızca "Kabul et" sonrası yükle.',
@@ -25,8 +25,8 @@ export const LIVE_RULES = [
     id: 'WEB002', category: 'tracking', severity: 'high',
     title: { tr: 'Rıza alınmadan izleyicilere istek gönderiliyor', en: 'Requests sent to trackers before consent' },
     desc: {
-      tr: 'Kullanıcı seçim yapmadan önce tarayıcı, analitik/reklam sağlayıcılarına istek gönderiyor. Her istek IP adresi, cihaz ve sayfa bilgisini (çoğunlukla yurt dışına) iletir.',
-      en: 'Before the user makes a choice, the browser already calls analytics/ad providers. Each request transmits IP, device and page data (usually abroad).',
+      tr: 'Kullanıcı seçim yapmadan önce tarayıcı, analitik/reklam sağlayıcılarına istek gönderiyor. Her istek IP adresi, cihaz ve sayfa bilgisini (çoğunlukla yurt dışına) iletir. KVKK Çerez Rehberi (2025, 5.9), yalnızca kitle ölçümüyle sınırlı, siteler arası takip yapmayan birinci taraf analitiğin açık rıza dışında değerlendirilebileceğini söyler; aracın tespit ettiği sağlayıcının bu koşulları taşıyıp taşımadığını siz değerlendirmelisiniz.',
+      en: 'Before the user makes a choice, the browser already calls analytics/ad providers. Each request transmits IP, device and page data (usually abroad). The KVKK cookie guideline (2025, 5.9) accepts that first-party analytics limited to audience measurement and without cross-site tracking may be assessed outside explicit consent; whether the detected provider meets those conditions is for you to assess.',
     },
     fix: {
       tr: 'Bu sağlayıcıları rızaya bağla. Google için Consent Mode v2 "advanced" yerine "basic" mod (rızadan önce hiç istek yok) en güvenli seçenektir.',
@@ -55,8 +55,8 @@ export const LIVE_RULES = [
       en: 'Non-essential cookies or trackers were detected but no visible cookie consent banner was found.',
     },
     fix: {
-      tr: 'Bir consent yöneticisi ekle (vanilla-cookieconsent, Klaro, Cookiebot, OneTrust…). Kabul ve Reddet ilk katmanda eşit görünürlükte olmalı.',
-      en: 'Add a consent manager (vanilla-cookieconsent, Klaro, Cookiebot, OneTrust…) with Accept and Reject equally prominent on the first layer.',
+      tr: 'Bir consent yöneticisi ekle (vanilla-cookieconsent, Klaro, Cookiebot, OneTrust…). Rehberin iyi uygulama örneği: ilk katmanda eşit görünürlükte Kabul, Reddet ve Tercihler.',
+      en: 'Add a consent manager (vanilla-cookieconsent, Klaro, Cookiebot, OneTrust…); the guideline\'s good-practice example is equally prominent Accept, Reject and Preferences on the first layer.',
     },
     refs: [COOKIE_GUIDE, 'GDPR Art.7', 'ePrivacy Art.5(3)'],
   },
@@ -64,8 +64,8 @@ export const LIVE_RULES = [
     id: 'WEB005', category: 'consent', severity: 'medium',
     title: { tr: 'Banner\'ın ilk katmanında "Reddet" seçeneği yok', en: 'No "Reject" option on the banner\'s first layer' },
     desc: {
-      tr: 'Banner\'da "Kabul et" var ancak aynı katmanda "Reddet" yok. KVKK Çerez Rehberi, reddetmenin kabul etmek kadar kolay olmasını ve yalnızca "Kabul et" butonunun bulunmamasını öngörür; reddetmeyi ayarlar menüsüne gömmek dark pattern\'dir.',
-      en: 'The banner has "Accept" but no "Reject" on the same layer. Regulators (KVKK guideline, EDPB, CNIL) require rejecting to be as easy as accepting; hiding it in settings is a dark pattern.',
+      tr: 'Banner\'da "Kabul et" var ancak aynı katmanda "Reddet" yok. KVKK Çerez Rehberi eşit belirginlikte "kabul et", "reddet" ve "tercihler" butonlarını iyi uygulama örneği olarak gösterir ve bunların bulunmamasını kötü örnekler arasında sayar; zorunluluk olarak yazmaz. Reddetmenin zor olması rızanın özgür iradeyle verildiğini tartışmalı hâle getirir.',
+      en: 'The banner has "Accept" but no "Reject" on the same layer. The KVKK cookie guideline presents equally prominent accept, reject and preferences buttons as good practice and lists their absence among bad examples; it does not word it as an obligation. Making refusal hard puts freely given consent in question.',
     },
     fix: {
       tr: '"Tümünü reddet" (veya "Sadece zorunlu") butonunu "Kabul et" ile aynı boyut ve renkte ilk katmana ekle.',

@@ -100,12 +100,14 @@ test('VERBİS: employees OR balance sheet makes registration due; both below exe
   assert.equal(v({ employees: 3 }), 'open', 'balance sheet not answered');
   assert.equal(v({ employees: 3, balanceSheetBooks: false }), 'na', 'no balance-sheet books: employees only');
 });
-test('VERBİS: special-category main activity has its own limits; abroad is not decided', () => {
+test('VERBİS: special-category main activity has its own limits; abroad the exemption criteria do not apply', () => {
   const v = (a) => item(org({ establishedIn: 'TR', mainActivitySpecial: true, balanceSheetBooks: true, verbisRegistered: false, ...a }), 'ORG-VERBIS').status;
   assert.equal(v({ employees: 9, balanceSheetTRY: 9_999_999 }), 'na');
   assert.equal(v({ employees: 10, balanceSheetTRY: 1 }), 'action');
   assert.equal(v({ employees: 2, balanceSheetTRY: 10_000_000 }), 'action');
-  assert.equal(v({ establishedIn: 'DE', employees: 1, balanceSheetTRY: 1 }), 'open');
+  assert.equal(v({ establishedIn: 'DE', employees: 1, balanceSheetTRY: 1 }), 'action');
+  assert.equal(v({ establishedIn: 'DE', employees: 1, verbisRegistered: true }), 'ok');
+  assert.equal(v({ establishedIn: 'DE', employees: 1, verbisRegistered: null }), 'open');
 });
 test('VERBİS: an exemption with special-category data in the code asks to confirm the main activity', () => {
   const m = { ...EMPTY, inventory: [{ name: 'health', sensitivity: 'special' }] };

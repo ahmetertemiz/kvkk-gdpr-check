@@ -14,4 +14,4 @@
 - Derin denetim proje başına yaklaşık 8 gerçek sorunu kaçırır; en büyük boşluk yetki kontrolüdür ([docs/ACCURACY.md](docs/ACCURACY.md)).
 - Ölçüm kararlarını yapay zekâ verdi; hiçbir hukukçu bulguları, dayanakları ya da taslakları doğrulamadı.
 - Belge taslaklarının, anketin ve AUD-TRN-05 kuralının gerçek projelerdeki isabeti ölçülmedi.
-- Bazı kural metinleri okunan kaynakla çelişiyor; karar bekliyor (hukuki-dayanaklar.md, ilk tablo).
+- Bazı dayanaklar birincil kaynaktan doğrulanamadı (hukuki-dayanaklar.md); raporda işaretlidir.

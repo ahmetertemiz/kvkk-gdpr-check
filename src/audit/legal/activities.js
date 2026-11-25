@@ -40,7 +40,7 @@ const DEFS = [
   },
   {
     id: 'analytics', purpose: { tr: 'Ürün analitiği ve kullanım ölçümü', en: 'Product analytics' },
-    basis: ['consent'], rationale: { tr: 'Zorunlu olmayan çerez/tanımlayıcı kullanan analitik, KVKK Çerez Rehberi ve ePrivacy uyarınca açık rıza gerektirir.', en: 'Analytics using non-essential cookies/identifiers requires consent (ePrivacy).' },
+    basis: ['consent'], rationale: { tr: 'Kesinlikle gerekli olmayan çerez/tanımlayıcı kullanan analitik ePrivacy uyarınca rıza, KVKK bakımından kural olarak açık rıza gerektirir; Çerez Rehberi (2025, 5.9) yalnızca kitle ölçümüyle sınırlı birinci taraf analitik için istisnai değerlendirmeye izin verir.', en: 'Analytics using cookies/identifiers that are not strictly necessary requires consent (ePrivacy); the KVKK guideline (2025, 5.9) leaves room for first-party analytics limited to audience measurement.' },
     vendorCat: ['analytics', 'session-replay'],
   },
   {

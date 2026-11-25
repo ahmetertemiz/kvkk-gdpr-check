@@ -88,7 +88,7 @@ export const DATA_CATEGORIES = {
       en: 'GDPR Art.6(1)(a) — consent; ePrivacy Art.5(3) for cookies',
     },
     retention: {
-      tr: 'Rıza geri alınana kadar; ileti onay kayıtları onayın sona ermesinden itibaren 3 yıl (Ticari İletişim ve Ticari Elektronik İletiler Hakkında Yönetmelik) [[kontrol]]',
+      tr: 'Rıza geri alınana kadar; ileti onay kayıtları onayın sona ermesinden itibaren 3 yıl (Ticari İletişim ve Ticari Elektronik İletiler Hakkında Yönetmelik md.13); 6563 sayılı Kanun ise Kanun kapsamındaki kayıtlar için 10 yıl öngörür [[kontrol: hangi süre uygulanacak?]]',
       en: 'Until consent is withdrawn [[check: cookie lifetimes]]',
     },
   },
@@ -105,11 +105,17 @@ export const DATA_CATEGORIES = {
   din: { tr: 'Felsefi İnanç, Din, Mezhep ve Diğer İnançlar', en: 'Religious or philosophical beliefs', special: true },
   irk_etnik: { tr: 'Irk ve Etnik Köken', en: 'Racial or ethnic origin', special: true },
   cinsel: { tr: 'Cinsel Hayat', en: 'Sex life / sexual orientation', special: true },
-  ceza: { tr: 'Ceza Mahkûmiyeti ve Güvenlik Tedbirleri', en: 'Criminal convictions', special: true },
+  ceza: {
+    tr: 'Ceza Mahkûmiyeti ve Güvenlik Tedbirleri', en: 'Criminal convictions', special: true, gdprSpecial: false,
+    basis: { tr: 'KVKK md.6/3 — ilgili kişinin açık rızası veya md.6/3\'teki diğer şartlar; GDPR kapsamındaysa Art.10 (yalnızca resmî makam denetiminde ya da kanun izin veriyorsa) [[kontrol: hangi şart?]]', en: 'GDPR Art.10 — only under official authority or where Union / Member State law authorises it [[check: which law?]]' },
+  },
   sendika: { tr: 'Sendika Üyeliği', en: 'Trade union membership', special: true },
   siyasi: { tr: 'Siyasi Düşünce', en: 'Political opinions', special: true },
   genetik: { tr: 'Genetik Veri', en: 'Genetic data', special: true },
-  kilik: { tr: 'Kılık ve Kıyafet', en: 'Appearance and dress', special: true },
+  kilik: {
+    tr: 'Kılık ve Kıyafet', en: 'Appearance and dress', special: true, gdprSpecial: false,
+    basis: { tr: 'KVKK md.6/3 — ilgili kişinin açık rızası [[kontrol: md.6/3\'teki diğer şartlardan biri uygulanabilir mi?]]', en: 'GDPR Art.6 basis; a special category only under the KVKK [[check: which basis, and does the data reveal a special category?]]' },
+  },
   mesleki: {
     tr: 'Mesleki Deneyim / Özlük', en: 'Professional data',
     subjects: { tr: 'Üye / kullanıcı / aday [[kontrol]]', en: 'Users / applicants [[check]]' },
@@ -216,7 +222,7 @@ export const COOKIE_CATEGORY = {
 export const COOKIE_CATEGORIES = {
   zorunlu: { tr: 'Zorunlu', en: 'Strictly necessary', descTr: 'Sitenin çalışması, güvenlik ve oturum için gereklidir; rıza gerektirmez.', descEn: 'Required for the site to work, security and sessions; no consent needed.' },
   islevsel: { tr: 'İşlevsel', en: 'Functional', descTr: 'Canlı destek, gömülü içerik gibi ek özellikler sağlar; rızanızla çalışır.', descEn: 'Enable extra features such as live chat or embedded content; used with your consent.' },
-  analitik: { tr: 'Analitik', en: 'Analytics', descTr: 'Sitenin nasıl kullanıldığını ölçer; yalnızca rızanızla çalışır.', descEn: 'Measure how the site is used; only with your consent.' },
+  analitik: { tr: 'Analitik', en: 'Analytics', descTr: 'Sitenin nasıl kullanıldığını ölçer; rıza gerektirenler yalnızca rızanızla çalışır [[kontrol: hangi analitik çerezler rızaya tabi?]].', descEn: 'Measure how the site is used; those that need consent run only with your consent [[check: which analytics cookies need consent?]].' },
   pazarlama: { tr: 'Pazarlama', en: 'Marketing', descTr: 'Reklam ölçümü ve hedefleme için kullanılır; yalnızca rızanızla çalışır.', descEn: 'Used for ad measurement and targeting; only with your consent.' },
   bilinmiyor: { tr: 'Sınıflandırılmamış', en: 'Unclassified', descTr: '[[kontrol: bu çerezlerin amacını belirleyin]]', descEn: '[[check: determine the purpose of these cookies]]' },
 };

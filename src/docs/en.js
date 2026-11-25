@@ -9,6 +9,8 @@ const EU = /^(AT|BE|BG|HR|CY|CZ|DK|EE|FI|FR|DE|GR|HU|IE|IT|LV|LT|LU|MT|NL|PL|PT|
 const appName = (a) => P(a.appName, 'App name');
 const company = (a) => P(a.companyName, 'Company / person name');
 const contactEmail = (a) => P(a.email, 'privacy contact email');
+// Criminal convictions fall under GDPR Art.10, not Art.9; appearance and dress are special only under the KVKK.
+const gdprSpecial = (c) => c.def.special && c.def.gdprSpecial !== false;
 const fname = (c, k) => c.en?.get(k) || ({ 'çerez / çevrimiçi tanımlayıcılar': 'cookies / online identifiers', 'ileti tercihleri': 'messaging preferences' })[k] || k;
 const fieldList = (c) => [...c.fields.keys()].map((k) => fname(c, k)).join(', ') || '[[check: which data of this category is processed?]]';
 
@@ -29,7 +31,7 @@ function safeguard(v) {
 export function privacyPolicy(f) {
   const a = f.answers;
   const nonEu = !EU.test(a.country || '') ;
-  const rows = f.categories.map((c) => [c.def.en + (c.def.special ? ' (special category)' : ''), fieldList(c), c.def.purposes.en.join('; '), c.def.basis.en, (a.retention && a.retention[c.id]) || c.def.retention.en]);
+  const rows = f.categories.map((c) => [c.def.en + (gdprSpecial(c) ? ' (special category)' : ''), fieldList(c), c.def.purposes.en.join('; '), c.def.basis.en, (a.retention && a.retention[c.id]) || c.def.retention.en]);
   return join(
     header('en', f, 'Privacy Policy'),
     `Last updated: ${f.date}`,
@@ -47,7 +49,8 @@ export function privacyPolicy(f) {
       .join('\n'),
     '## 2. What we collect, why, and on what legal basis',
     mdTable(['Category', 'Data', 'Purpose', 'Legal basis', 'Retention'], rows),
-    f.special.length ? `We process special category data (${f.special.map((c) => c.def.en).join(', ')}) only with your explicit consent or another Art.9(2) condition, with additional safeguards. [[check: is this data strictly necessary?]]` : null,
+    f.special.some(gdprSpecial) ? `We process special category data (${f.special.filter(gdprSpecial).map((c) => c.def.en).join(', ')}) only with your explicit consent or another Art.9(2) condition, with additional safeguards. [[check: is this data strictly necessary?]]` : null,
+    f.special.some((c) => c.id === 'ceza') ? 'Data on criminal convictions is processed only under official authority or where Union or Member State law authorises it (GDPR Art.10). [[check: which law authorises this processing? Consent alone is not enough]]' : null,
     '## 3. Who we share it with',
     f.vendors.length
       ? mdTable(['Recipient', 'Purpose', 'Location', 'Transfer safeguard'], f.vendors.map((v) => [v.name, v.purpose?.en || '[[check]]', v.country || '[[check]]', f.isAbroad(v.country) ? safeguard(v) : '—']))
@@ -96,8 +99,8 @@ export function consentTexts(f) {
   const a = f.answers;
   const blocks = [];
   if (f.marketing) blocks.push('## Marketing messages', `- [ ] I agree to receive news and offers from ${company(a)} by **email / SMS** [[check: channels used]]. I can unsubscribe at any time.`, '> Must be unticked by default and not a condition of sign-up.');
-  if (f.consentVendors.length) blocks.push('## Analytics & marketing cookies', `- [ ] I agree to the use of analytics and marketing cookies (${f.consentVendors.map((v) => v.name).join(', ')}).`, '> Collect per category in the cookie banner; "Reject all" must be as prominent as "Accept all"; do not load these scripts before consent.');
-  if (f.special.length) blocks.push('## Special category data', `- [ ] I explicitly consent to the processing of my ${f.special.map((c) => c.def.en.toLowerCase()).join(', ')} for [[purpose]].`, '> Keep separate from other consents (GDPR Art.9(2)(a)).');
+  if (f.consentVendors.length) blocks.push('## Analytics & marketing cookies', `- [ ] I agree to the use of analytics and marketing cookies (${f.consentVendors.map((v) => v.name).join(', ')}).`, '> Collect per category in the cookie banner; do not load scripts that need consent before it is given. Equally prominent accept, reject and preferences buttons are good practice in the KVKK cookie guideline (2025).');
+  if (f.special.some(gdprSpecial)) blocks.push('## Special category data', `- [ ] I explicitly consent to the processing of my ${f.special.filter(gdprSpecial).map((c) => c.def.en.toLowerCase()).join(', ')} for [[purpose]].`, '> Keep separate from other consents (GDPR Art.9(2)(a)).');
   if (!blocks.length) blocks.push('No processing requiring consent was detected. [[check]]');
   return join(header('en', f, 'Consent Texts'), 'Present these separately from the privacy policy. Withdrawing consent must be as easy as giving it.', blocks);
 }
@@ -120,7 +123,7 @@ function abroadCell(f, catId) {
 function inventoryRows(f) {
   const a = f.answers;
   return f.categories.map((c) => [
-    c.def.en + (c.def.special ? ' (special)' : ''),
+    c.def.en + (gdprSpecial(c) ? ' (special)' : c.def.special ? ' (special under the KVKK)' : ''),
     [...c.fields.entries()].map(([k, v]) => (v.length ? `${fname(c, k)} (${v.slice(0, 2).join(', ')})` : fname(c, k))).join('; ') || '[[check: which data of this category is processed?]]',
     c.def.purposes.en.join('; '),
     c.def.basis.en,
