@@ -1,6 +1,6 @@
 # Değişiklikler
 
-## 0.1.0 — yayımlanmadı
+## 0.1.0 — 2026-11-25
 
 İlk herkese açık sürüm.
 
