@@ -62,7 +62,7 @@ export async function auditForDocs(dir, { org = null, lang = 'tr', ignore = [], 
     const { audit } = await import('../audit/index.js');
     const r = await audit(dir, { ignore, live, lang, org });
     const { getModel } = await import('../audit/report/common.js');
-    return { audit: { model: getModel(r, lang), findings: r.findings, review: r.review, layers: r.layers, organization: r.organization, coverage: r.coverage, scoreReliable: r.scoreReliable }, warning: null };
+    return { audit: { model: getModel(r, lang), findings: r.findings, review: r.review, layers: r.layers, organization: r.organization, coverage: r.coverage, scoreReliable: r.scoreReliable, scoreReasons: r.scoreReasons }, warning: null };
   } catch (e) {
     return { audit: null, warning: lang === 'en' ? `The deep audit could not run (${e.message}); documents use the pattern scan only.` : `Derin denetim çalışmadı (${e.message}); dokümanlar yalnızca desen taramasına dayanıyor.` };
   }

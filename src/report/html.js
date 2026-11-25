@@ -1,7 +1,8 @@
 import { supportNotice } from '../support-notice.js';
+import { scoreShown, reasonTexts } from '../score-gate.js';
 import { basisNote } from '../data/legal-basis.js';
 import { CATEGORIES, CATEGORY_ORDER } from '../data/categories.js';
-import { SEV_LABEL, L, loc, scoreGrade, HEADER_NAMES, isNonEssentialCookie, liveSummary } from '../report.js';
+import { REPORT_STRINGS, SEV_LABEL, L, loc, scoreGrade, HEADER_NAMES, isNonEssentialCookie, liveSummary } from '../report.js';
 
 const SEVS = ['critical', 'high', 'medium', 'low', 'info'];
 
@@ -121,6 +122,15 @@ function scoreColor(score) {
   if (score >= 75) return 'var(--good)';
   if (score >= 50) return 'var(--warn)';
   return 'var(--bad)';
+}
+
+function noScore(result, t, lang) {
+  const n = REPORT_STRINGS[lang];
+  return `<div class="gauge" role="img" aria-label="${esc(t.score)}: ${esc(n.scoreNA)}">
+  <svg viewBox="0 0 120 120" width="148" height="148" aria-hidden="true"><circle cx="60" cy="60" r="52" fill="none" stroke="var(--track)" stroke-width="12" stroke-dasharray="6 6"/></svg>
+  <div class="gauge-label"><span class="gauge-num">N/A</span></div>
+  <div class="grade">${esc(n.scoreNA)}</div>
+</div><p class="muted small">${reasonTexts(result, lang).map((x) => `${esc(n.scoreWhy)}: ${esc(x)}`).join('<br>')}</p>`;
 }
 
 function gauge(score, t) {
@@ -467,7 +477,7 @@ export function toHtml(result, { lang = 'tr' } = {}) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
-<title>${esc(t.title)} · ${result.score}/100</title>
+<title>${esc(t.title)} · ${scoreShown(result) ? `${result.score}/100` : 'N/A'}</title>
 <style>${CSS}</style>
 </head>
 <body data-report-key="${esc(reportKey)}">
@@ -483,7 +493,7 @@ export function toHtml(result, { lang = 'tr' } = {}) {
 
 ${notice ? `<div class="card" role="alert" style="border-left:4px solid #d97706;margin-bottom:14px"><b>⚠ ${esc(notice.text)}</b></div>` : ''}
 <section class="hero">
-  <div class="card">${gauge(result.score, t)}</div>
+  <div class="card">${scoreShown(result) ? gauge(result.score, t) : noScore(result, t, lang)}</div>
   <div class="card">
     <div class="sevs">${sevTiles}</div>
     ${bars ? `<h3>${esc(t.byCategory)}</h3>${bars}` : `<p class="muted">${esc(t.noFindings)}</p>`}

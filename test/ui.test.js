@@ -33,6 +33,18 @@ test('POST /api/scan with a local folder returns an HTML report', async () => {
   assert.ok(j.html.includes('SEC002'));
 });
 
+test('POST /api/scan: no number when the score is not reliable, and the page says N/A with the reason', async () => {
+  const j = await (await post('/api/scan', { path: path.join(here, '../examples/mobile-app'), lang: 'tr' })).json();
+  assert.equal(j.score, null);
+  assert.ok(j.scoreReasons.length);
+  assert.ok(j.html.includes('N/A'));
+  const page = await (await fetch(ui.url)).text();
+  assert.ok(page.includes('id="score-why"'));
+  const script = page.slice(page.lastIndexOf('<script>') + 8, page.lastIndexOf('</script>'));
+  new Function(script); // parses
+  assert.match(script, /STR\[lang\]\.scoreNA/);
+});
+
 test('invalid GitHub URL is rejected', async () => {
   for (const repo of ['https://gitlab.com/a/b', 'https://github.com/a/b;rm -rf', 'https://github.com/a', 'file:///etc']) {
     const r = await post('/api/scan', { repo });

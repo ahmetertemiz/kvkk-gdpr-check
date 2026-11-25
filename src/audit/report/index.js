@@ -68,6 +68,7 @@ export function auditJson(result, { lang = 'tr' } = {}) {
       filesSkipped: result.filesSkipped ?? result.coverageDetail?.filesSkipped ?? null,
       coverage: result.coverage ?? null,
       scoreReliable: result.scoreReliable !== false,
+      scoreReasons: (result.scoreReasons || []).map((r) => ({ code: r.code, text: txt(r, lang), ...(r.stacks ? { stacks: r.stacks } : {}), ...(r.layers ? { layers: r.layers } : {}) })),
       support: result.support || null,
       supportNotice: supportNotice(result, lang),
       pendingHigh: result.pendingHigh ?? null,

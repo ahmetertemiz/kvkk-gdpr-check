@@ -7,6 +7,7 @@
 - **Hızlı tarama** (50 kod kuralı), **canlı site taraması** (19 kural), **derin denetim** (`audit`: veri akışı grafiği ve ilke bazlı kontroller), **anket**, yerel web arayüzü, SARIF ve GitHub Action.
 - **Belge taslakları (beta):** aydınlatma metni, açık rıza, çerez politikası, veri envanteri, yurt dışı aktarım, ihlal planı, başvuru formu, DPIA / LIA / TIA. Her belge uyarıyla başlar; açık alanlar işaretlenir ve sonda listelenir.
 - **Destek düzeyleri:** sınırlı, deneysel ya da tanınamayan yığında rapor en başta uyarır.
+- **Skor:** bu yığınlarda ve yedi analiz katmanından dördü ya da daha fazlası görülmediğinde skor ve harf notu verilmez; rapor nedenini yazar. Asıl çıktı kanıtlı bulgu listesidir.
 - **Hukuki dayanaklar:** birincil kaynaklardan kontrol edildi ([docs/hukuki-dayanaklar.md](docs/hukuki-dayanaklar.md)); doğrulanmayanlar raporda işaretlenir.
 
 ### Bilinen sınırlar

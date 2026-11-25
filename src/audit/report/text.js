@@ -1,4 +1,5 @@
 import { pendingTop, S, L, SEVS, scoreView, coverageNote, coverageNotes, transferFlag, transferFlagLabel, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText } from './common.js';
+import { reasonTexts } from '../../score-gate.js';
 import { supportNotice } from '../../support-notice.js';
 import { basisNote } from '../../data/legal-basis.js';
 import { CONTROLLER_QUESTIONS } from '../legal/knowledge.js';
@@ -28,6 +29,7 @@ export function auditText(result, { lang = 'tr', color = false, verbose = false 
   const sv = scoreView(result);
   const scoreTxt = sv.reliable ? k.b(sv.text) : k.yellow(k.b(t.scoreNA)) + k.d(` (${t.scoreNAHint})`);
   o.push(`  ${k.b(t.score + ':')} ${scoreTxt}   ` + SEVS.map((s) => sc[s](` ${c[s] || 0} ${t.sev[s]} `)).join(' '));
+  for (const x of reasonTexts(result, lang)) o.push(k.yellow(`  ${t.scoreWhy}: ${x}`));
   const cov = coverageNote(result, t);
   if (cov) o.push(k.yellow(`  ⚠ ${cov}`));
   for (const n of coverageNotes(result, t, m)) o.push(k.d(`  ℹ ${n}`));

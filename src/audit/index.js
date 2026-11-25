@@ -52,6 +52,7 @@ import { VENDORS, vendorForUrl, vendorForLabel, vendorById } from '../data/vendo
 import { sortFindings, summarize } from '../summary.js';
 import * as stackMod from './legal/stack.js';
 import { stackSupport } from './legal/support.js';
+import { scoreReasons } from '../score-gate.js';
 import { reviewRate, reviewBand } from './legal/calibrate.js';
 
 const { detectStack, assessLayers, detectUnparsed, mergeUnparsed, NOT_PARSED_REASONS, TECHS } = stackMod;
@@ -730,6 +731,26 @@ function explainReview(entry, l, { layers, basis, declGaps }) {
   else if (reason) l.reviewReason = reason;
 }
 
+/** Score gate of a project (src/score-gate.js): why no score is shown, and the coverage word that goes with it. */
+function gateOf(cov, filesScanned) {
+  const experimentalOnly = cov.support?.tier === 'experimental' && !cov.warning;
+  const reasons = scoreReasons({ support: cov.support, layers: cov.layers, filesScanned, coverageWarning: cov.warning, coverageUnreliable: cov.scoreReliable === false && !experimentalOnly });
+  return {
+    scoreReasons: reasons,
+    scoreReliable: cov.scoreReliable !== false && !reasons.length,
+    coverage: cov.coverage === 'ok' && reasons.some((r) => r.code === 'layers-missing') ? 'partial' : cov.coverage,
+  };
+}
+
+/** Stack support, layers and score gate without running any check (quick scan). Same decision as audit(). */
+export async function assessProject(root, opts = {}) {
+  const { graph, ctx } = await buildGraph(root, opts);
+  const cov = assessCoverage(graph, ctx, opts.lang, { vendorForPackage: await vendorForPackageFn() });
+  const legal = await import('./legal/index.js');
+  refreshHonesty(cov, graph, legal.buildAuditModel(graph, opts.lang || 'tr', cov.layers), opts.lang === 'en');
+  return { support: cov.support || null, layers: cov.layers, ...gateOf(cov, ctx.files.length) };
+}
+
 export async function audit(root, opts = {}) {
   const { graph, ctx, warnings } = await buildGraph(root, opts);
   const cov = assessCoverage(graph, ctx, opts.lang, { vendorForPackage: await vendorForPackageFn() });
@@ -776,8 +797,7 @@ export async function audit(root, opts = {}) {
     ...(calibration ? { calibration } : {}),
     organization,
     warnings,
-    coverage: cov.coverage,
-    scoreReliable: cov.scoreReliable,
+    ...gateOf(cov, ctx.files.length),
     layers: cov.layers,
     stack: cov.stack,
     support: cov.support || null,

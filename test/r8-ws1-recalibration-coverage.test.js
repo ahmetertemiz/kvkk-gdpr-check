@@ -481,11 +481,13 @@ const S3_FILE = "import { S3Client } from '@aws-sdk/client-s3';\nimport { create
 test('audit(): JS project — well covered control is found and reliable; an untraced vendor or a table without columns makes it partial', async () => {
   const control = await audit(fixture(JS_APP), { lang: 'en' });
   for (const n of ['schema', 'routes', 'dbWrites', 'vendors']) assert.equal(control.layers[n].status, 'found', n);
-  assert.equal(control.scoreReliable, true);
+  // Express is a limited stack: that alone withholds the score (score-gate.js); coverage is not a reason
+  assert.deepEqual(control.scoreReasons.map((r) => r.code), ['limited-stack']);
   const bare = await audit(fixture({ ...JS_APP, 'src/orders.js': "import { Pool } from 'pg';\nconst pool = new Pool();\nexport async function addOrder(req) {\n  const { email } = req.body;\n  await pool.query('INSERT INTO shop_orders (email) VALUES ($1)', [email]);\n}\n" }), { lang: 'en' });
   assert.equal(bare.layers.schema.status, 'partial');
   assert.match(bare.layers.schema.gaps[0].label, /shop_orders/);
   assert.equal(bare.scoreReliable, false);
+  assert.ok(bare.scoreReasons.some((r) => r.code === 'coverage'));
   assert.match(bare.warnings.join('\n'), /schema partial \(shop_orders: used by the code, columns not parsed\)/);
   const s3 = await audit(fixture({ ...JS_APP, 'src/s3.js': S3_FILE }), { lang: 'en' });
   const aws = s3.graph.nodesOf('Sink', (n) => n.vendorId === 'aws')[0];

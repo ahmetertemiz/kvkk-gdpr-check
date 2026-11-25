@@ -6,6 +6,7 @@ import crypto from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { scan } from '../scan.js';
 import { mergeResults } from '../summary.js';
+import { attachCoverage, scoreShown, reasonTexts } from '../score-gate.js';
 import { toHtml } from '../report/html.js';
 import { PAGE } from './page.js';
 
@@ -155,7 +156,7 @@ export async function startUi({ port = 4477, lang = 'tr', open = true, quiet = f
 
     const parts = [];
     const warnings = [];
-    if (p) parts.push(scan(path.resolve(p)));
+    if (p) parts.push(await attachCoverage(scan(path.resolve(p)), path.resolve(p), { lang: L }));
     if (repo) {
       let dir;
       try {
@@ -164,7 +165,7 @@ export async function startUi({ port = 4477, lang = 'tr', open = true, quiet = f
         throw new HttpError(400, `${m.clone}: ${String(e.message || e).split('\n')[0]}`);
       }
       try {
-        const r = scan(dir);
+        const r = await attachCoverage(scan(dir), dir, { lang: L });
         r.root = repo;
         parts.push(r);
       } finally {
@@ -186,7 +187,8 @@ export async function startUi({ port = 4477, lang = 'tr', open = true, quiet = f
     while (results.size > 20) results.delete(results.keys().next().value);
     return {
       scanId,
-      score: result.score,
+      score: scoreShown(result) ? result.score : null,
+      scoreReasons: reasonTexts(result, L),
       counts: result.counts,
       warnings,
       html: toHtml(result, { lang: L }),

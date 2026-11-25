@@ -177,6 +177,8 @@ export function buildFacts(result, answers = {}, audit = null) {
     hits,
     findings: result.findings,
     score: result.score,
+    scoreReliable: result.scoreReliable !== false && audit?.scoreReliable !== false,
+    scoreReasons: audit?.scoreReliable === false ? audit.scoreReasons || [] : result.scoreReasons || [],
     signals: result.signals || {},
     live,
     hasAccounts,

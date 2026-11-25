@@ -243,7 +243,8 @@ async function main() {
     result = await runLive(args);
   } else {
     assertDir(args.dir);
-    const code = scan(args.dir, { ignore: args.ignore, disable: args.disable });
+    const { attachCoverage } = await import('../src/score-gate.js');
+    const code = await attachCoverage(scan(args.dir, { ignore: args.ignore, disable: args.disable }), args.dir, { ignore: args.ignore, lang: args.lang });
     result = args.url ? mergeResults(code, await runLive(args)) : code;
   }
 

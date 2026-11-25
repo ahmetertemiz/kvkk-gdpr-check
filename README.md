@@ -4,6 +4,8 @@
 
 [English](README.en.md) · [Doğruluk](docs/ACCURACY.md) · [Hukuki dayanaklar](docs/hukuki-dayanaklar.md) · [Örnek rapor](examples/reports/audit-app.md)
 
+> **Aracın asıl çıktısı skor değil, kanıtlı bulgu listesidir.** Skor çoğu projede verilmez: ölçüm setindeki 84 projenin 28'inde verildi. [Neden?](#skor)
+
 > ⚖️ Hukuki danışmanlık değildir. Bulgu çıkmaması sorun olmadığı anlamına gelmez. Üretilen belgeler taslaktır; bir hukukçu incelemeden yayımlamayın.
 
 ## 30 saniyede başlayın
@@ -89,7 +91,17 @@ Aydınlatma metni, açık rıza metni, çerez politikası, veri envanteri (Markd
 | **Sınırlı** | Express, Remix / React Router, Django, Flutter |
 | **Deneysel** | Laravel, NestJS, Flask, FastAPI, Fastify / Koa, Nuxt, Astro, Convex, Hono ve diğerleri |
 
-Düzeyler görülmemiş projelerdeki ölçüme göre sabit bir kuralla verilir. Sınırlı, deneysel ya da tanınamayan bir yığında rapor bunu **en başta** söyler, çünkü bulgular bu yığınlarda daha az güvenilirdir. Deneysel yığında derin denetim skor vermez. "Destekleniyor" da birkaç sorunun kaçırılacağı anlamına gelir.
+Düzeyler görülmemiş projelerdeki ölçüme göre sabit bir kuralla verilir. Sınırlı, deneysel ya da tanınamayan bir yığında rapor bunu **en başta** söyler, çünkü bulgular bu yığınlarda daha az güvenilirdir. Bu yığınlarda skor da verilmez. "Destekleniyor" da birkaç sorunun kaçırılacağı anlamına gelir.
+
+## Skor
+
+Önce bulgu listesine bakın: her bulgu dosya, satır ve kanıtla gelir. Skor yalnızca bir özet sayıdır ve şu durumlarda **verilmez**; rapor `N/A (skor güvenilir değil)` yazar ve nedenini söyler:
+
+- Yığın sınırlı, deneysel ya da tanınamıyor (karışık projede zayıf olan yığının adı yazılır).
+- Yedi analiz katmanından (şema, uç noktalar, veritabanı yazma, formlar, arayüz, üçüncü taraflar, aydınlatma metinleri) dördü ya da daha fazlası görülmedi. Görülmeyen katmanda bulgu çıkmaması skoru yükseltir; bu yüzden küçük bir proje yanıltıcı biçimde A alabilirdi.
+- Kapsam kontrolleri okunamayan bir bölüm buldu.
+
+Ölçüm setindeki 84 projenin 28'i skor alıyor; hızlı tarama ve derin denetim aynı kararı verir. Skor verildiğinde de bir **üst sınırdır**: doğrulanmayı bekleyen yüksek önemli maddeler skora girmez. Yalnızca `url` taramasında kod olmadığı için bu kural uygulanmaz. JSON'da skor yoksa `score: null`, `scoreReliable: false` ve `scoreReasons` bulunur. CI'da `--fail-on` skora değil önem derecesine bakar.
 
 ## Ne kadar doğru?
 

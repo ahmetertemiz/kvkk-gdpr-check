@@ -195,7 +195,7 @@ export function roadmap(f) {
   });
   return join(
     header('en', f, 'Compliance Roadmap'),
-    `Scan score: **${f.score}/100**. Fix CRITICAL and HIGH first.`,
+    f.scoreReliable ? `Scan score: **${f.score}/100**. Fix CRITICAL and HIGH first.` : `Scan score: **N/A (score not reliable)**${f.scoreReasons.length ? ` — ${f.scoreReasons.map((r) => r.en).join('; ')}` : ''}. Fix CRITICAL and HIGH first.`,
     '## Technical findings',
     items.join('\n') || 'None.',
     '## Organisational tasks',

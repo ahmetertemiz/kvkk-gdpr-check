@@ -34,6 +34,7 @@ Bu belge aracın ne kadar doğru çalıştığını ölçüldüğü hâliyle anl
 - **En büyük boşluk yetki kontrolüdür.** Rol kontrolü eksik uçlar, herkesin kaydını listeleyen uçlar, kullanıcının kendi rolünü değiştirebildiği güncellemeler, sınıf tabanlı Django görünümleri, Laravel ve GraphQL çoğunlukla görülmez. 10. turda eklenen kayıt düzeyindeki kontroller isabetlidir (anon-key-gate dışında 13'te 12), ama bu sorunların küçük bir bölümünü bulur. anon-key-gate sinyali 7'de 1 doğru çıktı ve puana girmez.
 - **"Doğrulanmalı" listesi atlanmamalı.** Ölçülmüş isabeti düşük ya da hiç ölçülmemiş sinyaller puana girmez, bu listeye düşer. 10. turda listedeki 146 maddenin 86'sı gerçek sorundu. Aynı sinyalin doğruluğu projeden projeye çok değişiyor.
 - **Skor bir üst sınırdır.** Listede bekleyen yüksek önemli maddeler skora dahil değildir; rapor sayılarını ve kendilerini yönetici özetinin altında gösterir.
+- **Çoğu projede skor verilmez.** Sınırlı, deneysel ya da tanınamayan yığında ve yedi katmandan dördü ya da daha fazlası görülmediğinde rapor N/A yazar (25.11.2026'dan beri; 84 projenin 28'i skor alıyor, önceki kuralla 45'iydi). Yukarıdaki isabet rakamları bulgulara aittir ve bu değişiklikten etkilenmez.
 - **"Kapsam ok" güvence değildir.** 9. ve 10. turda 12 projenin 4'ünde skor güvenilir görünürken temel bir katmanda açıklanmamış bir eksik vardı.
 
 ## Destek seviyeleri
@@ -44,7 +45,7 @@ Seviye, görülmemiş projelerdeki ölçüme göre sabit bir kuralla verilir (`s
 |---|---|
 | Destekleniyor | Next.js, React SPA (Vite / Lovable / Bolt), Expo / React Native, SvelteKit |
 | Sınırlı | Express, Remix / React Router, Django, Flutter |
-| Deneysel (skor verilmez) | NestJS, Laravel, Flask, FastAPI, Fastify / Koa, Nuxt, Astro, Convex, Hono ve hiç ölçülmemiş diğerleri |
+| Deneysel | NestJS, Laravel, Flask, FastAPI, Fastify / Koa, Nuxt, Astro, Convex, Hono ve hiç ölçülmemiş diğerleri |
 
 Seviye kaçırma sayısını öngörüyor (destekleniyor: proje başına 4,6-4,7; diğerleri 8-11), isabeti öngörmüyor. "Destekleniyor" da birkaç sorunun kaçırılacağı anlamına gelir. Tespit bazen yanılır: projedeki küçük bir yan servis seviyeyi belirleyebilir.
 

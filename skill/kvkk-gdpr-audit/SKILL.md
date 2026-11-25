@@ -52,7 +52,7 @@ The scanner is heuristic. For every critical/high finding, open the file and con
 
 Write a short report in the user's language:
 
-1. **Score & headline** — the scanner score and the 3 most urgent things.
+1. **Headline** — the 3 most urgent things. Give the score only when `scoreReliable` is true; otherwise say there is none and why (`scoreReasons`). The findings are the result, not the number.
 2. **Findings table** — severity, what, where (`file:line`), fix. Group by: Security → Consent/Tracking → Transparency → Data subject rights → Transfers → Retention.
 3. **Data inventory** — table: data field | purpose | legal basis (KVKK md.5/6, GDPR Art.6/9) | storage location | recipients/third parties | retention. Mark guesses as guesses and ask the user to confirm.
 4. **Third parties & transfers** — vendor, what data, region, whether a DPA/standard contract is needed (KVKK md.9: standard contract must be notified to the KVKK Authority within 5 business days of signing).

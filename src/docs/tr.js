@@ -358,7 +358,7 @@ export function yolHaritasi(f) {
   });
   return join(
     header('tr', f, 'KVKK / GDPR Uyum Yol Haritası'),
-    `Tarama skoru: **${f.score}/100**. Önce KRİTİK ve YÜKSEK maddeleri kapatın.`,
+    f.scoreReliable ? `Tarama skoru: **${f.score}/100**. Önce KRİTİK ve YÜKSEK maddeleri kapatın.` : `Tarama skoru: **N/A (skor güvenilir değil)**${f.scoreReasons.length ? ` — ${f.scoreReasons.map((r) => r.tr).join('; ')}` : ''}. Önce KRİTİK ve YÜKSEK maddeleri kapatın.`,
     '## Teknik bulgular',
     items.length ? items.join('\n') : 'Teknik bulgu yok.',
     '## Kurumsal yükümlülükler',

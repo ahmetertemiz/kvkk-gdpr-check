@@ -1,5 +1,6 @@
 import { CATEGORIES, CATEGORY_ORDER } from './data/categories.js';
 import { supportNotice } from './support-notice.js';
+import { scoreShown, reasonTexts } from './score-gate.js';
 import { basisNote, unverifiedBasis } from './data/legal-basis.js';
 
 export const SEV_LABEL = {
@@ -13,6 +14,8 @@ const T = {
     header: 'KVKK / GDPR Uyum Taraması',
     scanned: 'taranan dosya',
     score: 'Gizlilik skoru',
+    scoreNA: 'N/A (skor güvenilir değil)',
+    scoreWhy: 'Neden skor yok',
     why: 'Neden önemli',
     fix: 'Ne yapmalı',
     refs: 'Dayanak',
@@ -42,6 +45,8 @@ const T = {
     header: 'KVKK / GDPR Compliance Scan',
     scanned: 'files scanned',
     score: 'Privacy score',
+    scoreNA: 'N/A (score not reliable)',
+    scoreWhy: 'Why there is no score',
     why: 'Why it matters',
     fix: 'What to do',
     refs: 'Legal basis',
@@ -206,7 +211,11 @@ export function toText(result, { lang = 'tr', color = true, verbose = false } = 
         k.blue(`${c.info} ${SEV_LABEL[lang].info}`),
       ].join('  '),
   );
-  out.push(k.bold(`  ${t.score}: `) + gColor(k.bold(`${result.score}/100 (${grade})`)));
+  if (scoreShown(result)) out.push(k.bold(`  ${t.score}: `) + gColor(k.bold(`${result.score}/100 (${grade})`)));
+  else {
+    out.push(k.bold(`  ${t.score}: `) + k.yellow(k.bold(t.scoreNA)));
+    for (const x of reasonTexts(result, lang)) out.push(k.dim(`   ${t.scoreWhy}: ${x}`));
+  }
   out.push('');
   out.push(k.dim(`  ${t.tip}`));
   out.push(k.dim(`  ⚖  ${t.disclaimer}`));
@@ -226,7 +235,8 @@ export function toMarkdown(result, { lang = 'tr' } = {}) {
   if (notice) out.push(`> ⚠️ **${mdEsc(notice.text)}**`, '');
   for (const h of headerLines(result, t)) out.push(`- ${h.replace(/: (.*)$/, ': `$1`')}`);
   if (result.root || result.url) out.push('');
-  out.push(`**${t.score}: ${result.score}/100 (${scoreGrade(result.score)})**${result.filesScanned ? ` · ${result.filesScanned} ${t.scanned}` : ''}`);
+  out.push(`**${t.score}: ${scoreShown(result) ? `${result.score}/100 (${scoreGrade(result.score)})` : t.scoreNA}**${result.filesScanned ? ` · ${result.filesScanned} ${t.scanned}` : ''}`);
+  for (const x of reasonTexts(result, lang)) out.push('', `_${t.scoreWhy}: ${mdEsc(x)}_`);
   out.push('');
   out.push(`| ${SEV_ICON.critical} ${SEV_LABEL[lang].critical} | ${SEV_ICON.high} ${SEV_LABEL[lang].high} | ${SEV_ICON.medium} ${SEV_LABEL[lang].medium} | ${SEV_ICON.low} ${SEV_LABEL[lang].low} | ${SEV_ICON.info} ${SEV_LABEL[lang].info} |`);
   out.push('|---|---|---|---|---|');
@@ -301,7 +311,11 @@ export function toJSON(result, { lang = 'tr' } = {}) {
     {
       tool: 'kvkk-gdpr-check',
       supportNotice: supportNotice(result, lang, { quickScan: true }),
-      score: result.score,
+      // An unreliable score is not a number anyone should act on: null, with the computed value kept as scoreRaw.
+      score: scoreShown(result) ? result.score : null,
+      ...(scoreShown(result) ? {} : { scoreRaw: result.score }),
+      scoreReliable: scoreShown(result),
+      scoreReasons: (result.scoreReasons || []).map((r) => ({ code: r.code, text: r[lang] || r.tr, ...(r.stacks ? { stacks: r.stacks } : {}), ...(r.layers ? { layers: r.layers } : {}) })),
       root: result.root || null,
       url: result.url || null,
       filesScanned: result.filesScanned,
@@ -359,7 +373,7 @@ export function toSarif(result, { lang = 'tr' } = {}) {
     {
       $schema: 'https://json.schemastore.org/sarif-2.1.0.json',
       version: '2.1.0',
-      runs: [{ tool: { driver: { name: 'kvkk-gdpr-check', informationUri: 'https://github.com/', rules } }, ...(notice ? { properties: { supportNotice: notice.text } } : {}), results }],
+      runs: [{ tool: { driver: { name: 'kvkk-gdpr-check', informationUri: 'https://github.com/', rules } }, properties: { ...(notice ? { supportNotice: notice.text } : {}), score: scoreShown(result) ? result.score : null, scoreReliable: scoreShown(result), scoreReasons: reasonTexts(result, lang) }, results }],
     },
     null,
     2,

@@ -1,4 +1,5 @@
 import { pendingTop, S, L, SEVS, grade, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText } from './common.js';
+import { reasonTexts } from '../../score-gate.js';
 import { supportNotice } from '../../support-notice.js';
 import { basisNote } from '../../data/legal-basis.js';
 import { CONTROLLER_QUESTIONS } from '../legal/knowledge.js';
@@ -203,7 +204,7 @@ export function auditHtml(result, { lang = 'tr' } = {}) {
 <nav class="tabs" role="tablist">${Object.entries(t.tabs).map(([k, v], i) => `<button type="button" class="tab" role="tab" data-tab="${k}" aria-selected="${i === 0}">${esc(v)}${k === 'findings' ? ` (${result.findings.length})` : ''}</button>`).join('')}</nav>
 
 <section class="panel" data-panel="overview">${banner}
-<div class="grid g3"><div class="card">${gauge(sv.score, t)}</div>
+<div class="grid g3"><div class="card">${gauge(sv.score, t)}${reasonTexts(result, lang).map((x) => `<p class="small muted">${esc(t.scoreWhy)}: ${esc(x)}</p>`).join('')}</div>
 <div class="card"><h2>${esc(t.summary)}</h2><div class="tiles">${tiles}</div><h3>${esc(t.topRisks)}</h3>${topHtml}${pendHtml}</div>
 <div class="card"><h2>${esc(t.heatmap)}</h2>${heatmap(result.findings, t)}<h3>${esc(t.dpia)}</h3>${dpia}</div></div>
 ${layersHtml}<div class="card"><h2>${esc(t.inventory)} (${m.inventory.length})</h2>${inv}</div>${warnHtml}

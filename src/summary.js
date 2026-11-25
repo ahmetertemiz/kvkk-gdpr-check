@@ -10,6 +10,8 @@ import { SEVERITY_ORDER, SEVERITY_WEIGHT } from './rules.js';
  *     findings: Finding[],      // sorted most severe first
  *     counts: {critical, high, medium, low, info},
  *     score: number,            // 0..100
+ *     scoreReliable?: boolean,  // false: reports show N/A and scoreReasons (score-gate.js)
+ *     scoreReasons?: object[],
  *     signals?: object,         // code-scan facts
  *     live?: object,            // live-scan facts (cookies, requests, banner, headers…)
  *   }
@@ -58,6 +60,10 @@ export function mergeResults(...results) {
     if (r.url) merged.url = r.url;
     if (r.signals) merged.signals = r.signals;
     if ('support' in r) merged.support = r.support;
+    if (r.layers) merged.layers = r.layers;
+    // One part without a reliable score is enough: the merged number would rest on it.
+    if (r.scoreReliable === false) merged.scoreReliable = false;
+    if (r.scoreReasons) merged.scoreReasons = [...(merged.scoreReasons || []), ...r.scoreReasons];
     if (r.live) merged.live = r.live;
   }
   return merged;

@@ -15,6 +15,7 @@ const STR = {
     scan: 'Tara',
     scanning: 'Taranıyor… Canlı site taraması 30-60 sn sürebilir.',
     score: 'Skor',
+    scoreNA: 'N/A (skor güvenilir değil)',
     download: 'HTML raporu indir',
     newTab: 'Yeni sekmede aç',
     docsTitle: 'Dokümanları üret',
@@ -44,6 +45,7 @@ const STR = {
     scan: 'Scan',
     scanning: 'Scanning… a live site scan can take 30–60 s.',
     score: 'Score',
+    scoreNA: 'N/A (score not reliable)',
     download: 'Download HTML report',
     newTab: 'Open in new tab',
     docsTitle: 'Generate documents',
@@ -128,7 +130,7 @@ footer{margin-top:24px;color:var(--muted);font-size:12.5px}
 <section id="result" hidden>
   <div id="warnings"></div>
   <div class="result-bar">
-    <span class="muted" data-t="score"></span> <span class="score" id="score"></span>
+    <span class="muted" data-t="score"></span> <span class="score" id="score"></span> <span class="muted small" id="score-why"></span>
     <a class="btn" id="download" download="kvkk-report.html" data-t="download"></a>
     <a class="btn" id="newtab" target="_blank" rel="noopener" data-t="newTab"></a>
   </div>
@@ -185,8 +187,10 @@ footer{margin-top:24px;color:var(--muted);font-size:12.5px}
     post('/api/scan',{path:f.path.value,url:f.url.value,repo:f.repo.value,noBrowser:f.noBrowser.checked,lang:lang})
       .then(function(j){
         scanId=j.scanId;
-        $('#score').textContent=j.score+'/100';
-        $('#score').style.color=j.score>=75?'var(--good)':j.score>=50?'var(--warn)':'var(--bad)';
+        var na=typeof j.score!=='number';
+        $('#score').textContent=na?STR[lang].scoreNA:j.score+'/100';
+        $('#score').style.color=na?'var(--warn)':j.score>=75?'var(--good)':j.score>=50?'var(--warn)':'var(--bad)';
+        $('#score-why').textContent=na?(j.scoreReasons||[]).join(' · '):'';
         var w=$('#warnings'); w.textContent='';
         (j.warnings||[]).forEach(function(m){var d=document.createElement('div');d.className='warn';d.textContent=m;w.appendChild(d)});
         $('#report').srcdoc=j.html;

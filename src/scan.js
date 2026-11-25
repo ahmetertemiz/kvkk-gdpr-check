@@ -4,6 +4,7 @@ import { walk } from './walk.js';
 import { RULES, SIGNALS } from './rules.js';
 import { sortFindings, summarize } from './summary.js';
 import { attachSupport } from './support-notice.js';
+import { scoreReasons } from './score-gate.js';
 
 const SUPPRESS = /kvkk-ignore(?:[\s:]+([A-Z]{3}\d{3}(?:\s*,\s*[A-Z]{3}\d{3})*))?/;
 
@@ -145,5 +146,8 @@ export function scan(root, opts = {}) {
   );
   const { counts, score } = summarize(findings);
 
-  return { root, filesScanned: files.length, findings, counts, score, signals, support: attachSupport(files) };
+  // Manifests only; score-gate.js attachCoverage adds the analysis layers (CLI, web UI).
+  const support = attachSupport(files);
+  const reasons = scoreReasons({ support, filesScanned: files.length });
+  return { root, filesScanned: files.length, findings, counts, score, signals, support, scoreReliable: !reasons.length, scoreReasons: reasons };
 }
