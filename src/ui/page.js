@@ -151,7 +151,7 @@ footer{margin-top:24px;color:var(--muted);font-size:12.5px}
       <span class="status" id="docs-status" hidden><span class="spinner"></span><span data-t="generating"></span></span>
     </div>
     <div class="error" id="docs-error" hidden style="margin-top:12px"></div>
-    <div id="docs-out" hidden><h2 style="margin-top:16px" data-t="files"></h2><ul class="files" id="docs-files"></ul></div>
+    <div id="docs-out" hidden><div class="warn" id="docs-notice" hidden></div><h2 style="margin-top:16px" data-t="files"></h2><ul class="files" id="docs-files"></ul></div>
   </form>
 </section>
 
@@ -213,6 +213,8 @@ footer{margin-top:24px;color:var(--muted);font-size:12.5px}
     post('/api/docs',{scanId:scanId,answers:answers,lang:lang})
       .then(function(j){
         var ul=$('#docs-files'); ul.textContent='';
+        $('#docs-notice').textContent=[j.notice,(j.skipped||[]).length?j.skippedLabel+': '+j.skipped.join(', '):''].filter(Boolean).join(' — ');
+        $('#docs-notice').hidden=!$('#docs-notice').textContent;
         (j.files||[]).forEach(function(file){
           var li=document.createElement('li'), a=document.createElement('a');
           a.href='/api/file?id='+encodeURIComponent(file.id); a.textContent=file.name; a.setAttribute('download','');

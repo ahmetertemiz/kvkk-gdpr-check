@@ -23,6 +23,9 @@ const MSG = {
     live: 'Canlı site taraması yapılamadı',
     docs: 'Doküman üretici çalıştırılamadı',
     noScan: 'Önce bir tarama yap.',
+    noAudit: 'Denetim verisi yok, belgeler üretilemedi.',
+    twoProjects: 'Denetim verisi yok, belgeler üretilemedi: klasör ve GitHub reposu birlikte tarandı. Belgeler tek proje için üretilir; yalnızca birini tarayın.',
+    skipped: 'Denetim verisi yok, üretilemedi',
   },
   en: {
     nothing: 'Enter a folder, a site URL or a GitHub repo URL.',
@@ -33,6 +36,9 @@ const MSG = {
     live: 'Live site scan failed',
     docs: 'Document generator failed',
     noScan: 'Run a scan first.',
+    noAudit: 'No audit data, the documents were not generated.',
+    twoProjects: 'No audit data, the documents were not generated: a folder and a GitHub repository were scanned together. Documents are made for one project; scan only one of them.',
+    skipped: 'No audit data, not written',
   },
 };
 
@@ -110,7 +116,7 @@ function openBrowser(url) {
  * @param {{port?:number, lang?:'tr'|'en', open?:boolean, host?:string}} opts
  * @returns {Promise<{server: http.Server, url: string, close: () => Promise<void>}>}
  */
-export async function startUi({ port = 4477, lang = 'tr', open = true, quiet = false } = {}) {
+export async function startUi({ port = 4477, lang = 'tr', open = true, quiet = false, clone: cloneFn = cloneRepo } = {}) {
   const host = '127.0.0.1';
   const results = new Map(); // scanId -> result (LRU-ish, max 20)
   const files = new Map(); // fileId -> { abs, name }
@@ -156,21 +162,19 @@ export async function startUi({ port = 4477, lang = 'tr', open = true, quiet = f
 
     const parts = [];
     const warnings = [];
+    let clone = null; // the clone lives until the audit for the documents ran: it cannot be read again later
+    try {
     if (p) parts.push(await attachCoverage(scan(path.resolve(p)), path.resolve(p), { lang: L }));
     if (repo) {
       let dir;
       try {
-        dir = await cloneRepo(repo.replace(/\/$/, ''));
+        clone = dir = await cloneFn(repo.replace(/\/$/, ''));
       } catch (e) {
         throw new HttpError(400, `${m.clone}: ${String(e.message || e).split('\n')[0]}`);
       }
-      try {
-        const r = await attachCoverage(scan(dir), dir, { lang: L });
-        r.root = repo;
-        parts.push(r);
-      } finally {
-        fs.rmSync(dir, { recursive: true, force: true });
-      }
+      const r = await attachCoverage(scan(dir), dir, { lang: L });
+      r.root = repo;
+      parts.push(r);
     }
     if (liveUrl) {
       try {
@@ -182,6 +186,11 @@ export async function startUi({ port = 4477, lang = 'tr', open = true, quiet = f
       }
     }
     const result = parts.length === 1 ? parts[0] : mergeResults(...parts);
+    result.codeParts = (p ? 1 : 0) + (repo ? 1 : 0);
+    if (clone && result.codeParts === 1) {
+      const { auditForDocs } = await import('../docs/index.js');
+      result.docsAudit = await auditForDocs(clone, { lang: L, live: result.live || null });
+    }
     const scanId = crypto.randomBytes(9).toString('base64url');
     results.set(scanId, result);
     while (results.size > 20) results.delete(results.keys().next().value);
@@ -193,6 +202,18 @@ export async function startUi({ port = 4477, lang = 'tr', open = true, quiet = f
       warnings,
       html: toHtml(result, { lang: L }),
     };
+    } finally {
+      if (clone) fs.rmSync(clone, { recursive: true, force: true });
+    }
+  }
+
+  /** Audit data for the documents of a scan; a code project without any is an error, not an empty audit. Site-only scans have none. */
+  async function auditOf(result, L, auditForDocs) {
+    if (!result.codeParts) return null;
+    if (result.codeParts > 1) throw new HttpError(409, MSG[L].twoProjects);
+    const { audit, warning } = result.docsAudit || (await auditForDocs(result.root, { lang: L, live: result.live || null }));
+    if (!audit) throw new HttpError(409, `${MSG[L].noAudit} ${warning || ''}`.trim());
+    return audit;
   }
 
   async function handleDocs(body) {
@@ -212,9 +233,10 @@ export async function startUi({ port = 4477, lang = 'tr', open = true, quiet = f
     tempDirs.add(outDir);
     let out;
     try {
-      const audit = result.root ? (await auditForDocs(result.root, { lang: L, live: result.live || null })).audit : null;
+      const audit = await auditOf(result, L, auditForDocs);
       out = await generateDocs({ result, answers, outDir, lang: L, interactive: false, audit });
     } catch (e) {
+      if (e instanceof HttpError) throw e;
       throw new HttpError(500, `${MSG[L].docs}: ${e.message || e}`);
     }
     const realOut = fs.realpathSync(outDir);
@@ -231,7 +253,7 @@ export async function startUi({ port = 4477, lang = 'tr', open = true, quiet = f
       files.set(id, { abs, name: path.relative(realOut, abs).split(path.sep).join('/') });
       list.push({ id, name: files.get(id).name, size: fs.statSync(abs).size });
     }
-    return { files: list };
+    return { files: list, notice: out.notice ? `${out.notice.title}: ${out.notice.text}` : null, skipped: (out.skipped || []).map((s) => s.name), skippedLabel: MSG[L].skipped };
   }
 
   function handleFile(id, res) {

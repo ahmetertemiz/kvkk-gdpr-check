@@ -223,10 +223,16 @@ async function main() {
     if (warning) process.stderr.write(`  ! ${warning}\n`);
     warnProblems(audit?.organization, args.lang);
     const out = args.out || path.join(args.dir, 'privacy-docs');
-    const { files, open } = await generateDocs({ result, answers, outDir: out, lang: args.lang, interactive: !args.yes && process.stdin.isTTY, audit });
+    const { files, open, skipped, stale, notice } = await generateDocs({ result, answers, outDir: out, lang: args.lang, interactive: !args.yes && process.stdin.isTTY, audit });
     console.log(args.lang === 'en'
       ? `\n  ✔ ${files.length} files written to ${out}\n  ⚠ BETA: these are automatically generated drafts, not legal advice. Their accuracy on real projects has not been measured.\n    Do not publish before a lawyer has reviewed them. ${open} fields are marked [TO FILL IN] or [TO VERIFY].`
       : `\n  ✔ ${files.length} dosya yazıldı: ${out}\n  ⚠ BETA: bunlar otomatik üretilmiş taslaklardır, hukuki danışmanlık değildir. Gerçek projelerdeki isabetleri ölçülmedi.\n    Bir hukukçu incelemeden yayımlamayın. ${open} alan [DOLDURULMALI] ya da [DOĞRULANMALI] olarak işaretli.`);
+    if (notice) console.log(`  ⚠ ${notice.title}: ${notice.text}`);
+    const drafts = skipped.filter((s) => s.why === 'no-audit-data').map((s) => s.name);
+    const inv = skipped.filter((s) => s.why === 'no-data-detected').map((s) => s.name);
+    if (drafts.length) console.log(args.lang === 'en' ? `  ✖ no audit data, not written: ${drafts.join(', ')}` : `  ✖ denetim verisi yok, üretilemedi: ${drafts.join(', ')}`);
+    if (inv.length) console.log(args.lang === 'en' ? `  ✖ no data detected, not written: ${inv.join(', ')}` : `  ✖ hiç veri tespit edilmedi, üretilemedi: ${inv.join(', ')}`);
+    if (stale.length) console.log(args.lang === 'en' ? `  ! left from an earlier run, do not use: ${stale.join(', ')}` : `  ! önceki çalıştırmadan kalmış, kullanmayın: ${stale.join(', ')}`);
     for (const f of files) {
       const rel = path.relative(process.cwd(), f);
       console.log(`    - ${rel.startsWith('..') ? f : rel}`);

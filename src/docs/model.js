@@ -3,6 +3,7 @@ import { DATA_CATEGORIES, categoryForField, COOKIE_CATEGORY } from './data.js';
 import { L, today } from './util.js';
 import { auditFields, auditVendors, recipientCategories } from './from-audit.js';
 
+const DEFAULT_FIELD = 'IP / log';
 const VENDOR_RULES = ['TRK001', 'TRF001', 'TRF002', 'FNT001', 'MED001'];
 const MARKETING_FIELD = /(marketing|newsletter|kampanya|pazarlama|iys|ileti|bulten|bülten)/i;
 
@@ -66,7 +67,7 @@ function collectCategories(result, hits, live, answers, audit) {
     add('musteri_islem');
   }
   if (s.passwordField) add('islem_guvenligi', 'password (hash)');
-  add('islem_guvenligi', 'IP / log');
+  add('islem_guvenligi', DEFAULT_FIELD);
   return { cats, hasAccounts: !!hasAccounts };
 }
 
@@ -199,6 +200,8 @@ export function buildFacts(result, answers = {}, audit = null) {
     },
     isAbroad,
     audit,
+    // Data seen by any source; the generic log entry is written for every app and shows nothing.
+    dataDetected: categories.some((c) => [...c.fields.keys()].some((k) => k !== DEFAULT_FIELD)),
     recipientCategories: audit ? recipientCategories(audit) : null,
   };
 }

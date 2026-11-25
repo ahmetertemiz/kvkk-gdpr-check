@@ -56,20 +56,20 @@ export function markPlaceholders(text, lang = 'tr') {
 
 const entries = (map, e) => [...map].map(([label, n]) => `${label}${n > 1 ? e.times(n) : ''}`);
 
-/** Markdown document: warning first, placeholders tagged, open fields last. */
-export function finalizeMarkdown(body, lang = 'tr') {
+/** Markdown document: warning first, placeholders tagged, open fields last. `notice`: a second warning about the evidence. */
+export function finalizeMarkdown(body, lang = 'tr', notice = null) {
   const b = BANNER[lang] || BANNER.tr, e = END[lang] || END.tr;
   const { text, open } = markPlaceholders(body, lang);
   const list = [];
   for (const kind of ['fill', 'check']) if (open[kind].size) list.push(`**${e[kind]}:**\n\n${entries(open[kind], e).map((x) => `- ${x}`).join('\n')}`);
   return {
-    text: `> ⚠️ **${b[0]}**\n>\n> ${b[1]}\n>\n> ${b[2]}\n\n${text.trim()}\n\n---\n\n## ${e.title}\n\n${list.length ? list.join('\n\n') : e.none}\n`,
+    text: `> ⚠️ **${b[0]}**\n>\n> ${b[1]}\n>\n> ${b[2]}\n\n${notice ? `> ⚠️ **${notice.title}**\n>\n> ${notice.text}\n\n` : ''}${text.trim()}\n\n---\n\n## ${e.title}\n\n${list.length ? list.join('\n\n') : e.none}\n`,
     open,
   };
 }
 
 /** CSV: the warning is the first row, the open fields the last rows; the table in between is unchanged. */
-export function finalizeCsv(body, lang = 'tr') {
+export function finalizeCsv(body, lang = 'tr', notice = null) {
   const b = BANNER[lang] || BANNER.tr, e = END[lang] || END.tr;
   const { text, open } = markPlaceholders(body.replace(/^﻿/, ''), lang);
   const bare = (rows) => toCsv(rows[0], rows.slice(1)).replace(/^﻿/, '');
@@ -77,7 +77,22 @@ export function finalizeCsv(body, lang = 'tr') {
   const rows = [[''], [e.title]];
   for (const kind of ['fill', 'check']) for (const x of entries(open[kind], e)) rows.push([`${e[kind]}: ${un(x)}`]);
   if (rows.length === 2) rows.push([e.none]);
-  return { text: `﻿${bare([[b.join(' ')]])}${text}${bare(rows)}`, open };
+  return { text: `﻿${bare([[[...b, ...(notice ? [notice.title, notice.text] : [])].join(' ')]])}${text}${bare(rows)}`, open };
 }
 
-export const finalize = (name, body, lang) => (name.endsWith('.csv') ? finalizeCsv(body, lang) : finalizeMarkdown(body, lang));
+export const finalize = (name, body, lang, notice = null) => (name.endsWith('.csv') ? finalizeCsv(body, lang, notice) : finalizeMarkdown(body, lang, notice));
+
+/** What the documents cannot rest on: no deep audit at all, or one that traced no personal data. null: audit data is there. */
+export function evidenceNotice(state, lang = 'tr') {
+  const N = {
+    none: {
+      tr: { title: 'DERİN DENETİM VERİSİ YOK', text: 'Bu belge yalnızca desen taramasına (ve varsa canlı site taramasına) dayanır. Veri, alıcı ve aktarım listesi eksik olabilir; "tespit edilmedi" ifadeleri yokluğu göstermez.' },
+      en: { title: 'NO DEEP AUDIT DATA', text: 'This document rests on the pattern scan only (and the live scan, if any). The lists of data, recipients and transfers may be incomplete; "not detected" does not mean absent.' },
+    },
+    empty: {
+      tr: { title: 'DENETİM HİÇ KİŞİSEL VERİ BULAMADI', text: 'Derin denetim bu projede hiçbir kişisel veri izleyemedi. Bu, veri işlenmediğini göstermez; büyük olasılıkla proje okunamadı. DPIA, LIA ve TIA taslakları üretilmedi; bu belgedeki "tespit edilmedi" ifadelerine güvenmeyin.' },
+      en: { title: 'THE AUDIT FOUND NO PERSONAL DATA', text: 'The deep audit traced no personal data in this project. That does not mean none is processed; most likely the project could not be read. No DPIA, LIA or TIA draft was written; do not rely on "not detected" in this document.' },
+    },
+  };
+  return N[state]?.[lang] || N[state]?.tr || null;
+}

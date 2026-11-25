@@ -81,6 +81,7 @@ Aydınlatma metni, açık rıza metni, çerez politikası, veri envanteri (Markd
 
 - Her belgenin **başında** taslak uyarısı, **sonunda** doldurulmamış alanların listesi vardır.
 - Koddan çıkarılamayan ya da ankette cevaplanmayan alanlar `[DOLDURULMALI: …]`; varsayılan metinler ve teyit gerektiren tespitler `[DOĞRULANMALI: …]` olarak işaretlenir. İşaret kalan belge yayıma hazır değildir.
+- Derin denetim verisi yoksa ya da denetim hiç kişisel veri bulamadıysa DPIA, LIA ve TIA **üretilmez**, veri hiç tespit edilmediyse envanter de üretilmez; kalan belgeler bunu başında yazar.
 - DPIA, LIA ve TIA taslaklarında değerlendirme ve karar yerleri boştur; araç "uygundur" demez.
 
 ## Desteklenen yığınlar

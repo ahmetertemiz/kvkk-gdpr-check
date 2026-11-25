@@ -31,7 +31,8 @@ for (const example of ['audit-app', 'vibe-app', 'mobile-app', 'clean-app']) {
     for (const withAudit of [true, false]) {
       test(`${example} / ${lang} / ${withAudit ? 'audit' : 'scan only'}: warning first, list last, no raw placeholder`, async () => {
         const { docs, open } = await make(example, lang, withAudit);
-        assert.ok(docs.length >= (withAudit ? 13 : 9));
+        // clean-app holds no data: no DPIA / LIA / TIA and no inventory (docs-evidence.test.js)
+        assert.ok(docs.length >= (example === 'clean-app' ? 7 : withAudit ? 13 : 9));
         let total = 0;
         for (const [name, text] of docs) {
           const l = langOf(name, lang);

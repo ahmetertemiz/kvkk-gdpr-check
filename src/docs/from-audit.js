@@ -26,6 +26,9 @@ export function auditFields(audit) {
   return out;
 }
 
+/** The audit ran but traced no personal data: nothing may be concluded from it. */
+export const auditEmpty = (audit) => !!audit && auditFields(audit).length === 0;
+
 /** Vendors of the transfer register with the data the audit traced to them. Rows without a catalogue vendor are kept as such. */
 export function auditVendors(audit) {
   const map = new Map();

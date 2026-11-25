@@ -335,6 +335,8 @@ export function refreshHonesty(cov, graph, model, en = false) {
 
 export async function buildGraph(root, { ignore = [], live = null, includeTests = false } = {}) {
   root = path.resolve(root);
+  // An audit of nothing would look like an audit that found nothing.
+  if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) throw new Error(`not a directory: ${path.basename(root)}`);
   const all = walk(root, { ignore }).filter((f) => !/kvkk-ignore-file/.test(f.content.slice(0, 500)));
   const files = includeTests ? all : all.filter((f) => !f.test);
   const graph = new PrivacyGraph();
