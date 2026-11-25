@@ -1,3 +1,4 @@
+import { supportNotice } from '../support-notice.js';
 import { CATEGORIES, CATEGORY_ORDER } from '../data/categories.js';
 import { SEV_LABEL, L, loc, scoreGrade, HEADER_NAMES, isNonEssentialCookie, liveSummary } from '../report.js';
 
@@ -454,6 +455,7 @@ export function toHtml(result, { lang = 'tr' } = {}) {
     )
     .join('');
 
+  const notice = supportNotice(result, lang, { quickScan: true });
   const hasLive = !!result.live;
   const bars = categoryBars(result, lang);
 
@@ -478,6 +480,7 @@ export function toHtml(result, { lang = 'tr' } = {}) {
   <div class="actions"><button type="button" class="btn" id="print">${esc(t.print)}</button></div>
 </header>
 
+${notice ? `<div class="card" role="alert" style="border-left:4px solid #d97706;margin-bottom:14px"><b>⚠ ${esc(notice.text)}</b></div>` : ''}
 <section class="hero">
   <div class="card">${gauge(result.score, t)}</div>
   <div class="card">

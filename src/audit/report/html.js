@@ -1,4 +1,5 @@
 import { pendingTop, S, L, SEVS, grade, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText } from './common.js';
+import { supportNotice } from '../../support-notice.js';
 import { CONTROLLER_QUESTIONS } from '../legal/knowledge.js';
 import { ORG_STATUS, ORG_TEXT } from '../legal/org.js';
 import { buildDataMap } from './datamap.js';
@@ -174,7 +175,8 @@ export function auditHtml(result, { lang = 'tr' } = {}) {
   const cov = coverageNote(result, t);
   const warns = result.warnings || [];
   const notes = coverageNotes(result, t, m);
-  const banner = (cov ? `<div class="warnbox" role="alert"><b>⚠ ${esc(cov)}</b></div>` : '') + (notes.length ? `<ul class="covnotes" aria-label="${esc(t.coverageNotes)}">${notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : '');
+  const notice = supportNotice(result, lang);
+  const banner = (notice ? `<div class="warnbox" role="alert"><b>⚠ ${esc(notice.text)}</b></div>` : '') + (cov ? `<div class="warnbox" role="alert"><b>⚠ ${esc(cov)}</b></div>` : '') + (notes.length ? `<ul class="covnotes" aria-label="${esc(t.coverageNotes)}">${notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : '');
   const lr = layerRows(result, t);
   const stl = stackLabels(result);
   const layerCls = (r) => (r.kind === 'found' ? 'ok' : r.kind === 'none' ? 'muted' : 'sev-medium');

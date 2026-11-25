@@ -48,21 +48,6 @@ Desteklenen yığınlar:
 - **Python:** Django/SQLAlchemy/Flask, Alembic
 - **Mobil:** React Native/Expo formları
 
-**Ne kadar doğru?** Daha önce hiç görülmemiş gerçek projelerde ölçüldü (son üç tur, 36 proje). Kararları kodu okuyan yapay zekâ ajanları verdi; bir avukat doğrulamadı.
-
-- Puanlanan bulguların **%79-84'ü** doğru (kör denetimle düzeltilmiş tahmin %75-79).
-- Proje başına **yaklaşık 8 gerçek sorun kaçırılıyor**, 2-3'ü yüksek önemli. Çoğu yetki sorunudur: başkasının verisine erişim, eksik rol kontrolü. "Bulgu yok" "sorun yok" demek değildir.
-- **Skor bir üst sınırdır.** Ölçülmüş isabeti düşük ya da hiç ölçülmemiş sinyaller "Doğrulanmalı" listesine düşer ve skora girmez; görülmemiş projelerde bu listenin %45-60'ı gerçek sorundur, atlamayın.
-- **"Kapsam ok" güvence değildir:** son iki turda 12 projenin 4'ünde skor güvenilir görünürken açıklanmamış temel bir eksik vardı.
-
-| Destek | Yığınlar |
-|---|---|
-| Destekleniyor | Next.js, React SPA (Vite / Lovable / Bolt), Expo / React Native, SvelteKit |
-| Sınırlı | Express, Remix / React Router, Django, Flutter |
-| Deneysel (skor verilmez) | NestJS, Laravel, Flask, FastAPI, Fastify, Nuxt, Astro, Convex, Hono ve diğerleri |
-
-Ayrıntılar, yöntem ve sınırlar: [docs/ACCURACY.md](docs/ACCURACY.md). Ölçüm etiketleri gerçek projelerdeki açıkları içerdiği için yayınlanmaz.
-
 Kanıt bulunamamasına dayanan sonuçlar ("hesap silme yok" gibi) ancak ilgili katman gerçekten görüldüyse bulgu olur, aksi halde puanı etkilemeyen "Doğrulanmalı" listesine düşer. Desteklenmeyen ya da kısmen görülen yığınlarda rapor hangi katmanın eksik olduğunu söyler ve skoru "güvenilmez" olarak işaretler; amaç sessizce "temiz" dememektir, ama bu her zaman tutmuyor (aşağıdaki kapsam notuna bakın). Tasarım: [docs/AUDIT-ENGINE.md](docs/AUDIT-ENGINE.md).
 
 ## 4 modül
@@ -136,6 +121,39 @@ npx kvkk-gdpr-check ui
 
 ---
 
+## Desteklenen yığınlar
+
+| Düzey | Yığınlar |
+|---|---|
+| **Destekleniyor** | Next.js, React (Vite / Lovable / Bolt), Expo / React Native, SvelteKit |
+| **Sınırlı** | Express, Remix / React Router, Django, Flutter |
+| **Deneysel** | Laravel, NestJS, Flask, FastAPI, Fastify / Koa, Nuxt, Astro, Convex, Hono ve diğerleri |
+
+Düzeyler görülmemiş projelerdeki ölçüme göre sabit bir kuralla verilir. Sınırlı, deneysel ya da tanınamayan bir yığında rapor bunu **en başta** söyler, çünkü bulgular bu yığınlarda daha az güvenilirdir. Deneysel yığında derin denetim skor vermez. "Destekleniyor" da birkaç sorunun kaçırılacağı anlamına gelir.
+
+## Ne kadar doğru?
+
+Derin denetim (`audit`), daha önce üzerinde çalışılmamış gerçek açık kaynak projelerde ölçüldü. Son üç tur (36 proje):
+
+- Skora giren bulguların **%79-84'ü** doğru. 9. turda yalnızca "yanlış" kararları itiraza açıktı; düzeltilmiş tahmin %75-79.
+- Proje başına **yaklaşık 8 gerçek sorun kaçırılıyor**, bunların 2-3'ü yüksek önemli. En büyük boşluk yetki kontrolü: başkasının verisine erişim, eksik rol kontrolü.
+- "Doğrulanmalı" listesinin **%45-60'ı** gerçek sorun. Bu liste skora girmez, atlamayın.
+
+**Ölçümdeki doğru/yanlış kararlarını yapay zekâ ajanları verdi; hepsi aynı model ailesindendir. Hiçbir hukukçu hiçbirini doğrulamadı.** Hızlı taramanın, canlı site taramasının, anketin ve belge taslaklarının isabeti bu ölçümde yer almaz.
+
+Yöntem ve tur tur sonuçlar: [docs/ACCURACY.md](docs/ACCURACY.md). Ölçüm etiketleri gerçek projelerdeki açıkları içerdiği için yayımlanmaz; bu yüzden rakamları dışarıdan yeniden üretemezsiniz.
+
+## Sınırları
+
+- **Hukuki danışmanlık değildir, uyumu garanti etmez.** Bulgu çıkmaması sorun olmadığı anlamına gelmez.
+- Sözleşmeleri, çalışan sistemi, gerçek veriyi ve idari tedbirleri görmez. Sızma testinin yerine geçmez.
+- Skor bir üst sınırdır: doğrulanmayı bekleyen yüksek önemli maddeler skora girmez.
+- "Kapsam ok" güvence değildir: son iki turda 12 projenin 4'ünde skor güvenilir görünürken açıklanmamış temel bir eksik vardı.
+- Kuralların hukuki dayanaklarını bir hukukçu incelemedi.
+- Belge taslakları ve anket ölçülmedi; hukukçu incelemesi olmadan kullanılmamalıdır.
+
+---
+
 ## Diğer seçenekler
 
 ```bash
@@ -201,7 +219,7 @@ src/docs/             doküman üretici (veri modeli + TR/EN şablonlar)
 src/report.js         text / md / json / sarif
 src/report/html.js    HTML rapor
 src/ui/               yerel web arayüzü
-src/data/vendors.js   66 servis: alan adları, çerezler, ülke, amaç
+src/data/vendors.js   182 servis: alan adları, çerezler, ülke, amaç
 ```
 
 ## Katkı

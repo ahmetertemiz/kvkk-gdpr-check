@@ -1,4 +1,5 @@
 import { pendingTop, S, L, SEVS, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText } from './common.js';
+import { supportNotice } from '../../support-notice.js';
 import { CONTROLLER_QUESTIONS } from '../legal/knowledge.js';
 import { ORG_STATUS, ORG_TEXT } from '../legal/org.js';
 import { buildDataMap, toMermaid } from './datamap.js';
@@ -17,6 +18,8 @@ export function auditMarkdown(result, { lang = 'tr' } = {}) {
   const o = [];
   const c = result.counts || {};
   o.push(`# ${t.title}`, '', `_${t.subtitle}_`, '');
+  const notice = supportNotice(result, lang);
+  if (notice) o.push(`> ⚠️ **${cell(notice.text)}**`, '');
   const sv = scoreView(result);
   o.push(`**${t.score}: ${sv.reliable ? sv.text : t.scoreNA}**${sv.reliable ? '' : ` _(${t.scoreNAHint})_`} · ${result.root || result.url || ''} · ${result.filesScanned || 0} ${t.files}`, '');
   const cov = coverageNote(result, t);

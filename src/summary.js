@@ -57,6 +57,7 @@ export function mergeResults(...results) {
     if (r.root) merged.root = r.root;
     if (r.url) merged.url = r.url;
     if (r.signals) merged.signals = r.signals;
+    if ('support' in r) merged.support = r.support;
     if (r.live) merged.live = r.live;
   }
   return merged;

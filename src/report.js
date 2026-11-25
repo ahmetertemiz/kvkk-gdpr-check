@@ -1,4 +1,5 @@
 import { CATEGORIES, CATEGORY_ORDER } from './data/categories.js';
+import { supportNotice } from './support-notice.js';
 
 export const SEV_LABEL = {
   tr: { critical: 'KRİTİK', high: 'YÜKSEK', medium: 'ORTA', low: 'DÜŞÜK', info: 'BİLGİ' },
@@ -147,6 +148,8 @@ export function toText(result, { lang = 'tr', color = true, verbose = false } = 
   const scanned = result.filesScanned ? k.dim(`  ·  ${result.filesScanned} ${t.scanned}`) : '';
   out.push(k.bold(`  ${t.header}`) + scanned);
   if (result.url) out.push(k.dim(`  ${t.site}: ${result.url}`));
+  const notice = supportNotice(result, lang, { quickScan: true });
+  if (notice) out.push(k.yellow(k.bold(`  ⚠ ${notice.text}`)));
   out.push('');
 
   const ls = liveSummary(result.live);
@@ -217,6 +220,8 @@ export function toMarkdown(result, { lang = 'tr' } = {}) {
   const out = [];
   out.push(`# ${t.header}`);
   out.push('');
+  const notice = supportNotice(result, lang, { quickScan: true });
+  if (notice) out.push(`> ⚠️ **${mdEsc(notice.text)}**`, '');
   for (const h of headerLines(result, t)) out.push(`- ${h.replace(/: (.*)$/, ': `$1`')}`);
   if (result.root || result.url) out.push('');
   out.push(`**${t.score}: ${result.score}/100 (${scoreGrade(result.score)})**${result.filesScanned ? ` · ${result.filesScanned} ${t.scanned}` : ''}`);
@@ -292,6 +297,7 @@ export function toJSON(result, { lang = 'tr' } = {}) {
   return JSON.stringify(
     {
       tool: 'kvkk-gdpr-check',
+      supportNotice: supportNotice(result, lang, { quickScan: true }),
       score: result.score,
       root: result.root || null,
       url: result.url || null,
@@ -318,6 +324,7 @@ export function toJSON(result, { lang = 'tr' } = {}) {
 const SARIF_LEVEL = { critical: 'error', high: 'error', medium: 'warning', low: 'note', info: 'note' };
 
 export function toSarif(result, { lang = 'tr' } = {}) {
+  const notice = supportNotice(result, lang, { quickScan: true });
   const rules = result.findings.map((f) => ({
     id: f.rule.id,
     name: f.rule.id,
@@ -348,7 +355,7 @@ export function toSarif(result, { lang = 'tr' } = {}) {
     {
       $schema: 'https://json.schemastore.org/sarif-2.1.0.json',
       version: '2.1.0',
-      runs: [{ tool: { driver: { name: 'kvkk-gdpr-check', informationUri: 'https://github.com/', rules } }, results }],
+      runs: [{ tool: { driver: { name: 'kvkk-gdpr-check', informationUri: 'https://github.com/', rules } }, ...(notice ? { properties: { supportNotice: notice.text } } : {}), results }],
     },
     null,
     2,

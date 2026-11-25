@@ -1,4 +1,5 @@
 import { pendingTop, S, L, SEVS, scoreView, coverageNote, coverageNotes, transferFlag, transferFlagLabel, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText } from './common.js';
+import { supportNotice } from '../../support-notice.js';
 import { CONTROLLER_QUESTIONS } from '../legal/knowledge.js';
 import { ORG_STATUS, ORG_TEXT } from '../legal/org.js';
 
@@ -19,6 +20,8 @@ export function auditText(result, { lang = 'tr', color = false, verbose = false 
   o.push('');
   o.push(k.b(`  ${t.title}`) + k.d(`  ·  ${result.root || result.url || ''}  ·  ${result.filesScanned || 0} ${t.files}`));
   o.push(k.d(`  ${t.subtitle}`));
+  const notice = supportNotice(result, lang);
+  if (notice) o.push(k.yellow(k.b(`  ⚠ ${notice.text}`)));
   o.push('');
   const c = result.counts || {};
   const sv = scoreView(result);

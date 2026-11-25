@@ -1,6 +1,7 @@
 /**
  * renderAudit(result, { lang, format: 'text'|'md'|'json'|'html', color, verbose }) → string
  */
+import { supportNotice } from '../../support-notice.js';
 import { auditText } from './text.js';
 import { auditMarkdown } from './markdown.js';
 import { auditHtml } from './html.js';
@@ -66,6 +67,7 @@ export function auditJson(result, { lang = 'tr' } = {}) {
       coverage: result.coverage ?? null,
       scoreReliable: result.scoreReliable !== false,
       support: result.support || null,
+      supportNotice: supportNotice(result, lang),
       pendingHigh: result.pendingHigh ?? null,
       coverageNotes: coverageNotes(result, S[lang] || S.tr, model),
       layers: viewLayers(result.layers),
