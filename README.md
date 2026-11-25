@@ -1,127 +1,85 @@
-# kvkk-gdpr-check 🛡️
+# kvkk-gdpr-check
 
-**Uygulamanı yayına almadan önce KVKK ve GDPR risklerini tara: kaynak kod, canlı site ve mobil uygulama. Eksik dokümanları da otomatik üret.**
-Vibecode'ladığın (Cursor, Claude Code, Lovable, Bolt, v0…) ya da elle yazdığın her proje için.
+**Yazılım projenizi KVKK ve GDPR riskleri açısından tarayan, her bulguyu dosya ve satırıyla gösteren komut satırı aracı.**
 
-```bash
-npx kvkk-gdpr-check                          # kaynak kodu tara
-npx kvkk-gdpr-check url https://siten.com    # canlı siteyi gerçek tarayıcıyla tara
-npx kvkk-gdpr-check docs                     # (beta) aydınlatma metni, çerez politikası, VERBİS envanteri… taslağı
-npx kvkk-gdpr-check ui                       # yerel web arayüzü
-```
+[English](README.en.md) · [Doğruluk](docs/ACCURACY.md) · [Hukuki dayanaklar](docs/hukuki-dayanaklar.md) · [Örnek rapor](examples/reports/audit-app.md)
 
-Herkes uygulama çıkarıyor ama kimse çerez onayına, aydınlatma metnine, Supabase RLS'ine, `NEXT_PUBLIC_` ile tarayıcıya sızan anahtarlara ya da "Reddet"e bastıktan sonra hâlâ çalışan Google Analytics'e bakmıyor. Bu araç bakar.
+> ⚖️ Hukuki danışmanlık değildir. Bulgu çıkmaması sorun olmadığı anlamına gelmez. Üretilen belgeler taslaktır; bir hukukçu incelemeden yayımlamayın.
 
-> ⚖️ **Bu bir hukuki danışmanlık değildir.** En yaygın hataları yakalayan bir risk tarayıcısı ve doküman taslağı üreticisidir; uyumu garanti etmez. Üretilen metinleri yayına almadan önce bir uzmana kontrol ettirin.
+## 30 saniyede başlayın
 
----
-
-## 🧠 Derin denetim: `kvkk-check audit`
-
-Desen taramasının ötesine geçen bir **denetim motoru**. Uygulamandaki her kişisel veri unsurunun yolculuğunu çıkarır (form → API → veritabanı kolonu → log → üçüncü taraf → tarayıcıya geri dönüş), sonra her unsur için denetçi sorularını kanıtla cevaplar.
+Node.js 20 veya üstü gerekir. Proje klasörünüzde:
 
 ```bash
-npx kvkk-gdpr-check audit                          # metin rapor
-npx kvkk-gdpr-check audit -f html -o denetim.html  # etkileşimli veri haritalı rapor
-npx kvkk-gdpr-check audit --url https://siten.com  # canlı site kanıtlarıyla birlikte
-npx kvkk-gdpr-check audit -f json --graph graf.json
+npx kvkk-gdpr-check                                    # hızlı tarama
+npx kvkk-gdpr-check audit -f html -o denetim.html      # derin denetim, tarayıcıda açılan rapor
 ```
 
-Şunları üretir:
-- **Kişisel veri envanteri:** hangi veri nereden toplanıyor, hangi tabloda/kolonda duruyor, kime gidiyor, gerçekten kullanılıyor mu.
-- **İşleme faaliyetleri (ROPA):** amaç ve önerilen hukuki sebep (KVKK md.5/6, GDPR Art.6/9).
-- **Yurt dışı aktarım kaydı:** her servis için hangi verinin hangi ülkeye gittiği.
-- **Silme kapsamı matrisi:** hesap silinince hangi tablo, dosya, vektör ve üçüncü taraf kopyasının silinmeden kaldığı (FK cascade analiziyle).
-- **İlke bazlı bulgular:** her biri kanıt zinciriyle (`form signup → POST /api/signup → profiles.tckn → GET /api/profile → tarayıcı`):
-  - veri minimizasyonu ve amaç kayması
-  - özel nitelikli veri akışları
-  - RLS ve IDOR açıkları
-  - rıza mekaniği
-  - aydınlatma metni ile gerçeğin karşılaştırması
-  - DPIA gerekliliği, otomatik karar verme
-  - üçüncü kişilerden dolaylı veri toplama
-- **Kodun cevaplayamadığı sorular:** VERBİS, imzalı DPA'lar, saklama kararları gibi konular rapora soru olarak eklenir.
+Kodunuz bilgisayarınızdan çıkmaz: tarama ağa bağlanmaz, projenizin kodunu çalıştırmaz.
 
-Desteklenen yığınlar:
-- **JS/TS:** Next.js (app/pages router, server actions), Express/Fastify/Hono/Koa, SvelteKit, Nuxt, TanStack Start, Supabase/Firebase functions
-- **ORM ve veritabanı:** Supabase/Postgres SQL (RLS, policy, FK, pg_cron), Prisma, Drizzle, Mongoose, Firestore rules
-- **Python:** Django/SQLAlchemy/Flask, Alembic
-- **Mobil:** React Native/Expo formları
+## Örnek çıktı
 
-Kanıt bulunamamasına dayanan sonuçlar ("hesap silme yok" gibi) ancak ilgili katman gerçekten görüldüyse bulgu olur, aksi halde puanı etkilemeyen "Doğrulanmalı" listesine düşer. Desteklenmeyen ya da kısmen görülen yığınlarda rapor hangi katmanın eksik olduğunu söyler ve skoru "güvenilmez" olarak işaretler; amaç sessizce "temiz" dememektir, ama bu her zaman tutmuyor (aşağıdaki kapsam notuna bakın). Tasarım: [docs/AUDIT-ENGINE.md](docs/AUDIT-ENGINE.md).
+Depodaki örnek uygulamanın ([examples/audit-app](examples/audit-app)) derin denetiminden:
 
-## 4 modül
+```text
+  Uyum skoru: 0/100 (F)    4 KRİTİK   4 YÜKSEK   7 ORTA   1 DÜŞÜK   0 BİLGİ
+  ℹ 2 yüksek / kritik önemde madde doğrulanmayı bekliyor ve skora dahil değil; skor bir üst sınırdır
+  ℹ Next.js: destekleniyor; daha önce görülmemiş 8 projede 253 maddeden 214 tanesi doğruydu,
+    proje başına ortalama 5 sorun kaçırıldı
 
-### 1. 🔍 Kaynak kod taraması — 50 kural
+  Yönetici özeti — En önemli riskler
+    KRİTİK  Kişisel veri tutan tablolar herkese açık — health_logs: "read all logs" politikası
+            herkese select izni veriyor (Sağlık bilgisi, …)
+    KRİTİK  Yetkisiz erişime açık uç noktalar — POST /api/health kimlik doğrulaması olmadan
+            kişisel veri işliyor
+    KRİTİK  Yurt dışına kişisel veri aktarımı — OpenAI (US) ← Serbest metin, Sağlık bilgisi
+    YÜKSEK  Silme işlemi verinin her kopyasına ulaşmıyor — OpenAI tarafındaki kopya silinmiyor
+```
 
-| Kategori | Neye bakar |
+Tam rapor: [Markdown](examples/reports/audit-app.md) · [HTML](examples/reports/audit-app.html) (indirip tarayıcıda açın).
+
+## Özellikler
+
+| Komut | Ne yapar |
 |---|---|
-| 🔐 **Güvenlik** | Kodda gizli anahtar (Stripe, AWS, OpenAI, Supabase `service_role`, DB URL'leri, service account…), `NEXT_PUBLIC_`/`VITE_`/`EXPO_PUBLIC_` ile açılan secret'lar, **RLS kapalı Supabase tabloları**, `USING (true)`, `auth.users` view'ları, public bucket'lar, **herkese açık Firebase kuralları**, log'a kişisel veri / `req.body`, zayıf şifre hash'i, `.gitignore`'da olmayan `.env` |
-| 🍪 **Çerez & rıza** | GA/GTM, Meta Pixel, Hotjar, Clarity, Mixpanel, PostHog, TikTok, Yandex… + consent banner yoksa, Consent Mode `granted` varsayılanı, **önceden işaretli onay kutuları**, fingerprinting, YouTube/Maps embed, Google Fonts CDN |
-| 📱 **Mobil** | Yüksek riskli Android izinleri (SMS, rehber, arka plan konumu…), iOS izin açıklamaları, **HealthKit / Health Connect**, **ATT olmadan AppsFlyer/Adjust/Meta SDK**, eksik **Privacy Manifest**, cleartext trafik, `allowBackup`, güvensiz token depolama, App Store / Play Data safety beyanları |
-| ⚙️ **Backend** | Django/Laravel/Rails/Flask debug modu, `ALLOWED_HOSTS=*`, güvensiz oturum çerezleri, URL'de kişisel veri, helmet eksikliği |
-| 🌍 **Veri akışı & aktarım** | **Kişisel veri LLM prompt'una gidiyor mu**, analitiğe e-posta gönderen `identify()` çağrıları, Supabase/Firebase/Stripe/Sentry/OpenAI… yurt dışı aktarım envanteri, session replay |
-| 📄 **Şeffaflık & haklar** | Aydınlatma metni, çerez politikası, hesap silme, veri dışa aktarma, saklama/imha, pazarlama iletilerinde ret / İYS |
-
-### 2. 🌐 Canlı site taraması — 19 kural
-
-Siteyi **gerçek bir tarayıcıyla** (Chrome/Edge, Playwright) açar ve *kodun değil sitenin gerçekte ne yaptığını* ölçer:
-
-- Kullanıcı hiçbir şeye tıklamadan **rızadan önce** set edilen çerezler ve gönderilen izleyici istekleri
-- Banner'da **"Reddet"e tıklar**, sonra izlemenin gerçekten durup durmadığını kontrol eder
-- Banner var mı, "Reddet" ilk katmanda mı (KVKK Çerez Rehberi)
-- Gizlilik / çerez politikası bağlantıları ve **aydınlatma metninin KVKK md.10 unsurlarını** içerip içermediği
-- Kayıt/iletişim formları: ön-işaretli kutular, yanında gizlilik bağlantısı var mı (birkaç sayfayı otomatik gezer)
-- HTTPS yönlendirmesi, HSTS, CSP ve diğer güvenlik başlıkları, çerez bayrakları, 13 aydan uzun ömürlü çerezler
-- Yurt dışına giden tüm üçüncü taraf host'ların ülke bazlı envanteri
+| `kvkk-gdpr-check [dizin]` | **Hızlı tarama**, 50 kural: sızan anahtarlar, RLS kapalı tablolar, rızasız izleyiciler, önceden işaretli kutular, log'a yazılan kişisel veri, mobil izinler, eksik aydınlatma metni |
+| `audit [dizin]` | **Derin denetim**: her kişisel verinin yolunu izler (form → API → veritabanı → log → üçüncü taraf). Veri envanteri, işleme faaliyetleri, yurt dışı aktarım kaydı, silme kapsamı, kanıt zincirli bulgular |
+| `url <adres>` | **Canlı site**, 19 kural: rızadan önce yazılan çerezler, "Reddet"ten sonra süren izleme, güvenlik başlıkları |
+| `anket [dizin]` | Koddan anlaşılamayanları sorar: VERBİS, veri sorumlusu/işleyen rolü, aktarım aracı, çocuklar, saklama. Cevaplar `kvkk-answers.json` dosyasına yazılır ve sonuçları etkiler; skoru değiştirmez |
+| `docs [dizin]` | **Belge taslakları (beta)**, aşağıda |
+| `ui` | Yerel web arayüzü (`127.0.0.1`) |
 
 ```bash
-npm i -D playwright-core        # tarayıcı modu için (sistemdeki Chrome/Edge kullanılır)
-npx kvkk-gdpr-check url https://siten.com --pages /kayit,/iletisim
-npx kvkk-gdpr-check . --url https://siten.com   # kod + canlı, tek rapor
-npx kvkk-gdpr-check url https://siten.com --no-browser  # bağımlılıksız hafif HTTP modu
+npx kvkk-gdpr-check audit --url https://siten.com      # canlı site kanıtlarıyla birlikte
+npx kvkk-gdpr-check -f md|json|sarif|html -o dosya     # rapor biçimi
+npx kvkk-gdpr-check --fail-on critical                 # CI: yalnızca kritikte hata ver (varsayılan: high)
+npx kvkk-gdpr-check --disable FNT001 --ignore "scripts/**"
+npx kvkk-gdpr-check --list-rules
+npx kvkk-gdpr-check --help
 ```
 
-### 3. 📝 Doküman taslakları (beta)
+Canlı siteyi gerçek tarayıcıyla taramak için `npm i -D playwright-core` (sistemdeki Chrome/Edge kullanılır); onsuz `--no-browser` ile hafif HTTP modu çalışır.
 
-> **Beta.** Üretilen her belge otomatik bir taslaktır ve hukuki danışmanlık değildir; bir hukukçu incelemeden yayımlamayın. Gerçek projelerdeki isabeti **ölçülmedi**. Her belgenin başında bu uyarı, sonunda doldurulmamış alanların listesi bulunur. Koddan çıkarılamayan ya da ankette cevaplanmayan alanlar `[DOLDURULMALI: …]`, varsayılan veya tespit edilmiş ama teyit gerektirenler `[DOĞRULANMALI: …]` olarak işaretlenir.
+**Yanlış alarmı susturma:** satıra `// kvkk-ignore` ya da `// kvkk-ignore SEC013`, dosya başına `kvkk-ignore-file`, proje köküne `.kvkkcheckrc.json`:
 
-Tarama sonuçlarından (tespit edilen veri alanları, servisler, gerçek çerezler) **uygulamana özel** taslaklar üretir:
+```json
+{ "ignore": ["examples/**"], "disable": ["FNT001"] }
+```
 
-| Doküman | İçerik |
-|---|---|
-| `aydinlatma-metni.md` | KVKK md.10: veri kategorileri, amaç, hukuki sebep, tespit edilen alıcılar, yurt dışı aktarım, md.11 hakları |
-| `acik-riza-metni.md` | Sadece gerçekten gereken açık rıza metinleri (pazarlama, analitik çerezler, özel nitelikli veri), aydınlatmadan ayrı |
-| `cerez-politikasi.md` | Canlı taramada bulunan gerçek çerezlerle tablo (ad, sağlayıcı, amaç, süre, kategori) |
-| `veri-envanteri.md` + `.csv` | VERBİS tarzı kişisel veri işleme envanteri (Excel'de açılır) |
-| `yurt-disi-aktarim.md` | Yurt dışındaki her servis, aktarım mekanizması, standart sözleşme + 5 iş günü bildirim checklist'i |
-| `ihlal-mudahale-plani.md` | 72 saatlik veri ihlali planı, kullandığın stack'e özel adımlar |
-| `basvuru-formu.md` | İlgili kişi başvuru formu |
-| `uyum-yol-haritasi.md` | Bulgulardan öncelik sıralı yapılacaklar listesi |
-| `privacy-policy.md` | GDPR Art.13 İngilizce gizlilik politikası |
+### Belge taslakları (beta)
+
+> **Beta.** Üretilen her belge otomatik bir taslaktır ve hukuki danışmanlık değildir; bir hukukçu incelemeden yayımlamayın. Gerçek projelerdeki isabeti **ölçülmedi**.
 
 ```bash
-npx kvkk-gdpr-check anket                     # koddan anlaşılamayanları sorar → kvkk-answers.json
-npx kvkk-gdpr-check docs                      # şirket bilgilerini sorar
-npx kvkk-gdpr-check docs --url https://siten.com --answers sirket.json -y --out privacy-docs
-npx kvkk-gdpr-check docs --lang en            # İngilizce set
+npx kvkk-gdpr-check anket        # önce soruları cevaplayın
+npx kvkk-gdpr-check docs         # privacy-docs/ klasörüne yazar (--lang en: İngilizce)
 ```
 
-`docs` veriyi derin denetimin veri akışı grafiğinden alır: hangi veri, nerede, hangi alıcıya gidiyor (`--no-audit` ile yalnızca desen taraması). Ayrıca şu **taslakları** üretir: DPIA, LIA (meşru menfaate dayanabilecek faaliyetler), TIA (her yurt dışı alıcı) ve organizasyon denetimi. Araç yalnızca olguları ve kanıtı yazar; değerlendirme ve karar yerleri `[DOLDURULMALI: …]` olarak boştur. **Bir hukukçu okumadan kullanmayın.**
+Aydınlatma metni, açık rıza metni, çerez politikası, veri envanteri (Markdown ve CSV), yurt dışı aktarım, ihlal planı, başvuru formu, yol haritası, İngilizce gizlilik politikası; DPIA, LIA, TIA taslakları ve organizasyon denetimi.
 
-`anket` VERBİS yükümlülüğü, rolünüz, aktarım araçları (standart sözleşmede 5 iş günü), saklama, erişim, çocuklar ve ölçek gibi soruları sorar (`-y`: yalnızca şablon yazar). Cevaplar `audit` ve `docs` sonuçlarını değiştirir, ama kod bulgularını ve skoru değiştirmez; her sonuç "beyana dayalı" olarak işaretlenir. VERBİS eşikleri 25.11.2026'da kvkk.gov.tr duyurularından okundu ([docs/hukuki-dayanaklar.md](docs/hukuki-dayanaklar.md)); resmî tatiller iş günü hesabında yoktur.
-
-### 4. 📊 HTML rapor & web arayüzü
-
-```bash
-npx kvkk-gdpr-check . --url https://siten.com -f html -o rapor.html
-npx kvkk-gdpr-check ui
-```
-
-- **HTML rapor:** tek dosya, dışarıya sıfır istek. Skor göstergesi, kategori grafikleri, filtre/arama, düzeltme checklist'i (tarayıcıda hatırlanır), canlı site çerez tabloları, yazdırılabilir, açık/koyu tema.
-- **Web arayüzü** (`127.0.0.1`): klasör yolu, canlı URL veya **public GitHub repo linki** gir, raporu gör, dokümanları tek tıkla üret ve indir.
-
----
+- Her belgenin **başında** taslak uyarısı, **sonunda** doldurulmamış alanların listesi vardır.
+- Koddan çıkarılamayan ya da ankette cevaplanmayan alanlar `[DOLDURULMALI: …]`; varsayılan metinler ve teyit gerektiren tespitler `[DOĞRULANMALI: …]` olarak işaretlenir. İşaret kalan belge yayıma hazır değildir.
+- DPIA, LIA ve TIA taslaklarında değerlendirme ve karar yerleri boştur; araç "uygundur" demez.
 
 ## Desteklenen yığınlar
 
@@ -153,89 +111,16 @@ Yöntem ve tur tur sonuçlar: [docs/ACCURACY.md](docs/ACCURACY.md). Ölçüm eti
 - "Kapsam ok" güvence değildir: son iki turda 12 projenin 4'ünde skor güvenilir görünürken açıklanmamış temel bir eksik vardı.
 - Kuralların hukuki dayanaklarını bir hukukçu incelemedi. Hangisinin birincil kaynaktan okunduğu, hangisinin doğrulanamadığı: [docs/hukuki-dayanaklar.md](docs/hukuki-dayanaklar.md). Doğrulanmayanlar raporda "doğrulanmamış dayanak" notuyla çıkar.
 - Belge taslakları ve anket ölçülmedi; hukukçu incelemesi olmadan kullanılmamalıdır.
+- Raporlar projenizdeki açıkları gösterir; herkese açık yerlere koymayın.
 
----
+## CI ve yapay zekâ ajanları
 
-## Diğer seçenekler
-
-```bash
-npx kvkk-gdpr-check -v                        # tüm konumlar + kod satırları
-npx kvkk-gdpr-check --lang en                 # English
-npx kvkk-gdpr-check -f md|json|sarif|html -o dosya
-npx kvkk-gdpr-check --fail-on critical        # CI'da sadece kritikte kır (varsayılan: high)
-npx kvkk-gdpr-check --disable FNT001,WEB014 --ignore "scripts/**"
-npx kvkk-gdpr-check --list-rules              # 69 kuralın listesi
-```
-
-**Yanlış pozitifleri susturma:** satıra `// kvkk-ignore` veya `// kvkk-ignore SEC013`, dosyanın başına `kvkk-ignore-file`, ya da proje köküne `.kvkkcheckrc.json`:
-
-```json
-{ "ignore": ["examples/**", "scripts"], "disable": ["FNT001"] }
-```
-
-## 🤖 Claude Code / Cursor ile derin denetim
-
-[`skill/kvkk-gdpr-audit`](skill/kvkk-gdpr-audit/SKILL.md): tarayıcıları çalıştıran, bulguları kodu okuyarak doğrulayan, veri akışını çıkaran, düzeltmeleri uygulayan ve dokümanları dolduran bir AI ajan skill'i.
-
-```bash
-mkdir -p .claude/skills && cp -r node_modules/kvkk-gdpr-check/skill/kvkk-gdpr-audit .claude/skills/
-# sonra Claude Code'a: "KVKK/GDPR denetimi yap"
-```
-
-## GitHub Action
-
-```yaml
-name: privacy
-on: [pull_request]
-jobs:
-  kvkk:
-    runs-on: ubuntu-latest
-    permissions: { contents: read, security-events: write }
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - uses: <kullanici-adi>/kvkk-gdpr-check@v0
-        with:
-          fail-on: high
-          # url: https://staging.siten.com   # opsiyonel: canlı ortamı da tara (HTTP modu)
-      - uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with: { sarif_file: kvkk.sarif }
-```
-
-Rapor, job özetine Markdown olarak yazılır; bulgular Code Scanning'de satır bazında görünür.
-
-## Mimari
-
-```
-bin/cli.js            alt komutlar: scan | audit | url | docs | anket | ui
-src/audit/            derin denetim motoru (docs/AUDIT-ENGINE.md)
-src/scan.js           kod tarayıcı (satır + çok satırlı desenler, proje kuralları)
-src/rules.js          çekirdek web kuralları  ─┐
-src/rules/mobile.js   mobil kurallar           ├─ 50 kod kuralı
-src/rules/backend.js  framework/config         │
-src/rules/web-extra.js veri akışı              ─┘
-src/live/             canlı tarayıcı (Playwright + HTTP modu), 19 WEB kuralı
-src/docs/             doküman üretici (veri modeli + TR/EN şablonlar)
-src/report.js         text / md / json / sarif
-src/report/html.js    HTML rapor
-src/ui/               yerel web arayüzü
-src/data/vendors.js   182 servis: alan adları, çerezler, ülke, amaç
-```
+Her CI sisteminde: `npx kvkk-gdpr-check -f sarif -o kvkk.sarif --fail-on high`. GitHub için hazır eylem: [action.yml](action.yml). Claude Code / Cursor için denetim becerisi: [skill/kvkk-gdpr-audit](skill/kvkk-gdpr-audit/SKILL.md).
 
 ## Katkı
 
-Önce [CONTRIBUTING.md](CONTRIBUTING.md). Güvenlik açığı bildirimi: [SECURITY.md](SECURITY.md). Yeni desen kuralı: ilgili `src/rules/*.js` dosyasına bir obje ekle (regex + TR/EN metin + yasal dayanak), `test/` altına test yaz, `npm test`. Yeni servis: `src/data/vendors.js`. Özellikle aranıyor: daha fazla framework kuralı, yanlış pozitif azaltma, **hukukçu gözüyle metin incelemesi**.
+[CONTRIBUTING.md](CONTRIBUTING.md) · Güvenlik açığı bildirimi: [SECURITY.md](SECURITY.md) · Motorun çalışması: [docs/AUDIT-ENGINE.md](docs/AUDIT-ENGINE.md) · Değişiklikler: [CHANGELOG.md](CHANGELOG.md)
 
-Node ≥ 20. Tek bağımlılık `@babel/parser` (derin denetim); desen taraması bağımlılıksız çalışır. Tarayıcı modu için opsiyonel `playwright-core`.
+En çok aranan katkı: hukukçu gözüyle metin incelemesi, yetki kontrolü tespiti, deneysel yığınlar. Node ≥ 20; zorunlu tek bağımlılık `@babel/parser`.
 
----
-
-## English
-
-**Scan your app for KVKK (Turkey) and GDPR (EU) privacy risks across source code, the live site and mobile apps, then generate the missing documents.** 69 rules: secrets exposed via `NEXT_PUBLIC_`, Supabase tables without RLS, open Firebase rules, trackers firing before consent or after "Reject" (measured in a real browser), missing privacy notice, PII in logs/LLM prompts/analytics, iOS ATT & Privacy Manifest, risky Android permissions, missing account deletion and more. `docs` drafts a privacy policy, cookie policy (with the real cookies found), consent texts, data inventory, transfer register and breach plan. Outputs text/Markdown/JSON/SARIF/HTML; ships with a local web UI, a GitHub Action and a Claude Code skill. Run with `--lang en`. Not legal advice.
-
-**Deep audit (`audit`):** builds a data-flow graph of your app and reports findings with evidence, a data inventory, ROPA, a transfer register and an erasure matrix. **Measured on projects nobody had tuned on** (last three rounds, 36 projects; judged by AI agents, not by a lawyer): 79-84% of scored findings were right, about 8 real issues per project were missed (2-3 of them high severity, mostly access control). The score is an upper bound; do not skip the "Needs verification" list. Details: [docs/ACCURACY.md](docs/ACCURACY.md).
-
-MIT License
+MIT lisansı.

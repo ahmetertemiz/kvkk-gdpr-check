@@ -1,7 +1,7 @@
 {
   "name": "kvkk-gdpr-check",
-  "version": "0.3.0",
-  "description": "KVKK & GDPR uyum tarayıcısı: kaynak kod, canlı site ve mobil uygulama taraması + aydınlatma metni, çerez politikası, VERBİS envanteri üretici. / KVKK & GDPR compliance scanner for code, live sites and mobile apps, with privacy document generator.",
+  "version": "0.1.0",
+  "description": "KVKK ve GDPR risk tarayıcısı: kaynak kod, canlı site ve mobil; kanıtlı bulgular ve belge taslakları (beta). / KVKK & GDPR privacy risk scanner for code, live sites and mobile apps, with document drafts (beta).",
   "type": "module",
   "bin": {
     "kvkk-check": "bin/cli.js",
@@ -14,6 +14,8 @@
     "skill",
     "docs/*.md",
     "README.md",
+    "README.en.md",
+    "CHANGELOG.md",
     "LICENSE",
     "SECURITY.md"
   ],
@@ -22,7 +24,9 @@
     "scan:example": "node bin/cli.js examples/vibe-app",
     "bench": "node bench/run.js",
     "check:publishable": "node scripts/check-publishable.js",
-    "prepublishOnly": "npm test && npm run check:publishable"
+    "prepublishOnly": "npm test && npm run check:publishable",
+    "legal-basis": "node scripts/legal-basis.js",
+    "example-report": "node scripts/example-report.js"
   },
   "engines": {
     "node": ">=20"
@@ -31,13 +35,18 @@
     "kvkk",
     "gdpr",
     "privacy",
+    "data-protection",
     "compliance",
+    "privacy-by-design",
     "cookie-consent",
-    "vibecoding",
+    "verbis",
+    "dpia",
     "security",
     "scanner",
+    "static-analysis",
     "cli",
-    "gizlilik"
+    "gizlilik",
+    "kisisel-veri"
   ],
   "license": "MIT",
   "devDependencies": {
