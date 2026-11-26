@@ -789,9 +789,19 @@ function unknownHostStrong(g, sink, r) {
   return { code: 'third-party-host-traced-pii', tr: `${host} üçüncü taraf sunucusuna izlenen kişisel veri gidiyor (${names})`, en: `traced personal data reaches the third-party host ${host} (${names})` };
 }
 
+/** Review reason when every code file a transfer row is evidenced in is a module nothing imports, else null. */
+function orphanReason(g, r) {
+  const orphans = g.orphanModules;
+  if (!orphans || !orphans.size) return null;
+  const files = [...new Set((r.evidence || []).map((e) => e?.file).filter((f) => f && !MANIFEST_FILE_RE.test(f) && !/(?:^|\/)\.env/.test(f)))];
+  if (!files.length || !files.every((f) => orphans.has(f))) return null;
+  const list = files.slice(0, 2).join(', ');
+  return T(`Aktarım yalnızca hiçbir yerden import edilmeyen modülde görülüyor (${list}); bu kod çalışmıyor olabilir. Modülün kullanılıp kullanılmadığını doğrulayın.`, `The transfer is seen only in a module nothing imports (${list}); this code may never run. Verify whether the module is used.`);
+}
+
 export function internationalTransfers(g, model, lang) {
   const locs = [];
-  for (const r of model.transfers) {
+  const row = (r) => {
     if (r.configOnly && r.abroadKvkk !== false) {
       // Seen only in configuration: no data flow was traced, so this is a verification item, not a finding.
       const ev = r.evidence[0] || {};
@@ -802,13 +812,13 @@ export function internationalTransfers(g, model, lang) {
         severity: 'low', confidence: 0.4, steps: r.evidence.slice(0, 3),
         reviewReason: T('Servis yalnızca yapılandırma / bağımlılık dosyalarında görülüyor; koddan bir veri akışı izlenemedi. Kullanılıp kullanılmadığını ve hangi verinin aktarıldığını doğrulayın.', 'The service appears only in configuration / dependency files; no data flow was traced from code. Verify whether it is used and which data it receives.'),
       }), 'TRF-01:config-only', r.elements));
-      continue;
+      return;
     }
     if (r.untraced) {
       locs.push(untracedLoc(r));
-      continue;
+      return;
     }
-    if (r.abroadKvkk === false || !r.elements.length) continue;
+    if (r.abroadKvkk === false || !r.elements.length) return;
     const sink = g.node(r.sinkId);
     if (r.oauth && !r.hosting && (r.implied || !sink || sink.type === 'Source' || !sinksWithData(g).some((x) => x.sink.id === sink.id))) {
       // OAuth identity provider: receives the sign-in event and supplies the profile (identity data imported).
@@ -820,7 +830,7 @@ export function internationalTransfers(g, model, lang) {
         label: T(`${where_.tr} ← ${els('tr')} (OAuth kimlik sağlayıcısı: giriş olayını alır, profil verisini sağlar)`, `${where_.en} ← ${els('en')} (OAuth identity provider: receives the sign-in event, supplies the profile)`),
         severity: 'low', confidence: r.abroadKvkk == null ? 0.5 : 0.7, steps: r.evidence.slice(0, 3), basis: 'evidence',
       }), 'TRF-01:oauth-idp', r.elements));
-      continue;
+      return;
     }
     const sens = maxSensitivity(r.elements.map((e) => e.sensitivity));
     const ev = r.evidence[0] || where(sink);
@@ -835,29 +845,29 @@ export function internationalTransfers(g, model, lang) {
         label: T(`${where_.tr} ← SDK'nın kendiliğinden gönderdiği ${els('tr')} (çıkarım; açık veri akışı izlenmedi)`, `${where_.en} ← ${els('en')} sent by the SDK itself (inferred; no explicit data flow traced)`),
         severity: 'low', confidence: 0.5, steps: r.evidence.slice(0, 2),
       }), 'TRF-01:sdk-implied', r.elements));
-      continue;
+      return;
     }
     if (r.abroadKvkk == null) {
       // Recipient whose location is unknown (generic HTTP host, self-hosted vendor): needs verification.
       const smtp = !!sink && isGenericSmtp(sink);
-      if (!smtp && !unknownHostCarriesPersonal(g, sink, r)) continue;
+      if (!smtp && !unknownHostCarriesPersonal(g, sink, r)) return;
       const strong = smtp ? null : unknownHostStrong(g, sink, r);
       locs.push(tag(loc({
         file: ev.file, line: ev.line, snippet: ev.snippet,
         label: T(`${r.vendor} (konum bilinmiyor – doğrulayın) ← ${els('tr')}`, `${r.vendor} (location unknown – verify) ← ${els('en')}`),
         severity: 'low', confidence: 0.5, steps: r.evidence.slice(0, 4),
       }), smtp ? 'TRF-01:unknown-location-smtp' : 'TRF-01:unknown-location-host', r.elements, strong));
-      continue;
+      return;
     }
     // Only catalogue identifiers (a coin id, a locale) in the request: nothing about a person is transferred.
-    if (sink && !r.hosting && r.elements.every((e) => publicCatalogueId(g, sink, e))) continue;
+    if (sink && !r.hosting && r.elements.every((e) => publicCatalogueId(g, sink, e))) return;
     if (r.declaredOnly) {
       locs.push(tag(loc({
         file: ev.file, line: ev.line, snippet: ev.snippet,
         label: T(`${r.vendor} (${r.country}; yalnızca yapılandırmada görülüyor – doğrulayın) ← ${els('tr')}`, `${r.vendor} (${r.country}; seen only in configuration – verify) ← ${els('en')}`),
         severity: 'low', confidence: 0.55, steps: r.evidence.slice(0, 2),
       }), 'TRF-01:declared-only', r.elements));
-      continue;
+      return;
     }
     const risk = assess({ sensitivity: sens, exposure: isAiSink(sink) ? 'llm-abroad' : 'abroad', confidence: 0.8, floor: 'medium', cap: sens === 'special' ? undefined : 'high' });
     const region = (note) => (r.regionSelectable && !/bölge|region/i.test(r.country || '') ? `, ${note}` : '');
@@ -869,6 +879,14 @@ export function internationalTransfers(g, model, lang) {
       ),
       risk, steps: r.evidence.slice(0, 4),
     }), 'TRF-01:traced-vendor', r.elements));
+  };
+  for (const r of model.transfers) {
+    const start = locs.length;
+    row(r);
+    // Found only in modules nothing imports (extract/imports.js): the code may never run, so verify it.
+    const why = orphanReason(g, r);
+    if (why) for (const l of locs.slice(start)) if (!l.reviewReason) l.reviewReason = why;
+
   }
   return finding({
     id: 'AUD-TRF-01', category: 'transfer', severity: 'medium',

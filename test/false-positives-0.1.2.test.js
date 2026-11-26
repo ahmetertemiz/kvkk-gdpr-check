@@ -238,3 +238,42 @@ test('deep audit: the Supabase hosting row lists only Supabase tables, not the D
   assert.match(sb, /Email/);
   assert.doesNotMatch(sb, /IP address/, 'the D1 table\'s IP address is not attributed to Supabase');
 });
+
+// ------------------------------------------------------------------------------- 3. modules nothing imports
+import { orphanModules } from '../src/audit/extract/imports.js';
+
+const AI_CALL = 'import OpenAI from "openai";\nconst ai = new OpenAI();\nexport async function summarize(note) {\n  return ai.chat.completions.create({ model: "x", messages: [{ role: "user", content: note.body }] });\n}\n';
+const APP = {
+  'package.json': pkg(['openai', 'react']),
+  'src/main.tsx': 'import { App } from "./App";\nimport "./styles/boot";\nexport const run = () => App;\n',
+  'src/App.tsx': 'import { Card } from "./ui/Card";\nexport const App = () => <Card />;\nexport const later = () => import("./lazy/Page");\nexport * from "./shared/reexported";\n',
+  'src/ui/Card.tsx': 'export const Card = () => <div />;\n',
+  'src/styles/boot.ts': 'export const boot = 1;\n',
+  'src/lazy/Page.tsx': 'export default function Page() { return null; }\n',
+  'src/shared/reexported.ts': 'export const x = 1;\n',
+  'src/legacy/assistant.ts': AI_CALL,
+  'src/pages/notes.tsx': 'export default function Notes() { return null; }\n',
+};
+
+test('orphan modules: nothing imports it and it is no entry; static, side-effect, dynamic and re-export imports and routes are not orphans', () => {
+  const dir = mk(APP);
+  const ctx = { files: Object.entries(APP).map(([rel, content]) => ({ rel, content, kind: rel.endsWith('.json') ? 'manifest' : 'code' })), shared: {}, root: dir };
+  const o = orphanModules(ctx);
+  assert.deepEqual([...o], ['src/legacy/assistant.ts']);
+});
+
+test('deep audit: a transfer found only in a module nothing imports goes to review; once imported it is scored', async () => {
+  const orphan = await audit(mk(APP), { lang: 'en' });
+  const inScore = (a) => a.findings.filter((f) => f.rule.id === 'AUD-TRF-01').flatMap((f) => f.locations.map((l) => L(l.label)));
+  const inReview = (a) => a.review.filter((f) => f.rule.id === 'AUD-TRF-01').flatMap((f) => f.locations.map((l) => ({ label: L(l.label), why: L(l.reviewReason) })));
+  assert.ok(!inScore(orphan).some((x) => /^OpenAI/.test(x)));
+  assert.ok(inReview(orphan).some((x) => /^OpenAI/.test(x.label) && /a module nothing imports \(src\/legacy\/assistant\.ts\)/.test(x.why)));
+  const used = await audit(mk({ ...APP, 'src/ui/Card.tsx': 'import { summarize } from "../legacy/assistant";\nexport const Card = () => <button onClick={() => summarize({ body: "x" })} />;\n' }), { lang: 'en' });
+  assert.ok(inScore(used).some((x) => /^OpenAI/.test(x)), 'imported: scored as before');
+});
+
+test('orphan detection turns itself off when import resolution looks unreliable', () => {
+  const files = [{ rel: 'package.json', content: '{}', kind: 'manifest' }];
+  for (let i = 0; i < 10; i++) files.push({ rel: `lib/m${i}.ts`, content: `export const v${i} = ${i};\n`, kind: 'code' });
+  assert.equal(orphanModules({ files, shared: {}, root: '.' }).size, 0, '10 of 10 unimported: resolution is not trusted');
+});
