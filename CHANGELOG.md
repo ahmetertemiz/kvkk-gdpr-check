@@ -1,6 +1,6 @@
 # Değişiklikler
 
-## 0.1.2 — yayımlanmadı
+## 0.1.2 — 2026-11-26
 
 Gerçek bir Cloudflare + Supabase uygulamasında görülen yanlış alarmlar, kök nedenlerine göre düzeltildi. O projede kritik, yüksek ve orta önemli konumlar 23'ten 7'ye indi; doğru olan 6 konumun hepsi kaldı, yanlışlar 17'den 1'e düştü.
 
