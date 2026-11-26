@@ -14,6 +14,7 @@ const CODE = ['code'];
 const CODE_MANIFEST = ['code', 'manifest'];
 
 import { MOBILE_RULES } from './rules/mobile.js';
+import { sqlEngines } from './db-engine.js';
 import { BACKEND_RULES } from './rules/backend.js';
 import { WEB_EXTRA_RULES } from './rules/web-extra.js';
 
@@ -141,8 +142,6 @@ const PII_FIELDS = '(email|e_?posta|phone(?:_?number)?|telefon(?:_?no)?|gsm|mobi
 
 const SENSITIVE_FIELDS = '(health\\w*|saglik\\w*|sağlık\\w*|diagnos\\w*|teshis\\w*|teşhis\\w*|medical\\w*|disease\\w*|hastal[ıi]k\\w*|blood_?type|kan_?grubu|religio\\w*|mezhep\\w*|ethnic\\w*|etnik\\w*|biometric\\w*|biyometrik\\w*|fingerprint\\w*|parmak_?izi|face_?(?:id|embedding|descriptor|encoding)s?|sexual\\w*|cinsel\\w*|criminal\\w*|sab[ıi]ka\\w*|union_?member\\w*|sendika\\w*|political\\w*|siyasi\\w*|disabilit\\w*|engellilik\\w*|pregnan\\w*|hamile\\w*|medication\\w*|prescription\\w*|re[çc]ete\\w*|mental_?health\\w*|therapy\\w*|terapi\\w*)';
 
-// DDL of a database without Row Level Security (MySQL / MariaDB / SQLite).
-const NON_POSTGRES_SQL_RE = /\bENGINE\s*=\s*\w+|\bAUTO_INCREMENT\b|\bAUTOINCREMENT\b|\bcreate\s+table\s+(?:if\s+not\s+exists\s+)?`|\bDEFAULT\s+CHARSET\b|\bunsigned\b/i;
 // A bounce / delivery status notification (RFC 3464) has a "diagnostic code": mail delivery, not a medical diagnosis.
 const DSN_CONTEXT_RE = /\b(?:bounce[ds]?|bouncing|dsn|diagnostic[-_]?code|mailer[-_]daemon|delivery[-_ ]status|smtp)\b/i;
 
@@ -795,18 +794,20 @@ export const RULES = [
     scope: 'project',
     check: ({ files, signals }) => {
       if (!signals.supabase && !signals.supabaseDir) return [];
+      // The database of each SQL file (db-engine.js): Supabase tables are checked; D1 / MySQL / SQLite tables are a
+      // different database without RLS; plain SQL whose database cannot be told is reported lower, to be verified.
+      const engines = sqlEngines(files);
       const created = new Map();
       const rls = new Set();
       for (const f of files) {
-        if (!f.rel.endsWith('.sql')) continue;
-        // Row Level Security exists only in Postgres; MySQL / MariaDB / SQLite DDL is a different database.
-        if (NON_POSTGRES_SQL_RE.test(f.content)) continue;
+        const engine = engines.get(f.rel);
+        if (!engine || engine === 'd1' || engine === 'other') continue;
         const lines = f.content.split(/\r?\n/);
         lines.forEach((ln, i) => {
           const c = ln.match(/create\s+table\s+(?:if\s+not\s+exists\s+)?(?:"?public"?\.)?"?([a-z_][\w]*)"?/i);
           if (c && !/^(auth|storage)$/i.test(c[1])) {
             const name = c[1].toLowerCase();
-            if (!created.has(name)) created.set(name, { file: f.rel, line: i + 1, snippet: ln.trim() });
+            if (!created.has(name)) created.set(name, { file: f.rel, line: i + 1, snippet: (f.raw || f.content).split(/\r?\n/)[i]?.trim() || ln.trim(), engine });
           }
           const r = ln.match(/alter\s+table\s+(?:only\s+)?(?:"?public"?\.)?"?([a-z_][\w]*)"?\s+enable\s+row\s+level\s+security/i);
           if (r) rls.add(r[1].toLowerCase());
@@ -814,7 +815,11 @@ export const RULES = [
       }
       return [...created.entries()]
         .filter(([name]) => !rls.has(name))
-        .map(([name, loc]) => ({ label: name, ...loc }));
+        .map(([name, { engine, ...loc }]) =>
+          engine === 'supabase'
+            ? { label: name, ...loc }
+            : { label: { tr: `${name} (veritabanı motoru belirlenemedi — doğrulayın)`, en: `${name} (database engine could not be told — verify)` }, severity: 'low', ...loc },
+        );
     },
     title: {
       tr: 'Supabase tablosunda RLS etkin değil',

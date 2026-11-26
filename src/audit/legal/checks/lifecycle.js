@@ -334,6 +334,9 @@ export function buildTransfers(g) {
     const stored = new Map();
     for (const { store, elements } of personalStores(g)) {
       if (!isRecordStore(store) && !(withFiles && store.kind === 'bucket')) continue;
+      // Another database of the project (db-engine.js): Cloudflare D1 tables never sit at the host; MySQL / SQLite
+      // tables do not sit at Supabase / Firebase (they may at a single other host such as PlanetScale or Turso).
+      if (store.engine === 'd1' || (store.engine === 'other' && bundled.length)) continue;
       // "User-linked record" is a structural marker, not a data category worth listing per recipient.
       for (const e of elements) if (e.name !== 'user_ref') stored.set(e.id, e);
     }

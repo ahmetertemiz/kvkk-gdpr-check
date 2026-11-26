@@ -275,10 +275,14 @@ export function tableAccess(g, model, lang) {
     const sens = maxSensitivity(els.map((e) => e.sensitivity));
     if (store.rls === false && postgrest) {
       const risk = assess({ sensitivity: sens, exposure: 'public', confidence: 0.85, floor: els.some((e) => e.identifier === 'direct') ? 'high' : undefined });
+      // A SQL file that is neither under supabase/ nor Supabase-specific (db-engine.js 'unknown'): it may belong to
+      // another database of the project, where RLS does not apply.
+      const engineUnknown = store.engine === 'unknown';
       locs.push(tag(loc({
         ...where(store),
         label: T(`${store.table}: RLS kapalı — anon anahtarı ile okunabilir/yazılabilir (${els.map((e) => elLabel(e, 'tr')).join(', ')})`, `${store.table}: RLS disabled — readable/writable with the anon key (${els.map((e) => elLabel(e, 'en')).join(', ')})`),
         risk, steps: store.evidence?.slice(0, 2) || [],
+        ...(engineUnknown ? { reviewReason: T('Veritabanı motoru belirlenemedi: bu SQL dosyası supabase/ altında değil ve Supabase\'e özgü bir ifade içermiyor; tablonun Supabase\'de olup olmadığını doğrulayın.', 'Database engine could not be told: this SQL file is not under supabase/ and has no Supabase-specific statement; verify that the table lives in Supabase.') } : {}),
       }), 'SEC-01:rls-disabled', els));
       continue;
     }

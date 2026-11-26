@@ -4,6 +4,7 @@
  * encryption hints, views (incl. over auth.users), vector columns.
  */
 import { newTable, emitTables, lineOf } from './_schema.js';
+import { sqlEngines } from '../../db-engine.js';
 
 export const name = 'sql';
 export const order = 10;
@@ -569,15 +570,32 @@ export function extract(ctx) {
   }
   if (!sqlFiles.length && !usesSupabase && !configBuckets.length) return;
 
-  const { tables, buckets, retention, projectEncryption, dropped } = parseSqlFiles(sqlFiles);
+  // The database of each SQL file (db-engine.js). D1 and MySQL / SQLite files are parsed apart, so a table of one
+  // database never merges with a same-named table of another, and RLS (a Postgres / Supabase notion) is not applied.
+  const engines = sqlEngines(files);
+  const isolated = (f) => engines.get(f.rel) === 'd1' || engines.get(f.rel) === 'other';
+  const { tables, buckets, retention, projectEncryption, dropped } = parseSqlFiles(sqlFiles.filter((f) => !isolated(f)));
+  const side = parseSqlFiles(sqlFiles.filter(isolated));
+  for (const t of tables.values()) if (t.file && engines.has(t.file)) t.extra = { ...(t.extra || {}), engine: engines.get(t.file) };
+  for (const [key, t] of side.tables) {
+    t.extra = { ...(t.extra || {}), engine: engines.get(t.file) || 'other' };
+    if (!tables.has(key)) tables.set(key, t);
+  }
+  for (const [k, b] of side.buckets) if (!buckets.has(k)) buckets.set(k, b);
+  retention.push(...side.retention);
+  projectEncryption.push(...side.projectEncryption);
+  for (const d of side.dropped) dropped.add(d);
   ctx.shared.sqlDropped = dropped;
 
-  const referencesAuth = [...tables.values()].some((t) => t.fks.some((f) => f.refTable === 'auth.users') || (t.viewOf || []).includes('auth.users'));
+  const pgTables = [...tables.values()].filter((t) => !['d1', 'other'].includes(t.extra?.engine));
+  const referencesAuth = pgTables.some((t) => t.fks.some((f) => f.refTable === 'auth.users') || (t.viewOf || []).includes('auth.users'));
   // RLS only means something where a PostgREST/Supabase anon key can reach the tables. Tables start with rls:null
   // (unknown / not applicable); in a Supabase-like project a table with no ENABLE statement is RLS-disabled.
-  const supabaseLike = usesSupabase || referencesAuth || [...tables.values()].some((t) => t.rls === true || t.policies.size > 0);
+  // Only tables of a Supabase file, or of a SQL file whose database cannot be told ('unknown': checks send those to
+  // review), get that default; D1 / MySQL / SQLite tables keep rls:null.
+  const supabaseLike = usesSupabase || referencesAuth || pgTables.some((t) => t.rls === true || t.policies.size > 0);
   if (supabaseLike) {
-    for (const t of tables.values()) if (t.rls == null && t.kind === 'table' && !t.external) t.rls = false;
+    for (const t of pgTables) if (t.rls == null && t.kind === 'table' && !t.external) t.rls = false;
   }
   if (usesSupabase || referencesAuth) {
     if (!tables.has('auth.users')) {

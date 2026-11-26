@@ -149,3 +149,70 @@ test('one rule at two levels: JSON, SARIF and merged results keep both without d
   assert.equal(mergeResults(r, r).findings.filter((f) => f.rule.id === 'SEC001').length, 2);
 });
 
+// ------------------------------------------------------------------------------- 2. database engine per file / folder
+import { audit } from '../src/audit/index.js';
+import { d1MigrationDirs, sqlEngines } from '../src/db-engine.js';
+
+const SB_CLIENT = 'import { createClient } from "@supabase/supabase-js";\nexport const sb = createClient(url, key);\nexport const load = (id) => sb.from("members").select("email, full_name").eq("id", id);\nexport const save = (row) => sb.from("ledger_users").insert(row);\n';
+const TWO_DBS = {
+  'package.json': pkg(['@supabase/supabase-js', 'react']),
+  'src/db.ts': SB_CLIENT,
+  'supabase/migrations/001_init.sql': 'create table public.members (id uuid primary key, email text, full_name text);\n',
+  'wrangler.toml': 'name = "edge"\n[[d1_databases]]\nbinding = "DB"\ndatabase_name = "accounts"\nmigrations_dir = "worker/migrations"\n',
+  'worker/migrations/0001_users.sql': 'create table "ledger_users" ("id" text not null primary key, "email" text not null, "ipAddress" text);\n',
+  'worker/index.ts': 'export default { fetch: (req, env) => env.DB.prepare("select email from ledger_users").all() };\n',
+};
+
+test('engine detection: wrangler / nitro D1 folders (relative paths and the default), Supabase folder and SQL, MySQL, unknown', () => {
+  const files = (o) => Object.entries(o).map(([rel, content]) => ({ rel, content }));
+  assert.deepEqual(d1MigrationDirs(files(TWO_DBS)), ['worker/migrations']);
+  const nitro = files({
+    'nitro.config.ts': 'export default { cloudflare: { wrangler: { d1_databases: [{ binding: "DB", migrations_dir: "../../edge/sql" }] } } };\n',
+    'edge/sql/0001.sql': 'create table a (id text);\n',
+    'wrangler.jsonc': '{ "d1_databases": [ { "binding": "X" } ] }\n',
+    'migrations/0001.sql': 'create table b (id text);\n',
+  });
+  assert.deepEqual(d1MigrationDirs(nitro).sort(), ['edge/sql', 'migrations']);
+  const e = sqlEngines(files({
+    ...TWO_DBS,
+    'db/policies.sql': 'create table notes (id uuid, owner uuid references auth.users);\n',
+    'db/legacy.sql': 'CREATE TABLE `x` (id int unsigned AUTO_INCREMENT);\n',
+    'db/plain.sql': 'create table plain_rows (id uuid primary key, email text);\n',
+    'db/commented.sql': '-- create policy "x" on t; enable row level security\ncreate table c (id int);\n',
+  }));
+  assert.equal(e.get('supabase/migrations/001_init.sql'), 'supabase');
+  assert.equal(e.get('worker/migrations/0001_users.sql'), 'd1');
+  assert.equal(e.get('db/policies.sql'), 'supabase');
+  assert.equal(e.get('db/legacy.sql'), 'other');
+  assert.equal(e.get('db/plain.sql'), 'unknown');
+  assert.equal(e.get('db/commented.sql'), 'unknown', 'a Supabase word in a comment does not decide the engine');
+});
+
+test('quick scan: RLS only for Supabase tables; D1 tables never; unknown-engine tables lower and to verify', () => {
+  const r = scan(mk({ ...TWO_DBS, 'db/plain.sql': 'create table plain_rows (id uuid primary key, email text);\n' }));
+  const sec = of(r, 'SEC003');
+  const all = sec.flatMap((f) => f.locations.map((l) => ({ sev: f.severity, label: L(l.label), file: l.file })));
+  assert.ok(all.some((x) => x.sev === 'high' && x.label === 'members'), 'Supabase table without RLS is still caught');
+  assert.ok(!all.some((x) => x.file.startsWith('worker/')), 'no RLS finding on D1 tables');
+  assert.ok(all.some((x) => x.sev === 'low' && /plain_rows \(database engine could not be told — verify\)/.test(x.label)));
+});
+
+test('deep audit: D1 tables get no RLS finding, unknown-engine tables go to review, Supabase tables stay scored', async () => {
+  const dir = mk({ ...TWO_DBS, 'db/plain.sql': 'create table plain_rows (id uuid primary key, email text, phone text);\n', 'src/plain.ts': 'export const p = () => sb.from("plain_rows").select("email, phone");\nimport { sb } from "./db";\n' });
+  const a = await audit(dir, { lang: 'en' });
+  const scored = a.findings.filter((f) => f.rule.id === 'AUD-SEC-01').flatMap((f) => f.locations.map((l) => L(l.label)));
+  const review = a.review.filter((f) => f.rule.id === 'AUD-SEC-01').flatMap((f) => f.locations.map((l) => ({ label: L(l.label), why: L(l.reviewReason) })));
+  assert.ok(scored.some((x) => /^members: RLS disabled/.test(x)), 'Supabase table stays scored');
+  assert.ok(!scored.some((x) => /ledger_users/.test(x)) && !review.some((x) => /ledger_users/.test(x.label)), 'D1 table: no RLS finding at all');
+  assert.ok(!scored.some((x) => /plain_rows/.test(x)));
+  assert.ok(review.some((x) => /^plain_rows: RLS disabled/.test(x.label) && /Database engine could not be told/.test(x.why)));
+});
+
+test('deep audit: the Supabase hosting row lists only Supabase tables, not the D1 tables', async () => {
+  const a = await audit(mk(TWO_DBS), { lang: 'en' });
+  const trf = [...a.findings, ...a.review].filter((f) => f.rule.id === 'AUD-TRF-01').flatMap((f) => f.locations.map((l) => L(l.label)));
+  const sb = trf.find((x) => /^Supabase/.test(x));
+  assert.ok(sb, 'Supabase is a recipient');
+  assert.match(sb, /Email/);
+  assert.doesNotMatch(sb, /IP address/, 'the D1 table\'s IP address is not attributed to Supabase');
+});
