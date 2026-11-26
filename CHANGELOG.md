@@ -1,6 +1,6 @@
 # Değişiklikler
 
-## 0.1.1 — yayımlanmadı
+## 0.1.1 — 2026-11-26
 
 Gerçek bir Next.js + MySQL projesinde görülen dört yanlış alarm düzeltildi. O projede hızlı tarama 95 konumdan 35'e, derin denetimin puanlı bulguları 58 konumdan 45'e indi; giden 11 "korumasız uç nokta" sonucu silinmedi, "Doğrulanmalı" listesine taşındı.
 
