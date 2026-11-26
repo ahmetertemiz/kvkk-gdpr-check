@@ -63,7 +63,7 @@ npx kvkk-gdpr-check --help
 
 Canlı siteyi gerçek tarayıcıyla taramak için `npm i -D playwright-core` (sistemdeki Chrome/Edge kullanılır); onsuz `--no-browser` ile hafif HTTP modu çalışır.
 
-**Atlanan klasörler:** `node_modules`, derleme çıktıları ve kodlama ajanı / editör klasörleri (`.claude`, `.cursor`, `.codex`, `.windsurf` …) ile proje içindeki git worktree kopyaları taranmaz; rapor atlananları yazar.
+**Atlanan klasörler:** `node_modules`, derleme çıktıları ve kodlama ajanı / editör klasörleri (`.claude`, `.cursor`, `.codex`, `.windsurf` …) ile proje içindeki git worktree kopyaları taranmaz; rapor atlananları yazar. Test, spec ve fixture dosyaları da taranmaz (`--include-tests` ile açılır); gizli anahtar kuralları bunları ve kod yorumlarını yine okur, testte bulunan bir anahtar bir kademe düşük önemde ve "test dosyasında" notuyla raporlanır.
 
 **Yanlış alarmı susturma:** satıra `// kvkk-ignore` ya da `// kvkk-ignore SEC013`, dosya başına `kvkk-ignore-file`, proje köküne `.kvkkcheckrc.json`:
 
@@ -118,6 +118,12 @@ Derin denetim (`audit`), daha önce üzerinde çalışılmamış gerçek açık 
 - "Doğrulanmalı" listesinin **%45-60'ı** gerçek sorun. Bu liste skora girmez, atlamayın.
 
 **Ölçümdeki doğru/yanlış kararlarını yapay zekâ ajanları verdi; hepsi aynı model ailesindendir. Hiçbir hukukçu hiçbirini doğrulamadı.** Hızlı taramanın, canlı site taramasının, anketin ve belge taslaklarının isabeti bu ölçümde yer almaz.
+
+**Ölçüm setinin dışında, iki gerçek projede:** Aracın yazarının iki canlı projesinde (bir Next.js + MySQL sitesi, bir Cloudflare + Supabase uygulaması) hızlı tarama, derin denetim ve canlı tarama birlikte çalıştırıldı. Kritik, yüksek ve orta önemli konumların her biri koddan elle kontrol edildi; bu kararları da yapay zekâ verdi.
+
+- **Gerçek isabet** (bu projelere bakılarak yapılan düzeltmelerden önce): birinde 113 kararlı konumun 15'i (%13), diğerinde 23 konumun 6'sı (%26) doğruydu. İlkindeki yanlışların 73'ü bir kodlama ajanının proje içindeki worktree kopyalarından geliyordu; onlar hariç oran %38.
+- **Düzeltmelerden sonra** (0.1.1 ve 0.1.2): %49 (39 kararlı konumun 19'u) ve %86 (7 konumun 6'sı). **Bu düzeltmeler tam da bu iki projeye bakılarak yazıldığı için bu ikinci oranlar bağımsız bir ölçüm değildir;** görülmemiş projelerdeki isabet için yukarıdaki ölçüme bakın.
+- Ölçüm setinde derin denetimin skora giren bulgularının %79-84'ü doğruydu; gerçek projelerde, hızlı tarama da işin içine girince, oran bunun çok altında kaldı.
 
 Yöntem ve tur tur sonuçlar: [docs/ACCURACY.md](docs/ACCURACY.md). Ölçüm etiketleri gerçek projelerdeki açıkları içerdiği için yayımlanmaz; bu yüzden rakamları dışarıdan yeniden üretemezsiniz.
 
