@@ -30,6 +30,8 @@ Tarama seçenekleri:
       --fail-on <seviye>              Bu seviye veya üstünde bulgu varsa exit 1
                                       (critical|high|medium|low|none, varsayılan: high)
       --ignore <glob,...>             Yok sayılacak yollar
+      --include <klasör,...>          Varsayılan olarak atlanan ajan/editör klasörlerini
+                                      (.claude, .cursor, .codex …) yine de tara
       --disable <ID,...>              Kapatılacak kurallar
   -v, --verbose                       Tüm konumları ve kod satırlarını göster
       --no-color                      Renksiz çıktı
@@ -57,7 +59,7 @@ const SUBCOMMANDS = new Set(['url', 'docs', 'ui', 'audit', 'anket', 'questions']
 
 function parseArgs(argv) {
   const a = {
-    cmd: 'scan', dir: '.', format: 'text', lang: 'tr', failOn: 'high', ignore: [], disable: [], pages: [],
+    cmd: 'scan', dir: '.', format: 'text', lang: 'tr', failOn: 'high', ignore: [], include: [], disable: [], pages: [],
     maxPages: 5, timeout: 30000, browser: true, color: process.stdout.isTTY && !process.env.NO_COLOR, port: 4477,
   };
   if (SUBCOMMANDS.has(argv[0])) a.cmd = argv.shift();
@@ -93,6 +95,7 @@ function parseArgs(argv) {
       case '--graph': a.graphOut = next(); break;
       case '--no-audit': a.noAudit = true; break;
       case '--include-tests': a.includeTests = true; break;
+      case '--include': a.include.push(...next().split(',').map((x) => x.trim()).filter(Boolean)); break;
       case '-h': case '--help': a.help = true; break;
       case '--version': console.log(JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version); process.exit(0);
       default:
@@ -180,7 +183,7 @@ async function main() {
     assertDir(args.dir);
     const live = args.url ? (await runLive(args)).live : null;
     const { audit } = await import('../src/audit/index.js');
-    const result = await audit(args.dir, { ignore: args.ignore, live, lang: args.lang, includeTests: !!args.includeTests, org: readAnswers(args).org });
+    const result = await audit(args.dir, { ignore: args.ignore, include: args.include, live, lang: args.lang, includeTests: !!args.includeTests, org: readAnswers(args).org });
     warnProblems(result.organization, args.lang);
     if (args.graphOut) fs.writeFileSync(args.graphOut, JSON.stringify(result.graph.toJSON(), null, 2));
     const { renderAudit } = await import('../src/audit/report/index.js');
@@ -214,12 +217,12 @@ async function main() {
 
   if (args.cmd === 'docs') {
     assertDir(args.dir);
-    const code = scan(args.dir, { ignore: args.ignore, disable: args.disable });
+    const code = scan(args.dir, { ignore: args.ignore, include: args.include, disable: args.disable });
     const live = args.url ? await runLive(args) : null;
     const result = mergeResults(code, live);
     const { generateDocs, auditForDocs } = await import('../src/docs/index.js');
     const answers = readAnswers(args);
-    const { audit, warning } = args.noAudit ? { audit: null, warning: null } : await auditForDocs(args.dir, { org: answers.org, lang: args.lang, ignore: args.ignore, live: live?.live || null });
+    const { audit, warning } = args.noAudit ? { audit: null, warning: null } : await auditForDocs(args.dir, { org: answers.org, lang: args.lang, ignore: args.ignore, include: args.include, live: live?.live || null });
     if (warning) process.stderr.write(`  ! ${warning}\n`);
     warnProblems(audit?.organization, args.lang);
     const out = args.out || path.join(args.dir, 'privacy-docs');
@@ -250,7 +253,7 @@ async function main() {
   } else {
     assertDir(args.dir);
     const { attachCoverage } = await import('../src/score-gate.js');
-    const code = await attachCoverage(scan(args.dir, { ignore: args.ignore, disable: args.disable }), args.dir, { ignore: args.ignore, lang: args.lang });
+    const code = await attachCoverage(scan(args.dir, { ignore: args.ignore, include: args.include, disable: args.disable }), args.dir, { ignore: args.ignore, include: args.include, lang: args.lang });
     result = args.url ? mergeResults(code, await runLive(args)) : code;
   }
 

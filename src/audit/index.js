@@ -333,17 +333,19 @@ export function refreshHonesty(cov, graph, model, en = false) {
   return true;
 }
 
-export async function buildGraph(root, { ignore = [], live = null, includeTests = false } = {}) {
+export async function buildGraph(root, { ignore = [], include = [], live = null, includeTests = false } = {}) {
   root = path.resolve(root);
   // An audit of nothing would look like an audit that found nothing.
   if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) throw new Error(`not a directory: ${path.basename(root)}`);
-  const all = walk(root, { ignore }).filter((f) => !/kvkk-ignore-file/.test(f.content.slice(0, 500)));
+  const walked = walk(root, { ignore, include });
+  const all = walked.filter((f) => !/kvkk-ignore-file/.test(f.content.slice(0, 500)));
   const files = includeTests ? all : all.filter((f) => !f.test);
   const graph = new PrivacyGraph();
   const warnings = [];
   const ctx = {
     root, files, graph, classify: classifyField, ev, live, includeTests,
     testFilesSkipped: all.length - files.length,
+    skippedDirs: walked.skippedDirs || [],
     vendors: { VENDORS, vendorForUrl, vendorForLabel, vendorById },
     // shared.unparsed (contract C2): extractors push {layer, kind, label, files, count} for artefacts they saw but did
     // not analyse; assessLayers turns each into a 'not-parsed' gap on its layer.
@@ -791,6 +793,7 @@ export async function audit(root, opts = {}) {
     root: ctx.root,
     filesScanned: ctx.files.length,
     testFilesSkipped: ctx.testFilesSkipped,
+    skippedDirs: ctx.skippedDirs || [],
     graph,
     findings,
     ...summarize(findings),

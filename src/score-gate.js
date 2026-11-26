@@ -79,10 +79,11 @@ export const scoreShown = (result) => result?.scoreReliable !== false && typeof 
  * Complete the gate of a quick-scan result with the layers of the deep audit (no check runs). Never throws: when the layers cannot
  * be extracted there is no score.
  */
-export async function attachCoverage(result, dir, { ignore = [], lang = 'tr' } = {}) {
+export async function attachCoverage(result, dir, { ignore = [], include = [], lang = 'tr' } = {}) {
+  if (include.length) result.include = include;
   try {
     const { assessProject } = await import('./audit/index.js');
-    const a = await assessProject(dir, { ignore, lang });
+    const a = await assessProject(dir, { ignore, include: result.include || [], lang });
     Object.assign(result, { support: a.support, layers: a.layers, scoreReliable: a.scoreReliable, scoreReasons: a.scoreReasons });
   } catch (e) {
     if (process.env.KVKK_DEBUG) console.error(e);

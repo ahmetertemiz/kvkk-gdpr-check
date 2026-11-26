@@ -56,7 +56,7 @@ import { finding as baseFinding, loc, T } from './_util.js';
 import { assess, maxSensitivity } from '../risk.js';
 import { personalStores, elLabel, nodeLabel, where, flowsOf, elements, chainFor, tableOf, userLinkedStores, isSubjectName, isManagedAuth, userFkColumn, personAnchored } from '../model.js';
 import { sessionHelperText, bucketHow } from '../remedy.js';
-import { authHintIn, clientIdInputIn, handlerRegion, accessDenyIn, bodyDenies } from '../authhints.js';
+import { authHintIn, tokenGateIn, requestGateIn, clientIdInputIn, handlerRegion, accessDenyIn, bodyDenies } from '../authhints.js';
 
 // ---------------------------------------------------------------------------------------------
 // C-R7 tagging helpers.
@@ -453,6 +453,10 @@ const T_REVIEW_HELPER = (h) => T(
   `İşleyici kimlik doğrulama yardımcısına benzeyen "${h.name}" çağrısı yapıyor (satır ${h.line}); motor bu yardımcının ne yaptığını çözemedi. Oturum kontrolü olup olmadığını elle doğrulayın.`,
   `The handler calls "${h.name}" (line ${h.line}), which looks like an auth helper the engine could not resolve. Verify manually whether it enforces a session.`,
 );
+const T_REVIEW_TOKEN = (h) => T(
+  `İşleyici istekten "${h.name}" değerini okuyup geçersizse reddediyor (satır ${h.line}); erişim bir bağlantı tokenına ya da anahtara dayanıyor olabilir. Bu değerin tahmin edilemez olduğunu ve yalnızca ilgili kişiye verildiğini elle doğrulayın.`,
+  `The handler reads "${h.name}" from the request and rejects it when invalid (line ${h.line}); access may rest on a link token or key. Verify manually that the value cannot be guessed and is given only to the person concerned.`,
+);
 const T_REVIEW_UNKNOWN = T('Uç noktanın kimlik doğrulama durumu belirlenemedi (bilinmeyen auth yardımcısı/çatı); elle doğrulayın.', 'The endpoint\'s authentication state could not be determined (unknown auth helper / framework); verify manually.');
 const T_REVIEW_NO_ID = T('İşleyici istemciden bir kayıt kimliği almıyor gibi görünüyor (yolda parametre yok, gövdeden kimlik alınmıyor); IDOR için başkasının kaydını hedefleyen bir girdi gerekir. Elle doğrulayın.', 'The handler does not appear to take a record identifier from the client (no path parameter, no id from the body); an IDOR needs an input that targets someone else\'s record. Verify manually.');
 
@@ -536,6 +540,7 @@ export function unauthenticatedEndpoints(g, model, lang) {
     const unresolvedAuth = ep.auth === 'unknown' || !!ep.authHelperUnresolved;
     const src = sourceOf(ep.file || ep.handlerRel);
     const hint = !ep.authUnused && ep.auth !== true ? authHintIn(src, ep.line) : null;
+    const tokenGate = !ep.authUnused && ep.auth !== true && !hint && src ? tokenGateIn(src, ep.line) || wrapperGate(ep, src, sourceOf) : null;
     // Throw-on-deny access checks (a helper asked about this record, then a throw / 401 / 403 on "no").
     const deny = src ? accessDenyIn(src, ep.line, { resolve: (name) => helperBody(ep.handlerRel || ep.file, name, sourceOf) }) : null;
     // An IDOR needs a client-supplied record identifier (path segment, query/body/form field, action argument).
@@ -614,7 +619,7 @@ export function unauthenticatedEndpoints(g, model, lang) {
       // A handler that stops with a throw / 401 / 403 when an access check fails has an access check the extractor
       // did not classify: same treatment as an unresolved auth-like helper.
       const denyHint = !u && !hint && deny ? { name: deny.name, line: deny.line } : null;
-      const strong = !u && !unresolvedAuth && !hint && !deny && src != null && !ep.opaque ? unguardedPersonStore(g, ep, flows, reads, exposedPrivate, handlerText(src, ep.line)) : null;
+      const strong = !u && !unresolvedAuth && !hint && !tokenGate && !deny && src != null && !ep.opaque ? unguardedPersonStore(g, ep, flows, reads, exposedPrivate, handlerText(src, ep.line)) : null;
       locs.push(tag(loc({
         file: ep.file, line: ep.line, snippet: ep.evidence?.[0]?.snippet || null,
         label: u
@@ -624,7 +629,7 @@ export function unauthenticatedEndpoints(g, model, lang) {
         // An unchecked session lookup is evidence; "no auth found" is an absence conclusion, weaker when no
         // store access was proven (stateless handlers cannot leak stored records).
         basis: u ? 'evidence' : 'absence', confidence: u ? 0.8 : provenStore ? 0.75 : 0.55,
-        reviewReason: u ? undefined : unresolvedAuth ? T_REVIEW_UNKNOWN : hint ? T_REVIEW_HELPER(hint) : denyHint ? T_REVIEW_HELPER(denyHint) : undefined,
+        reviewReason: u ? undefined : unresolvedAuth ? T_REVIEW_UNKNOWN : hint ? T_REVIEW_HELPER(hint) : denyHint ? T_REVIEW_HELPER(denyHint) : tokenGate ? T_REVIEW_TOKEN(tokenGate) : undefined,
       }), u ? 'SEC-03:session-unchecked' : 'SEC-03:no-auth', els, strong));
     }
     if (ep.ownershipCheck === false && !publicByDesign && !(ep.nonTerminatingGuards || []).some((x) => x.kind === 'owner') && !(quietRead && !ep.subjectIdFrom) && !guardChecksOwnership(ep, sourceOf) && deny?.kind !== 'owner') {
@@ -2603,6 +2608,40 @@ function resolveRel(fromRel, spec, src) {
   }
   return null;
 }
+/**
+ * A handler exported through a wrapper (`export const GET = withX(handler)`) whose code, or a function it hands the request to,
+ * shows request-gate behaviour (authhints.js requestGateIn). Two levels at most. {name, line} or null.
+ */
+function wrapperGate(ep, src, sourceOf) {
+  const lines = String(src || '').split(/\r?\n/);
+  const reg = lines.slice(Math.max(0, (ep.line || 1) - 3), (ep.line || 1) + 1).join('\n');
+  // The export may sit elsewhere in the file and name the handler function: export const GET = withX(ROUTE, handler, …)
+  const fn = /\bfunction\s+([A-Za-z_$][\w$]*)/.exec(lines[(ep.line || 1) - 1] || '')?.[1] || ep.fnName;
+  const byName = fn ? lines.find((l) => new RegExp(String.raw`^\s*export\s+(?:const|let)\s+\w+\s*=\s*[A-Za-z_$][\w$]*\s*\([^)]*\b${fn}\b`).test(l)) : null;
+  const w = /=\s*(?:await\s+)?([A-Za-z_$][\w$]*)\s*\(/.exec(reg) || (byName && /=\s*([A-Za-z_$][\w$]*)\s*\(/.exec(byName));
+  if (!w) return null;
+  const file = ep.handlerRel || ep.file;
+  const body = helperBody(file, w[1], sourceOf);
+  if (!body) return null;
+  const direct = requestGateIn(body);
+  if (direct) return { name: `${w[1]} → ${direct.name}`, line: ep.line };
+  // The wrapper hands the request to a check and stops on its answer.
+  const home = importedFrom(file, w[1], sourceOf) || file;
+  for (const c of new Set([...body.matchAll(/\b([A-Za-z_$][\w$]*)\s*\(\s*(?:req|request|event|ctx|c)\b/g)].map((m) => m[1]))) {
+    if (c === w[1]) continue;
+    const inner = helperBody(home, c, sourceOf);
+    const g = inner && requestGateIn(inner);
+    if (g) return { name: `${w[1]} → ${c} → ${g.name}`, line: ep.line };
+  }
+  return null;
+}
+/** File that defines an imported name (one hop), or null. */
+function importedFrom(fileRel, name, src) {
+  const s = src(fileRel);
+  const imp = s && s.match(new RegExp(String.raw`import\s*\{[^}]*\b${name}\b[^}]*\}\s*from\s*['"]([^'"]+)['"]`));
+  return imp ? resolveRel(fileRel, imp[1], src) : null;
+}
+
 function helperBody(fileRel, name, src, depth = 0) {
   const s = src(fileRel);
   if (!s || depth > 2) return null;

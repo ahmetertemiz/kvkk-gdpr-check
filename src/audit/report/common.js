@@ -1,5 +1,6 @@
 /** Shared strings and helpers for audit reports. */
 import { hideRoot } from '../../display-root.js';
+import { skippedDirsText } from '../../skipped-dirs.js';
 import { buildAuditModel, serializeModel } from '../legal/index.js';
 import { CATEGORIES, CATEGORY_ORDER } from '../../data/categories.js';
 import { CATEGORIES as DATA_CATS } from '../classify/pii.js';
@@ -484,6 +485,8 @@ export function coverageNotes(result, t, model) {
   const out = [];
   if (Number(result?.pendingHigh) > 0 && t.pendingHigh) out.push(t.pendingHigh(Number(result.pendingHigh)));
   for (const f of result?.support?.families || []) if (t.support) out.push(t.support(f, t.supportTier[f.tier] || f.tier));
+  const dirs = skippedDirsText(result, tLang(t));
+  if (dirs) out.push(dirs);
   const sk = skippedEntries(result?.filesSkipped ?? result?.coverageDetail?.filesSkipped);
   if (sk.total > 0) out.push(t.filesSkipped(sk.total, sk.reasons.map(([k, v]) => `${t.skipReasons[k] || k}: ${v}`).join(', ')));
   const tests = Number(result?.testFilesSkipped) || 0;

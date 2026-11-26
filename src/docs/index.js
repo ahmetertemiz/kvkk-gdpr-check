@@ -70,11 +70,11 @@ function projectOrg(dir) {
  * Deep audit for the documents: {audit, warning}. Never throws: without it (e.g. @babel/parser missing) the documents fall back
  * to the pattern scan, and the warning says so.
  */
-export async function auditForDocs(dir, { org = null, lang = 'tr', ignore = [], live = null } = {}) {
+export async function auditForDocs(dir, { org = null, lang = 'tr', ignore = [], include = [], live = null } = {}) {
   try {
     if (!org) org = projectOrg(dir);
     const { audit } = await import('../audit/index.js');
-    const r = await audit(dir, { ignore, live, lang, org });
+    const r = await audit(dir, { ignore, include, live, lang, org });
     const { getModel } = await import('../audit/report/common.js');
     return { audit: { model: getModel(r, lang), findings: r.findings, review: r.review, layers: r.layers, organization: r.organization, coverage: r.coverage, scoreReliable: r.scoreReliable, scoreReasons: r.scoreReasons }, warning: null };
   } catch (e) {

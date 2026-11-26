@@ -66,6 +66,7 @@ export function auditJson(result, { lang = 'tr' } = {}) {
       counts: result.counts,
       filesScanned: result.filesScanned,
       testFilesSkipped: typeof result.testFilesSkipped === 'number' ? result.testFilesSkipped : null,
+      skippedDirs: result.skippedDirs || [],
       filesSkipped: result.filesSkipped ?? result.coverageDetail?.filesSkipped ?? null,
       coverage: result.coverage ?? null,
       scoreReliable: result.scoreReliable !== false,

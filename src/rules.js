@@ -68,9 +68,16 @@ export const SIGNALS = {
     kinds: CODE_MANIFEST,
     re: /(@supabase\/|supabase\.auth|firebase\/auth|getAuth\(|next-auth|@auth\/|@clerk\/|auth0|lucia|better-auth|@kinde|passport|django\.contrib\.auth|devise|laravel\/(breeze|sanctum|fortify|jetstream)|appwrite|pocketbase|firebase_auth|supabase_flutter)/i,
   },
+  // A Supabase project: its SDK, a client created for it, or calls to its data / auth API. A supabase.co host alone (an image
+  // domain in next.config, a CSP entry) is not one: the rules that follow from it (RLS, anon key) need the database.
   supabase: {
     kinds: CODE_MANIFEST,
-    re: /(@supabase\/|supabase_flutter|supabase-py|createClient\([^)]*supabase|supabase\.co)/i,
+    re: /(@supabase\/|supabase_flutter|supabase-py|\bfrom\s+supabase\s+import|createClient\([^)]*supabase|\.supabase\.co\/(?:rest|auth|functions|realtime|graphql)\/v1)/i,
+  },
+  // The Supabase CLI folder (supabase/config.toml, supabase/migrations/…).
+  supabaseDir: {
+    kinds: ['path'],
+    re: /(?:^|\/)supabase\/(?:config\.toml|migrations\/|seed\.sql)/,
   },
   retention: {
     kinds: CODE,
@@ -123,6 +130,11 @@ const PROCESSORS = [
 const PII_FIELDS = '(email|e_?posta|phone(?:_?number)?|telefon(?:_?no)?|gsm|mobile|cep_?tel\\w*|address|adres|birth_?date|birthday|date_?of_?birth|dob|dogum_?tarihi|full_?name|ad_?soyad|first_?name|last_?name|iban|ip_?address|location|konum|lat(?:itude)?|lng|longitude|passport|pasaport|gender|cinsiyet)';
 
 const SENSITIVE_FIELDS = '(health\\w*|saglik\\w*|sağlık\\w*|diagnos\\w*|teshis\\w*|teşhis\\w*|medical\\w*|disease\\w*|hastal[ıi]k\\w*|blood_?type|kan_?grubu|religio\\w*|mezhep\\w*|ethnic\\w*|etnik\\w*|biometric\\w*|biyometrik\\w*|fingerprint\\w*|parmak_?izi|face_?(?:id|embedding|descriptor|encoding)s?|sexual\\w*|cinsel\\w*|criminal\\w*|sab[ıi]ka\\w*|union_?member\\w*|sendika\\w*|political\\w*|siyasi\\w*|disabilit\\w*|engellilik\\w*|pregnan\\w*|hamile\\w*|medication\\w*|prescription\\w*|re[çc]ete\\w*|mental_?health\\w*|therapy\\w*|terapi\\w*)';
+
+// DDL of a database without Row Level Security (MySQL / MariaDB / SQLite).
+const NON_POSTGRES_SQL_RE = /\bENGINE\s*=\s*\w+|\bAUTO_INCREMENT\b|\bAUTOINCREMENT\b|\bcreate\s+table\s+(?:if\s+not\s+exists\s+)?`|\bDEFAULT\s+CHARSET\b|\bunsigned\b/i;
+// A bounce / delivery status notification (RFC 3464) has a "diagnostic code": mail delivery, not a medical diagnosis.
+const DSN_CONTEXT_RE = /\b(?:bounce[ds]?|bouncing|dsn|diagnostic[-_]?code|mailer[-_]daemon|delivery[-_ ]status|smtp)\b/i;
 
 // Matches a field *definition* (form input name, schema column, object key) — not free text.
 const fieldDef = (fields) =>
@@ -288,7 +300,7 @@ export const RULES = [
     kinds: CODE,
     aggregate: true,
     patterns: [
-      { re: fieldDef(SENSITIVE_FIELDS), labelFrom: (m) => (m[1] || m[2] || '').toLowerCase() },
+      { re: fieldDef(SENSITIVE_FIELDS), labelFrom: (m) => (m[1] || m[2] || '').toLowerCase(), verify: (m, line, file) => !(/^diagnos/i.test(m[1] || m[2] || '') && DSN_CONTEXT_RE.test(file?.content || '')) },
       { label: { tr: 'yüz tanıma / biyometrik kütüphane', en: 'face recognition / biometric library' }, re: /(face-api\.js|@vladmandic\/face-api|face_recognition|@mediapipe\/face|aws-sdk.*rekognition|@aws-sdk\/client-rekognition|FaceDetector|LocalAuthentication|BiometricPrompt|expo-local-authentication)/ },
     ],
     title: {
@@ -742,11 +754,13 @@ export const RULES = [
     severity: 'high',
     scope: 'project',
     check: ({ files, signals }) => {
-      if (!signals.supabase) return [];
+      if (!signals.supabase && !signals.supabaseDir) return [];
       const created = new Map();
       const rls = new Set();
       for (const f of files) {
         if (!f.rel.endsWith('.sql')) continue;
+        // Row Level Security exists only in Postgres; MySQL / MariaDB / SQLite DDL is a different database.
+        if (NON_POSTGRES_SQL_RE.test(f.content)) continue;
         const lines = f.content.split(/\r?\n/);
         lines.forEach((ln, i) => {
           const c = ln.match(/create\s+table\s+(?:if\s+not\s+exists\s+)?(?:"?public"?\.)?"?([a-z_][\w]*)"?/i);

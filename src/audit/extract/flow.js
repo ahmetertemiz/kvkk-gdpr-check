@@ -91,6 +91,7 @@ const META_HEADERS = [
   [/^(x-vercel-ip-|cf-ip)longitude$/i, 'longitude'],
   [/^(x-vercel-ip-|cf-)postal-code$/i, 'postal_code'],
 ];
+const HEADER_NAME_RE = /^(?:x-[\w-]+|accept(?:-[\w-]+)?|content-[\w-]+|cache-control|if-[\w-]+|origin|referer|host|connection|upgrade|sec-[\w-]+)$/i;
 // Template / markup renderers: the rendered string (email html, page) carries every value passed in (P5).
 // handlebars/ejs/pug/mustache/nunjucks/liquid/eta/marked/mjml, react-email render(), react-dom/server renderToString().
 const TEMPLATE_PKG_RE = /^(handlebars|express-handlebars|ejs|pug|jade|mustache|nunjucks|liquidjs|eta|squirrelly|dot|art-template|hogan\.js|lodash\.template|marked|markdown-it|mjml|@react-email\/(render|components)|react-email|@jsx-email\/[\w-]+|jsx-email|react-dom\/server|preact-render-to-string|vue\/server-renderer|@vue\/server-renderer|svelte\/server)$/;
@@ -526,6 +527,9 @@ class FlowAnalyzer {
       if (!META_HEADERS.some(([re]) => re.test(k || '')) && k !== 'user-agent') return empty();
       key = k;
     }
+    // Any other x-… / standard header read off the request names a protocol field (x-health-scope, x-request-id, accept),
+    // not a person's data; known metadata headers (IP, geo, user agent) are classified above.
+    if (typeof key === 'string' && HEADER_NAME_RE.test(key) && !META_HEADERS.some(([re]) => re.test(key)) && key.toLowerCase() !== 'user-agent') return empty();
     key = metaKey(key);
     // Metadata of an uploaded File (file.name, file.type, file.size) is not the person's data.
     if (req.file && /^(name|type|size|lastModified|mimetype|mimeType|originalname|encoding)$/.test(key)) return empty();

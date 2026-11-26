@@ -8,6 +8,13 @@ export const DEFAULT_IGNORE_DIRS = new Set([
   'target', 'Pods', '.gradle', '.dart_tool', '.idea', '.vscode', 'storybook-static',
 ]);
 
+/**
+ * Folders of coding agents and editors: their settings, caches and worktree copies of the same repository. Not the project.
+ * Skipped by default and listed in the report; --include <name> scans one anyway.
+ */
+export const AGENT_DIRS = new Set(['.claude', '.cursor', '.codex', '.windsurf', '.continue', '.zed', '.roo', '.kiro', '.gemini', '.cline', '.aider.tags.cache.v3', '.aider.tags.cache.v4']);
+const isAgentDir = (name) => AGENT_DIRS.has(name) || /^\.aider/.test(name);
+
 const SKIP_FILES = new Set([
   'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb', 'bun.lock',
   'composer.lock', 'Gemfile.lock', 'poetry.lock', 'Cargo.lock', 'pubspec.lock',
@@ -26,6 +33,21 @@ const MANIFESTS = new Set([
   'package.json', 'requirements.txt', 'pyproject.toml', 'pubspec.yaml', 'Gemfile',
   'composer.json', 'go.mod', 'build.gradle', 'build.gradle.kts', 'Podfile',
 ]);
+
+/**
+ * A git worktree inside the project (coding agents keep them under .claude/worktrees, .worktrees …): its .git is a file that
+ * points at <repo>/.git/worktrees/<name>. It is another checkout of the same repository, not part of the project, and scanning
+ * it reports every finding again. A submodule (.git file pointing at .git/modules/…) is part of the project and is kept.
+ */
+export function isNestedWorktree(dir) {
+  try {
+    const p = path.join(dir, '.git');
+    if (!fs.statSync(p).isFile()) return false;
+    return /^gitdir:\s*.*[\\/]worktrees[\\/][^\\/]+\s*$/m.test(fs.readFileSync(p, 'utf8').slice(0, 1000));
+  } catch {
+    return false;
+  }
+}
 
 /** Classify a file into a kind used by rules. */
 export function classify(rel) {
@@ -74,11 +96,14 @@ function globToRegex(glob) {
  * `test` is set on test/spec/fixture files (see isTestPath); callers decide whether to keep them.
  * @returns {{path:string, rel:string, kind:string, content:string, test?:boolean}[]}
  */
-export function walk(root, { ignore = [] } = {}) {
+export function walk(root, { ignore = [], include = [] } = {}) {
   const ignoreRes = ignore.filter(Boolean).map(globToRegex);
+  const included = new Set(include.filter(Boolean).map((x) => String(x).replace(/^\.?\/+|\/+$/g, '')));
   const out = [];
+  // What was left out and why: reports name it (agent / editor folder, worktree copy).
+  const skippedDirs = [];
 
-  const visit = (dir) => {
+  const visit = (dir, opened = false) => {
     let entries;
     try {
       entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -91,7 +116,12 @@ export function walk(root, { ignore = [] } = {}) {
       if (ignoreRes.some((re) => re.test(rel))) continue;
       if (e.isDirectory()) {
         if (DEFAULT_IGNORE_DIRS.has(e.name)) continue;
-        visit(abs);
+        const open = opened || included.has(e.name) || included.has(rel);
+        if (!open) {
+          if (isAgentDir(e.name)) { skippedDirs.push({ rel, reason: 'agent', worktrees: countWorktrees(abs) }); continue; }
+          if (isNestedWorktree(abs)) { skippedDirs.push({ rel, reason: 'worktree' }); continue; }
+        }
+        visit(abs, open);
       } else if (e.isFile()) {
         if (SKIP_FILES.has(e.name) || /\.min\.(js|css)$/.test(e.name) || /\.map$/.test(e.name)) continue;
         const kind = classify(rel);
@@ -118,5 +148,18 @@ export function walk(root, { ignore = [] } = {}) {
   };
 
   visit(root);
+  Object.defineProperty(out, 'skippedDirs', { value: skippedDirs, enumerable: false });
   return out;
+}
+
+/** Worktree copies directly inside a folder (two levels: .claude/worktrees/<name>). */
+function countWorktrees(dir) {
+  let n = 0;
+  const look = (d, depth) => {
+    let es;
+    try { es = fs.readdirSync(d, { withFileTypes: true }); } catch { return; }
+    for (const e of es) if (e.isDirectory()) { const p = path.join(d, e.name); if (isNestedWorktree(p)) n++; else if (depth < 2) look(p, depth + 1); }
+  };
+  look(dir, 0);
+  return n;
 }

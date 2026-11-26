@@ -65,6 +65,43 @@ export function authHintIn(source, line) {
   return null;
 }
 
+// Request-gate behaviour: a value read from the request, compared or verified, and a 4xx answer when it does not match.
+// Only values that carry a secret count: a non-standard request header (x-…, authorization), or a query / body / cookie value
+// held in a variable or field named like a secret. A record id read and looked up (then 404) is not a gate: that is exactly the
+// unchecked lookup an IDOR finding is about.
+const SECRET_NAME = String.raw`\w*(?:token|Token|key|Key|secret|Secret|signature|Signature|sig|hash|Hash|otp|Otp|nonce|Nonce)\w*`;
+const GATE_READ_RES = [
+  /\bheaders\s*\.\s*get\(\s*['"`]((?:x-[\w-]+)|authorization)['"`]/i,
+  /\bheaders\s*\[\s*['"`]((?:x-[\w-]+)|authorization)['"`]\s*\]/i,
+  new RegExp(String.raw`\b(?:const|let|var)\s+(${SECRET_NAME})\s*=[^;\n]*\b(?:searchParams|query|params|body|formData|cookies|headers|input|payload|args)\b`),
+  new RegExp(String.raw`\b(?:searchParams|query|params|body|formData|form|fd|input|data|payload|args|cookies)\s*(?:\.\s*get\(\s*['"\x60]|\.\s*|\[\s*['"\x60])(${SECRET_NAME})\b`),
+  // const { token, action } = parsed.data / await req.json() / body
+  new RegExp(String.raw`\b(?:const|let|var)\s*\{[^}]*?\b(${SECRET_NAME})\b[^}]*\}\s*=\s*(?:await\s+)?[\w$.]*(?:data|body|json\(\)|query|params|input|payload|args)\b`),
+];
+const GATE_CHECK_RE = /safeParse|\.parse\(|===|!==|==|!=|\bverify\w*\(|\bcompare\w*\(|timingSafeEqual|\bif\s*\(\s*!/;
+const GATE_DENY_RE = /\b[A-Za-z_$][\w$]*\(\s*4(?:00|01|03|04|10|22)\b|status\s*:\s*4(?:00|01|03|04|10|22)\b|\.status\(\s*4(?:00|01|03|04|10|22)\s*\)|\bsendStatus\(\s*40[134]\b|\b(?:notFound|unauthorized|forbidden)\s*\(|\babort\(\s*40[134]\b/i;
+
+/** First request gate in a block of code: {name, offset} or null. */
+export function requestGateIn(text) {
+  const lines = String(text || '').split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    if (/^\s*(?:\/\/|\*|#)/.test(lines[i])) continue;
+    const m = GATE_READ_RES.map((re) => re.exec(lines[i])).find(Boolean);
+    if (!m) continue;
+    const near = lines.slice(i, i + 15).join('\n');
+    if (GATE_CHECK_RE.test(near) && GATE_DENY_RE.test(near)) return { name: m[1], offset: i };
+  }
+  return null;
+}
+
+/** The same in the handler that starts at line: {name, line, snippet} or null. A reason to verify, never proof of a guard. */
+export function tokenGateIn(source, line) {
+  if (!source || !line) return null;
+  const { start, lines } = handlerRegion(source, Number(line));
+  const g = requestGateIn(lines.join('\n'));
+  return g ? { name: g.name, line: start + g.offset, snippet: lines[g.offset].trim().slice(0, 160) } : null;
+}
+
 // Client-controlled record identifiers read inside a handler.
 const ID_NAME = String.raw`\w*(?:id|Id|ID|Ids|ids|IDs|_id|uuid|Uuid|slug)`;
 const ID_ACCESS_RE = new RegExp(String.raw`\b(?:params|query|args|input|body|searchParams|data|payload|variables)\s*(?:\.\s*get\(\s*['"\x60]|\.|\[\s*['"\x60])${ID_NAME}\b|\bformData\.get\(\s*['"\x60]${ID_NAME}['"\x60]|\breq(?:uest)?\.(?:params|query|body)\.${ID_NAME}\b|\{\s*[^}]*\b${ID_NAME}\b[^}]*\}\s*=\s*(?:await\s+)?(?:req(?:uest)?\.(?:json|body|query|params)|params|args|input|body|data)\b`);

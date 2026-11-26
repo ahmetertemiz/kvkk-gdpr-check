@@ -41,7 +41,7 @@ export function scan(root, opts = {}) {
   const ignore = [...(config.ignore || []), ...(opts.ignore || [])];
   const disabled = new Set([...(config.disable || []), ...(opts.disable || [])]);
 
-  const files = walk(root, { ignore });
+  const files = walk(root, { ignore, include: opts.include || [] });
   const rules = RULES.filter((r) => !disabled.has(r.id));
   const hits = {};
   const add = (rule, f) => (hits[rule.id] ||= []).push(f);
@@ -77,7 +77,7 @@ export function scan(root, opts = {}) {
       // Returns true if recorded (or aggregated), false if skipped.
       const record = (p, m, i) => {
         const line = lines[i] ?? '';
-        if (p.verify && !p.verify(m, line)) return false;
+        if (p.verify && !p.verify(m, line, file)) return false;
         if (isSuppressed(lines, i, rule.id)) return false;
         const label = (p.labelFrom ? p.labelFrom(m) : p.label) || m[0];
         const labelKey = typeof label === 'string' ? label : label.en;
@@ -149,5 +149,5 @@ export function scan(root, opts = {}) {
   // Manifests only; score-gate.js attachCoverage adds the analysis layers (CLI, web UI).
   const support = attachSupport(files);
   const reasons = scoreReasons({ support, filesScanned: files.length });
-  return { root, filesScanned: files.length, findings, counts, score, signals, support, scoreReliable: !reasons.length, scoreReasons: reasons };
+  return { root, filesScanned: files.length, skippedDirs: files.skippedDirs || [], findings, counts, score, signals, support, scoreReliable: !reasons.length, scoreReasons: reasons };
 }

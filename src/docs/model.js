@@ -193,7 +193,7 @@ export function buildFacts(result, answers = {}, audit = null) {
     cookies,
     cookiesFromLive: fromLive,
     stack: {
-      supabase: vendors.some((v) => v.id === 'supabase') || !!result.signals?.supabase,
+      supabase: vendors.some((v) => v.id === 'supabase') || !!(result.signals?.supabase || result.signals?.supabaseDir),
       firebase: vendors.some((v) => v.id === 'firebase'),
       stripe: vendors.some((v) => v.id === 'stripe'),
       sentry: vendors.some((v) => v.id === 'sentry'),
