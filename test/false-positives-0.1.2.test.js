@@ -1,0 +1,151 @@
+// 0.1.2: false positives grouped by root cause, each with a case that must still be caught.
+// Synthetic code only: no names, tables or code from the projects that showed them.
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { scan } from '../src/scan.js';
+import { toText, toJSON, toSarif } from '../src/report.js';
+import { mergeResults } from '../src/summary.js';
+import { stripComments } from '../src/strip-comments.js';
+
+function mk(files) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kvkk-fp2-'));
+  for (const [rel, c] of Object.entries(files)) { fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true }); fs.writeFileSync(path.join(dir, rel), c); }
+  return dir;
+}
+const pkg = (deps) => JSON.stringify({ name: 'x', dependencies: Object.fromEntries(deps.map((d) => [d, '1'])) });
+const of = (r, id) => r.findings.filter((f) => f.rule.id === id);
+const L = (l) => (typeof l === 'string' ? l : l?.en || '');
+const KEY = ['sk', 'live', 'Zp4Tq8Wn2Yb6'.repeat(2)].join('_');
+
+// ------------------------------------------------------------------------------- 1a. comments are not code
+test('comment stripper: comments become spaces, strings and line numbers stay', () => {
+  const src = 'const u = "https://a.example/v1"; // a note\n/* two\n lines */ const t = `x ${y /* in */} // kept`;\nconst r = /a\\/\\/b/; // after regex\n';
+  const out = stripComments(src, 'x.ts');
+  assert.equal(out.length, src.length);
+  assert.equal(out.split('\n').length, src.split('\n').length);
+  assert.match(out, /"https:\/\/a\.example\/v1"/);
+  assert.match(out, /\/\/ kept`/, 'a // inside a template literal is text');
+  assert.match(out, /\/a\\\/\\\/b\//, 'a regex literal is kept');
+  assert.doesNotMatch(out, /a note|two|lines|after regex|\/\* in \*\//);
+  assert.equal(stripComments('x = "#k" # c\n', 'a.py'), 'x = "#k"    \n');
+  assert.equal(stripComments('u: http://h/#frag # c\n', 'a.yml'), 'u: http://h/#frag    \n');
+  assert.equal(stripComments("select '--k'; -- c\n", 'a.sql'), "select '--k';     \n");
+  assert.match(stripComments('<!-- note --><script>// c\nlet a = "//k"</script>', 'a.vue'), /^\s+<script>\s+\nlet a = "\/\/k"<\/script>$/);
+});
+
+test('a consent sentence in a comment is not a pre-ticked box; a real pre-ticked box still is', () => {
+  const dir = mk({
+    'package.json': pkg(['react']),
+    'src/ai.ts': '// The consent flag is checked before any request leaves the browser.\nexport const ask = (ok: boolean) => ok;\n/* marketing consent: checked on the server too */\n',
+    'src/Signup.tsx': 'export const S = () => <label><input type="checkbox" name="marketing" defaultChecked /> Kampanya iletisi</label>;\n',
+  });
+  const locs = of(scan(dir), 'CNS003').flatMap((f) => f.locations);
+  assert.deepEqual(locs.map((l) => l.file), ['src/Signup.tsx']);
+});
+
+test('a key in a comment is still a leaked key (secret rules read comments)', () => {
+  const dir = mk({ 'package.json': pkg(['react']), 'src/pay.ts': `// old: const key = "${KEY}";\nexport const x = 1;\n` });
+  const f = of(scan(dir), 'SEC001');
+  assert.equal(f.length, 1);
+  assert.equal(f[0].severity, 'critical');
+});
+
+test('kvkk-ignore in a comment still silences the line', () => {
+  const dir = mk({ 'package.json': pkg(['react']), 'src/S.tsx': 'export const S = () => <input type="checkbox" name="newsletter" defaultChecked />; // kvkk-ignore CNS003\n' });
+  assert.equal(of(scan(dir), 'CNS003').length, 0);
+});
+
+test('a safeguard named only in a comment or a test still silences its absence finding; a trigger in a comment does not fire', () => {
+  const base = { 'package.json': pkg(['express']), 'src/model.ts': 'export const U = z.object({ email: z.string() });\n' };
+  // documented delete route (the doc comment names it, the code is a plain .delete handler)
+  const withDoc = scan(mk({ ...base, 'src/routes.ts': '/** Delete account: removes the signed-in user */\nrouter.delete("/me", auth, ctrl.remove);\n' }));
+  assert.ok(!withDoc.findings.some((f) => f.rule.id === 'DSR001'));
+  const none = scan(mk({ ...base, 'src/routes.ts': 'router.get("/me", auth, ctrl.show);\n' }));
+  assert.ok(none.findings.some((f) => f.rule.id === 'DSR001'), 'no deletion anywhere is still reported');
+  // a password field that exists only in a comment does not start the hashing finding
+  const pw = scan(mk({ 'package.json': pkg(['express']), 'src/a.ts': '// later: <input type="password" />\nexport const a = 1;\n' }));
+  assert.ok(!pw.findings.some((f) => f.rule.id === 'SEC010'));
+});
+
+// ------------------------------------------------------------------------------- 1b. test files
+const TESTS = {
+  'package.json': pkg(['react']),
+  'src/App.tsx': 'export const A = () => <main>hi</main>;\n',
+  'src/__tests__/models.test.ts': 'const fixture = { id: "whisper-1" };\nimport mixpanel from "mixpanel-browser";\nmixpanel.init("x");\n',
+  'test/keys.spec.ts': `const k = "${KEY}";\n`,
+};
+
+test('test files are left out of the quick scan; a key in one is still reported, one level lower and marked', () => {
+  const r = scan(mk(TESTS));
+  assert.ok(r.testsSkipped >= 2);
+  assert.ok(!r.findings.some((f) => f.locations.some((l) => /__tests__/.test(l.file || ''))), 'nothing from a test file but secrets');
+  const sec = of(r, 'SEC001');
+  assert.equal(sec.length, 1);
+  assert.equal(sec[0].severity, 'high', 'critical → high in a test file');
+  assert.match(L(sec[0].locations[0].label), /in a test file/);
+  assert.match(toText(r, { lang: 'tr', color: false }), /test\/spec\/fixture dosyası tarama dışı bırakıldı/);
+});
+
+test('--include-tests scans test files like any other', () => {
+  const r = scan(mk(TESTS), { includeTests: true });
+  assert.equal(r.testsSkipped, 0);
+  assert.ok(of(r, 'TRK001').length, 'the tracker in the test file is read');
+  assert.equal(of(r, 'SEC001')[0].severity, 'critical');
+});
+
+// ------------------------------------------------------------------------------- 1c. special-category context
+test('a sensitive word with only a TypeScript type is information only; schema, form and request fields stay high', () => {
+  const dir = mk({
+    'package.json': pkg(['react']),
+    'src/util.ts': 'export function digest(fingerprint: string, health?: boolean) { return fingerprint; }\n',
+    'db/schema.sql': 'create table patient_notes (id uuid primary key, diagnosis text not null);\n',
+    'src/Form.tsx': 'export const F = () => <input name="blood_type" />;\n',
+    'src/api.ts': 'export function h(req) { const v = req.body.religion; return v; }\n',
+    'src/zod.ts': 'export const S = z.object({ medication: z.string() });\n',
+  });
+  const r = scan(dir);
+  const high = of(r, 'PII002').filter((f) => f.severity === 'high').flatMap((f) => f.locations.map((l) => L(l.label)));
+  const info = of(r, 'PII002').filter((f) => f.severity === 'info').flatMap((f) => f.locations.map((l) => L(l.label)));
+  for (const w of ['diagnosis', 'blood_type', 'religion', 'medication']) assert.ok(high.some((x) => x.startsWith(w)), `${w} stays high`);
+  assert.ok(info.some((x) => x.startsWith('fingerprint') && /no person-linked context/.test(x)));
+  assert.ok(!high.some((x) => x.startsWith('fingerprint') || x.startsWith('health')));
+});
+
+test('a TypeScript-typed sensitive key in an ORM entity or generated database types stays high', () => {
+  const dir = mk({
+    'package.json': pkg(['typeorm']),
+    'src/entity.ts': 'import { Entity, Column } from "typeorm";\n@Entity()\nexport class Visit {\n  @Column()\n  diagnosis: string;\n}\n',
+    'src/types.ts': 'export type Database = { public: { Tables: { visits: { Row: { health_status: string | null } } } } };\n',
+  });
+  const high = of(scan(dir), 'PII002').filter((f) => f.severity === 'high').flatMap((f) => f.locations.map((l) => L(l.label)));
+  assert.ok(high.includes('diagnosis'));
+  assert.ok(high.includes('health_status'));
+});
+
+test('boolean flags are not personal data; real personal fields still are', () => {
+  const dir = mk({
+    'package.json': pkg(['react']),
+    'src/ui.ts': 'type Layout = { mobile: boolean; email?: boolean };\n',
+    'src/user.ts': 'export const User = z.object({\n  email: z.string(),\n  phone_number: z.string(),\n});\n',
+  });
+  const labels = of(scan(dir), 'PII001').flatMap((f) => f.locations.map((l) => ({ label: L(l.label), file: l.file })));
+  assert.ok(!labels.some((l) => l.file === 'src/ui.ts'));
+  assert.ok(labels.some((l) => l.label === 'email' && l.file === 'src/user.ts'));
+  assert.ok(labels.some((l) => l.label === 'phone_number'));
+});
+
+test('one rule at two levels: JSON, SARIF and merged results keep both without duplicate rule entries', () => {
+  const dir = mk({ ...TESTS, 'src/pay.ts': `export const k = "${KEY}";\n` });
+  const r = scan(dir);
+  const sec = of(r, 'SEC001');
+  assert.deepEqual(sec.map((f) => f.severity).sort(), ['critical', 'high']);
+  const sarif = JSON.parse(toSarif(r));
+  assert.equal(sarif.runs[0].tool.driver.rules.filter((x) => x.id === 'SEC001').length, 1);
+  assert.equal(sarif.runs[0].results.filter((x) => x.ruleId === 'SEC001').length, 2);
+  assert.equal(JSON.parse(toJSON(r)).findings.filter((f) => f.id === 'SEC001').length, 2);
+  assert.equal(mergeResults(r, r).findings.filter((f) => f.rule.id === 'SEC001').length, 2);
+});
+

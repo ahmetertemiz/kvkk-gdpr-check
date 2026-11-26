@@ -44,9 +44,11 @@ export function mergeResults(...results) {
   const byId = new Map();
   for (const r of results) {
     for (const f of r.findings) {
-      const prev = byId.get(f.rule.id);
+      // One finding per rule and level (a rule can report locations at two levels).
+      const key = `${f.rule.id}|${f.severity}`;
+      const prev = byId.get(key);
       if (prev) prev.locations.push(...f.locations);
-      else byId.set(f.rule.id, { ...f, locations: [...f.locations] });
+      else byId.set(key, { ...f, locations: [...f.locations] });
     }
   }
   const findings = sortFindings([...byId.values()]);

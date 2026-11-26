@@ -2,7 +2,7 @@ import { CATEGORIES, CATEGORY_ORDER } from './data/categories.js';
 import { supportNotice } from './support-notice.js';
 import { scoreShown, reasonTexts } from './score-gate.js';
 import { displayRoot } from './display-root.js';
-import { skippedDirsText } from './skipped-dirs.js';
+import { skippedDirsText, testsSkippedText } from './skipped-dirs.js';
 import { basisNote, unverifiedBasis } from './data/legal-basis.js';
 
 export const SEV_LABEL = {
@@ -159,6 +159,7 @@ export function toText(result, { lang = 'tr', color = true, verbose = false } = 
   const notice = supportNotice(result, lang, { quickScan: true });
   if (notice) out.push(k.yellow(k.bold(`  ⚠ ${notice.text}`)));
   if (skippedDirsText(result, lang)) out.push(k.dim(`  ℹ ${skippedDirsText(result, lang)}`));
+  if (testsSkippedText(result, lang)) out.push(k.dim(`  ℹ ${testsSkippedText(result, lang)}`));
   out.push('');
 
   const ls = liveSummary(result.live);
@@ -237,6 +238,7 @@ export function toMarkdown(result, { lang = 'tr' } = {}) {
   const notice = supportNotice(result, lang, { quickScan: true });
   if (notice) out.push(`> ⚠️ **${mdEsc(notice.text)}**`, '');
   if (skippedDirsText(result, lang)) out.push(`_${mdEsc(skippedDirsText(result, lang))}_`, '');
+  if (testsSkippedText(result, lang)) out.push(`_${mdEsc(testsSkippedText(result, lang))}_`, '');
   for (const h of headerLines(result, t)) out.push(`- ${h.replace(/: (.*)$/, ': `$1`')}`);
   if (result.root || result.url) out.push('');
   out.push(`**${t.score}: ${scoreShown(result) ? `${result.score}/100 (${scoreGrade(result.score)})` : t.scoreNA}**${result.filesScanned ? ` · ${result.filesScanned} ${t.scanned}` : ''}`);
@@ -324,6 +326,7 @@ export function toJSON(result, { lang = 'tr' } = {}) {
       url: result.url || null,
       filesScanned: result.filesScanned,
       skippedDirs: result.skippedDirs || [],
+      testsSkipped: result.testsSkipped || 0,
       counts: result.counts,
       signals: result.signals,
       live: result.live,
@@ -348,7 +351,8 @@ const SARIF_LEVEL = { critical: 'error', high: 'error', medium: 'warning', low: 
 
 export function toSarif(result, { lang = 'tr' } = {}) {
   const notice = supportNotice(result, lang, { quickScan: true });
-  const rules = result.findings.map((f) => ({
+  // One rule entry per id (a rule may have findings at two levels, e.g. a key in a test file one level lower).
+  const rules = result.findings.filter((f, i, all) => all.findIndex((x) => x.rule.id === f.rule.id) === i).map((f) => ({
     id: f.rule.id,
     name: f.rule.id,
     shortDescription: { text: f.rule.title[lang] },

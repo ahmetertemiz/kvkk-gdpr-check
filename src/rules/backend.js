@@ -149,6 +149,7 @@ export const BACKEND_RULES = [
     scope: 'file',
     kinds: ['code', 'config'],
     mask: true,
+    secret: true, // reads comments and test files too
     patterns: [
       {
         label: { tr: 'Şifreli veritabanı bağlantı adresi', en: 'Database URL with password' },

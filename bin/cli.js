@@ -33,6 +33,8 @@ Tarama seçenekleri:
       --include <klasör,...>          Varsayılan olarak atlanan ajan/editör klasörlerini
                                       (.claude, .cursor, .codex …) yine de tara
       --disable <ID,...>              Kapatılacak kurallar
+      --include-tests                 Test/spec/fixture dosyalarını da tara (gizli anahtar
+                                      kuralları onları her zaman okur)
   -v, --verbose                       Tüm konumları ve kod satırlarını göster
       --no-color                      Renksiz çıktı
       --list-rules                    Tüm kuralları listele
@@ -217,7 +219,7 @@ async function main() {
 
   if (args.cmd === 'docs') {
     assertDir(args.dir);
-    const code = scan(args.dir, { ignore: args.ignore, include: args.include, disable: args.disable });
+    const code = scan(args.dir, { ignore: args.ignore, include: args.include, disable: args.disable, includeTests: !!args.includeTests });
     const live = args.url ? await runLive(args) : null;
     const result = mergeResults(code, live);
     const { generateDocs, auditForDocs } = await import('../src/docs/index.js');
@@ -253,7 +255,7 @@ async function main() {
   } else {
     assertDir(args.dir);
     const { attachCoverage } = await import('../src/score-gate.js');
-    const code = await attachCoverage(scan(args.dir, { ignore: args.ignore, include: args.include, disable: args.disable }), args.dir, { ignore: args.ignore, include: args.include, lang: args.lang });
+    const code = await attachCoverage(scan(args.dir, { ignore: args.ignore, include: args.include, disable: args.disable, includeTests: !!args.includeTests }), args.dir, { ignore: args.ignore, include: args.include, lang: args.lang });
     result = args.url ? mergeResults(code, await runLive(args)) : code;
   }
 

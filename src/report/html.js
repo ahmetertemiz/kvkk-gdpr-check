@@ -1,7 +1,7 @@
 import { supportNotice } from '../support-notice.js';
 import { scoreShown, reasonTexts } from '../score-gate.js';
 import { displayRoot } from '../display-root.js';
-import { skippedDirsText } from '../skipped-dirs.js';
+import { skippedDirsText, testsSkippedText } from '../skipped-dirs.js';
 import { basisNote } from '../data/legal-basis.js';
 import { CATEGORIES, CATEGORY_ORDER } from '../data/categories.js';
 import { REPORT_STRINGS, SEV_LABEL, L, loc, scoreGrade, HEADER_NAMES, isNonEssentialCookie, liveSummary } from '../report.js';
@@ -494,6 +494,7 @@ export function toHtml(result, { lang = 'tr' } = {}) {
 </header>
 
 ${skippedDirsText(result, lang) ? `<p class="muted" style="margin:0 0 10px">ℹ ${esc(skippedDirsText(result, lang))}</p>` : ''}
+${testsSkippedText(result, lang) ? `<p class="muted" style="margin:0 0 10px">ℹ ${esc(testsSkippedText(result, lang))}</p>` : ''}
 ${notice ? `<div class="card" role="alert" style="border-left:4px solid #d97706;margin-bottom:14px"><b>⚠ ${esc(notice.text)}</b></div>` : ''}
 <section class="hero">
   <div class="card">${scoreShown(result) ? gauge(result.score, t) : noScore(result, t, lang)}</div>

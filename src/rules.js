@@ -35,24 +35,32 @@ function decodeJwtPayload(token) {
 // Project-level signals (true/false facts about the whole codebase)
 // ---------------------------------------------------------------------------
 
+// `control`: the signal shows that a safeguard exists and only silences an "is missing" finding. It reads comments
+// and test files too (an API doc comment above a real delete route, a section title in a comment, a test of the
+// feature): when unsure, no absence alarm. The other signals start findings and read code only.
 export const SIGNALS = {
   consent: {
+    control: true,
     kinds: ['code', 'manifest'],
     re: /(cookieconsent|cookie-consent|vanilla-cookieconsent|react-cookie-consent|klaro|cookiebot|onetrust|usercentrics|iubenda|tarteaucitron|termly|osano|complianz|CookieBanner|CookieConsent|cookie[-_]?banner|consent[-_]?manager|ConsentBanner|gtag\(\s*['"]consent['"]\s*,\s*['"]update)/i,
   },
   privacyDoc: {
+    control: true,
     kinds: ['code', 'doc', 'config', 'path'],
     re: /(aydınlatma[-_ ]?metni|aydinlatma[-_ ]?metni|aydinlatma|gizlilik[-_ ]?politikas[ıi]|privacy[-_ ]?policy|privacy[-_ ]?notice|\/privacy\b|\/gizlilik\b|\/kvkk\b|(^|\/)privacy(\.|\/)|(^|\/)kvkk(\.|\/)|(^|\/)gizlilik(\.|\/))/i,
   },
   cookiePolicy: {
+    control: true,
     kinds: ['code', 'doc', 'path'],
     re: /(cookie[-_ ]?policy|cookies[-_ ]?policy|çerez[-_ ]?politikas[ıi]|cerez[-_ ]?politikas[ıi]|çerez[-_ ]?aydınlatma|cerez[-_ ]?aydinlatma|\/cookies?\b|\/cerez\b)/i,
   },
   accountDeletion: {
+    control: true,
     kinds: CODE,
     re: /(delete[-_]?account|deleteAccount|deleteMyAccount|deleteUser|delete_user|removeAccount|closeAccount|close_account|hesab[ıi]m?[ıi]?[-_ ]?sil|hesap[-_ ]?sil|auth\.admin\.deleteUser|admin\.deleteUser|\.delete\(\)\s*;?\s*\/\/\s*account|account\/delete|Delete (my )?account|Hesabımı sil|Hesabimi sil)/i,
   },
   dataExport: {
+    control: true,
     kinds: CODE,
     re: /(export[-_]?(my[-_]?)?data|exportUserData|download[-_ ]?(my[-_ ]?)?data|verilerimi[-_ ]?indir|data[-_]?export|takeout|Download your data|Verilerimi indir)/i,
   },
@@ -61,6 +69,7 @@ export const SIGNALS = {
     re: /(type=["'{]?\s*["']?password["']|\bpassword_?hash\b|\bpassword\s+(text|varchar)|\bpassword\s*:\s*(String|string|z\.))/i,
   },
   hashing: {
+    control: true,
     kinds: CODE_MANIFEST,
     re: /(bcrypt|argon2|scrypt|pbkdf2|passlib|password_hash\(|werkzeug\.security|make_password|Bcrypt|has_secure_password)/i,
   },
@@ -80,6 +89,7 @@ export const SIGNALS = {
     re: /(?:^|\/)supabase\/(?:config\.toml|migrations\/|seed\.sql)/,
   },
   retention: {
+    control: true,
     kinds: CODE,
     re: /(retention|\bttl\b|expire_?at|expires_at|purge|pg_cron|cron\.schedule|older[ _]than|saklama[ _]s[üu]resi|imha|anonymi[sz]e)/i,
   },
@@ -136,12 +146,31 @@ const NON_POSTGRES_SQL_RE = /\bENGINE\s*=\s*\w+|\bAUTO_INCREMENT\b|\bAUTOINCREME
 // A bounce / delivery status notification (RFC 3464) has a "diagnostic code": mail delivery, not a medical diagnosis.
 const DSN_CONTEXT_RE = /\b(?:bounce[ds]?|bouncing|dsn|diagnostic[-_]?code|mailer[-_]daemon|delivery[-_ ]status|smtp)\b/i;
 
+const isDsnDiagnosis = (word, file) => /^diagnos/i.test(word || '') && DSN_CONTEXT_RE.test(file?.content || '');
+
 // Matches a field *definition* (form input name, schema column, object key) — not free text.
 const fieldDef = (fields) =>
   new RegExp(
     `(?:name=\\{?["'\`]${fields}["'\`]|\\b${fields}\\b["'\`]?\\s*(?::\\s*(?:z\\.|String|string|Boolean|boolean|number|Number|Int|Date|DateTime|Json|text|varchar|t\\.|Type\\.|v\\.)|\\s+(?:text|varchar|citext|jsonb?|boolean|bool|int|integer|bigint|date|timestamptz?|inet|String|Boolean|Int|DateTime|Json)\\b))`,
     'i',
   );
+// The match is a key typed only with a TypeScript primitive (case-sensitive: Mongoose / GraphQL `String` is a schema).
+const TS_PRIMITIVE_RE = /:\s*(?:string|boolean|number|Number|Date)\b/;
+// A field read from a request or registered in a form: person-linked input (req.body.x, formData.get('x'), register('x')).
+const requestField = (fields) =>
+  new RegExp(
+    `(?:\\b(?:req|request|ctx\\.request|event)\\.(?:body|query|form|json|args|POST|GET)\\s*(?:\\.|\\[\\s*["'\`]|\\.get\\(\\s*["'\`])|\\bformData\\.get\\(\\s*["'\`]|\\bregister\\(\\s*["'\`])${fields}\\b`,
+    'i',
+  );
+// A key typed only with a TypeScript primitive (x: string, y?: boolean): a variable, parameter or interface field,
+// which by itself says nothing about whose data it holds.
+const typedOnly = (fields) => new RegExp(`\\b${fields}\\b\\??\\s*:\\s*(?:string|boolean|number|Number|Date)\\b`, 'i');
+// Files where a TypeScript-typed key is still a schema column or validated input: ORM entities and DTO classes
+// (decorators), and generated database types (Tables → Row).
+const TYPED_SCHEMA_FILE_RE = /@(?:Entity|Table|Schema|ObjectType|InputType|ArgsType|Column|Prop|Field|Is[A-Z]\w*)\s*\(|\bTables\s*:\s*\{[\s\S]{0,4000}?\bRow\s*:\s*\{/;
+// A boolean-typed key holds a flag (mobile: boolean, an e-mail on/off preference), not the personal value itself.
+const BOOLEAN_TYPED_RE = /:\s*(?:z\.boolean|boolean|Boolean)\b|\s(?:boolean|bool)\b/;
+const NO_CONTEXT_NOTE = { tr: 'bağlamsız: şema, form ya da istek alanı değil — doğrulayın', en: 'no person-linked context: not a schema, form or request field — verify' };
 
 export const RULES = [
   // ---------------- Tracking & cookies ----------------
@@ -275,7 +304,7 @@ export const RULES = [
     kinds: CODE,
     aggregate: true,
     patterns: [
-      { re: fieldDef(PII_FIELDS), labelFrom: (m) => (m[1] || m[2] || '').toLowerCase() },
+      { re: fieldDef(PII_FIELDS), labelFrom: (m) => (m[1] || m[2] || '').toLowerCase(), verify: (m) => !BOOLEAN_TYPED_RE.test(m[0]) },
       { re: /type=\{?["'](email|tel)["']/i, labelFrom: (m) => (m[1].toLowerCase() === 'tel' ? 'phone' : 'email') },
     ],
     title: {
@@ -300,7 +329,17 @@ export const RULES = [
     kinds: CODE,
     aggregate: true,
     patterns: [
-      { re: fieldDef(SENSITIVE_FIELDS), labelFrom: (m) => (m[1] || m[2] || '').toLowerCase(), verify: (m, line, file) => !(/^diagnos/i.test(m[1] || m[2] || '') && DSN_CONTEXT_RE.test(file?.content || '')) },
+      // Person-linked context (schema column, form field, validated input, request field) → high.
+      { re: fieldDef(SENSITIVE_FIELDS), labelFrom: (m) => (m[1] || m[2] || '').toLowerCase(), verify: (m, line, file) => !TS_PRIMITIVE_RE.test(m[0]) && !isDsnDiagnosis(m[1] || m[2], file) },
+      { re: requestField(SENSITIVE_FIELDS), labelFrom: (m) => (m[1] || '').toLowerCase(), verify: (m, line, file) => !isDsnDiagnosis(m[1], file) },
+      // Typed only with a TypeScript primitive: high in an ORM entity / DTO / generated database types, else information only.
+      {
+        re: typedOnly(SENSITIVE_FIELDS),
+        labelFrom: (m) => (m[1] || '').toLowerCase(),
+        verify: (m, line, file) => !isDsnDiagnosis(m[1], file),
+        severity: (m, line, file) => (TYPED_SCHEMA_FILE_RE.test(file?.content || '') ? null : 'info'),
+        note: (m, line, file, sev) => (sev === 'info' ? NO_CONTEXT_NOTE : null),
+      },
       { label: { tr: 'yüz tanıma / biyometrik kütüphane', en: 'face recognition / biometric library' }, re: /(face-api\.js|@vladmandic\/face-api|face_recognition|@mediapipe\/face|aws-sdk.*rekognition|@aws-sdk\/client-rekognition|FaceDetector|LocalAuthentication|BiometricPrompt|expo-local-authentication)/ },
     ],
     title: {
@@ -422,6 +461,7 @@ export const RULES = [
     scope: 'file',
     kinds: ['code', 'config'],
     mask: true,
+    secret: true, // reads comments and test files too (a commented or test key is leaked all the same)
     patterns: [
       { label: 'Stripe secret key', re: /\b(sk|rk)_live_[0-9a-zA-Z]{20,}/ },
       { label: 'AWS access key', re: /\bAKIA[0-9A-Z]{16}\b/ },
