@@ -56,11 +56,14 @@ npx kvkk-gdpr-check audit --url https://siten.com      # canlı site kanıtları
 npx kvkk-gdpr-check -f md|json|sarif|html -o dosya     # rapor biçimi
 npx kvkk-gdpr-check --fail-on critical                 # CI: yalnızca kritikte hata ver (varsayılan: high)
 npx kvkk-gdpr-check --disable FNT001 --ignore "scripts/**"
+npx kvkk-gdpr-check --include .claude                 # varsayılan olarak atlanan bir ajan klasörünü de tara
 npx kvkk-gdpr-check --list-rules
 npx kvkk-gdpr-check --help
 ```
 
 Canlı siteyi gerçek tarayıcıyla taramak için `npm i -D playwright-core` (sistemdeki Chrome/Edge kullanılır); onsuz `--no-browser` ile hafif HTTP modu çalışır.
+
+**Atlanan klasörler:** `node_modules`, derleme çıktıları ve kodlama ajanı / editör klasörleri (`.claude`, `.cursor`, `.codex`, `.windsurf` …) ile proje içindeki git worktree kopyaları taranmaz; rapor atlananları yazar.
 
 **Yanlış alarmı susturma:** satıra `// kvkk-ignore` ya da `// kvkk-ignore SEC013`, dosya başına `kvkk-ignore-file`, proje köküne `.kvkkcheckrc.json`:
 
@@ -91,6 +94,8 @@ Aydınlatma metni, açık rıza metni, çerez politikası, veri envanteri (Markd
 | **Destekleniyor** | Next.js, React (Vite / Lovable / Bolt), Expo / React Native, SvelteKit |
 | **Sınırlı** | Express, Remix / React Router, Django, Flutter |
 | **Deneysel** | Laravel, NestJS, Flask, FastAPI, Fastify / Koa, Nuxt, Astro, Convex, Hono ve diğerleri |
+
+Next.js ölçümündeki 8 proje şu veritabanı kurulumlarını içeriyordu: Drizzle + Postgres (3), Supabase (2), Prisma + MySQL (3). Sonraki turlarda 4 Next.js projesi daha incelendi: Supabase, Prisma + Postgres, Prisma + Postgres + Supabase, Prisma + SQLite. **Doğrudan MySQL sürücüsü (`mysql2`) kullanan bir Next.js projesi ölçümde yok;** böyle projelerde bulgular daha az güvenilir olabilir.
 
 Düzeyler görülmemiş projelerdeki ölçüme göre sabit bir kuralla verilir. Sınırlı, deneysel ya da tanınamayan bir yığında rapor bunu **en başta** söyler, çünkü bulgular bu yığınlarda daha az güvenilirdir. Bu yığınlarda skor da verilmez. "Destekleniyor" da birkaç sorunun kaçırılacağı anlamına gelir.
 
