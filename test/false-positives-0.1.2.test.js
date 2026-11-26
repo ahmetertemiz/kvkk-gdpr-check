@@ -324,3 +324,17 @@ test('WEB018: a request the CSP blocks or that never completed is no data transf
   assert.ok(w.some((x) => /api\.example/.test(x)) && !w.some((x) => /beacon\.example/.test(x)));
   assert.match(toText({ findings: [], counts: {}, score: 100, live, url: 'https://example.test/' }, { lang: 'en', color: false }), /never completed \/ were blocked \(no data sent\): beacon\.example \(CSP\)/);
 });
+
+test('hidden and read-only form fields are not collected data; a normal field still is', async () => {
+  const dir = mk({
+    'package.json': pkg(['react']),
+    'src/Unlock.tsx': 'export const U = ({ email }) => (<form onSubmit={go}>\n  <input type="email" name="username" autoComplete="username" value={email} readOnly hidden />\n  <input type="password" name="secret_phrase" />\n</form>);\n',
+    'src/Join.tsx': 'export const J = () => (<form onSubmit={go}><input name="nickname" /></form>);\n',
+    'public/a.html': '<form action="/x"><input name="tracking_ref" readonly value="abc"><input name="city"></form>\n',
+  });
+  const { graph } = await buildGraph(dir);
+  const fields = graph.nodesOf('Source', (n) => n.kind === 'form').flatMap((s) => s.fields || []).map((f) => f.name);
+  assert.ok(!fields.includes('username'), 'read-only hidden username is not a collected field');
+  assert.ok(!fields.includes('tracking_ref'), 'readonly HTML input is not collected');
+  assert.ok(fields.includes('secret_phrase') && fields.includes('nickname') && fields.includes('city'));
+});

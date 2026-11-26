@@ -203,6 +203,12 @@ function fieldFromElement(el) {
   if (typeof type !== 'string') type = base === 'textarea' || base === 'Textarea' || base === 'TextArea' ? 'textarea' : /select/i.test(base) ? 'select' : /radio/i.test(base) ? 'radio' : /checkbox|switch/i.test(base) ? 'checkbox' : base === 'PhoneInput' ? 'tel' : base === 'DatePicker' ? 'date' : 'text';
   type = type.toLowerCase();
   if (SKIP_TYPES.has(type)) return null;
+  // A hidden or read-only field shows or carries a value the app already has (e.g. the account e-mail for a password
+  // manager): the user enters nothing there, so it is not collected.
+  for (const n of ['hidden', 'readOnly', 'readonly']) {
+    const a = attr(el, n);
+    if (a.present && a.value !== false && a.value !== 'false') return null;
+  }
   if (!fname && ['email', 'tel', 'password'].includes(type)) fname = type === 'tel' ? 'phone' : type;
   if (!fname) return null;
   const labelAttr = attr(el, 'label');
@@ -762,6 +768,8 @@ function extractHtml(ctx, file) {
       if (fromId) fname = idAttr;
       if (!fname && ['email', 'tel', 'password'].includes(type)) fname = type === 'tel' ? 'phone' : type;
       if (!fname || SKIP_TYPES.has(type.toLowerCase())) continue;
+      // hidden / readonly boolean attributes (outside quoted values): nothing is entered there.
+      if (/(?:^|\s)(?:hidden|readonly)(?=\s|=|\/|$)/i.test(f[2].replace(/"[^"]*"|'[^']*'/g, '""'))) continue;
       const label = get(f[2], 'aria-label');
       fields.push({ name: fname, type: type.toLowerCase(), line: lineAt(m.index + m[1].length + f.index), preChecked: /\bchecked\b/i.test(f[2]), ...(fromId ? { fromId, label } : {}) });
     }
