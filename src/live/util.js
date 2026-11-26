@@ -142,6 +142,62 @@ export function parseSetCookie(header, siteHost) {
 // ---------------------------------------------------------------------------
 
 /** Aggregate third-party request URLs by host and attach vendor info. */
+// Fetch directives of a Content Security Policy that can let a third-party resource load.
+const CSP_FETCH = ['default-src', 'script-src', 'script-src-elem', 'style-src', 'style-src-elem', 'img-src', 'font-src', 'connect-src', 'media-src', 'frame-src', 'child-src', 'worker-src', 'object-src', 'manifest-src'];
+
+/** Does one CSP source expression allow `url`? */
+function cspSourceAllows(src, url) {
+  const s = src.toLowerCase();
+  if (s === '*') return /^https?:/.test(url.protocol);
+  if (/^[a-z][a-z0-9+.-]*:$/.test(s)) return url.protocol === s; // scheme source (https:)
+  if (s.startsWith("'") || s === 'data:' || s === 'blob:') return false;
+  const m = s.match(/^(?:([a-z][a-z0-9+.-]*):\/\/)?(\*\.)?([^/:]+)(?::(\d+|\*))?(\/.*)?$/);
+  if (!m) return false;
+  const [, scheme, wild, host] = m;
+  if (scheme && `${scheme}:` !== url.protocol) return false;
+  const h = url.hostname.toLowerCase();
+  return wild ? h.endsWith(`.${host}`) : h === host;
+}
+
+/**
+ * True when the page's Content Security Policy lets `href` load through none of its fetch directives (HTTP mode:
+ * the resource type is not known, so only a host every directive leaves out counts as blocked).
+ */
+export function cspBlocksEverywhere(href, csp) {
+  if (!csp) return false;
+  let url;
+  try {
+    url = new URL(href);
+  } catch {
+    return false;
+  }
+  const dirs = new Map();
+  for (const part of String(csp).split(';')) {
+    const [name, ...vals] = part.trim().split(/\s+/);
+    if (name) dirs.set(name.toLowerCase(), vals);
+  }
+  const fetchDirs = CSP_FETCH.filter((d) => dirs.has(d));
+  if (!dirs.has('default-src') || !fetchDirs.length) return false; // without default-src, unlisted types are unrestricted
+  return fetchDirs.every((d) => !dirs.get(d).some((v) => cspSourceAllows(v, url)));
+}
+
+/** Hosts that only saw requests that never completed (or a CSP blocks), with why. */
+export function blockedHosts(failed, siteHost, sentHosts) {
+  const sent = new Set((sentHosts || []).map((h) => h.host));
+  const map = new Map();
+  for (const { url, reason } of failed || []) {
+    if (!/^https?:/i.test(url) || !isThirdParty(url, siteHost)) continue;
+    const host = hostOf(url);
+    if (sent.has(host)) continue;
+    const why = /csp/i.test(reason || '') ? 'csp' : /blocked_by_client/i.test(reason || '') ? 'client' : 'failed';
+    const e = map.get(host) || { host, reasons: [], count: 0 };
+    if (!e.reasons.includes(why)) e.reasons.push(why);
+    e.count++;
+    map.set(host, e);
+  }
+  return [...map.values()];
+}
+
 export function aggregateHosts(urls, siteHost) {
   const map = new Map();
   for (const u of urls) {
@@ -178,7 +234,8 @@ export function classifyLink(text, href) {
   // "aydınlatma" alone also means "lighting" — require "aydınlatma metni" or an explicit KVKK term.
   if (/kvkk|aydınlatma metni|aydinlatma[-_ ]metni|kişisel verilerin korunması|kisisel[-_]verilerin[-_]korunmasi|kişisel veri(lerin)? (işlenmesi|politikası)/.test(s)) return 'kvkk';
   if (/çerez|cerez|cookie|tanımlama bilgi|tanimlama-bilgi/.test(s)) return 'cookie';
-  if (/gizlilik|privacy|veri politikası|data protection|datenschutz|kişisel veri|kisisel-veri/.test(s)) return 'privacy';
+  if (/gizlilik|privacy|veri politikası|data protection|datenschutz|kişisel veri|kisisel-veri|\bgdpr\b|\bdsgvo\b|\brgpd\b/.test(s)) return 'privacy';
+  if (/künye|kunye|impressum|imprint|legal notice|yasal bilgi/.test(s)) return 'imprint';
   if (/kullanım koşul|kullanim-kosul|kullanim kosul|terms|şartlar|sartlar|sözleşme|sozlesme|conditions|agb/.test(s)) return 'terms';
   return null;
 }
@@ -360,10 +417,52 @@ export const PRIVACY_ELEMENTS = {
   transfer: { re: /yurt ?dışı|yurtdisi|yurt disi|international transfer|outside (the )?(eea|eu|european)|transfer(red)? to (third )?countr|standard contractual|standart sözleşme|data privacy framework/, tr: 'Yurt dışına aktarım bilgisi', en: 'International transfer information' },
 };
 
+// Elements GDPR Art.13 asks for but KVKK md.10 / Aydınlatma Tebliği md.4 do not list (the retention period).
+export const GDPR_ONLY_ELEMENTS = new Set(['retention']);
+
 export function checkPrivacyText(text) {
   const t = text.toLocaleLowerCase('tr');
   const present = [];
   const missing = [];
   for (const [k, v] of Object.entries(PRIVACY_ELEMENTS)) (v.re.test(t) ? present : missing).push(k);
   return { present, missing };
+}
+
+// Words that introduce the controller's name (a heading or a label), and a value that is only a domain name.
+const CONTROLLER_LEAD_RE = /(?:veri sorumlusu(?:nun kimliği)?|data controller|controller|operator|işletmeci|sorumlu (?:şirket|kuruluş)|verantwortlicher|betreiber)\s*[:\-–—]?\s*/giu;
+const DOMAIN_ONLY_RE = /^(?:https?:\/\/)?(?:www\.)?[\p{L}\d-]+(?:\.[\p{L}\d-]+)+\/?$/u;
+
+/**
+ * Who the notice names as controller: 'named' (a person or company name follows the heading), 'domain-only' (only a
+ * domain name such as "example.com" follows it everywhere), or 'missing' (no controller heading at all).
+ */
+export function controllerIdentity(text) {
+  const t = String(text || '').replace(/\s+/g, ' ');
+  const values = [];
+  for (const m of t.matchAll(CONTROLLER_LEAD_RE)) {
+    const after = t.slice(m.index + m[0].length, m.index + m[0].length + 120).trim();
+    const first = (after.match(/^[^\s,;.()]+(?:\.[^\s,;()]+)*/) || [''])[0].replace(/[.,;:]+$/, '');
+    if (first) values.push({ first, after });
+  }
+  if (!values.length) return { status: 'missing', value: null };
+  const domainOnly = values.filter((v) => DOMAIN_ONLY_RE.test(v.first));
+  // A value that is not just a domain, and starts like a name (capital letter, a digit-free word): a name is given.
+  const named = values.some((v) => !DOMAIN_ONLY_RE.test(v.first) && /^[\p{Lu}]/u.test(v.first) && !/^(?:is|ist|olarak|the|a|an|of|bir|der|die|das)$/i.test(v.first));
+  if (named) return { status: 'named', value: null };
+  if (domainOnly.length) return { status: 'domain-only', value: domainOnly[0].first };
+  return { status: 'unclear', value: null };
+}
+
+/**
+ * Several pages of one site's notices read together (privacy, KVKK, GDPR, imprint): an element counts when any page
+ * has it. The controller's identity is checked on the value, not on the heading.
+ */
+export function checkPrivacyPages(pages) {
+  const usable = pages.filter((p) => p && typeof p.text === 'string' && p.text.length > 200);
+  if (!usable.length) return null;
+  const present = new Set();
+  for (const p of usable) for (const k of checkPrivacyText(p.text).present) present.add(k);
+  const missing = Object.keys(PRIVACY_ELEMENTS).filter((k) => !present.has(k));
+  const controller = controllerIdentity(usable.map((p) => p.text).join('\n'));
+  return { url: usable[0].url, urls: usable.map((p) => p.url), present: [...present], missing, controller };
 }

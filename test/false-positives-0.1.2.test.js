@@ -150,7 +150,7 @@ test('one rule at two levels: JSON, SARIF and merged results keep both without d
 });
 
 // ------------------------------------------------------------------------------- 2. database engine per file / folder
-import { audit } from '../src/audit/index.js';
+import { audit, buildGraph } from '../src/audit/index.js';
 import { d1MigrationDirs, sqlEngines } from '../src/db-engine.js';
 
 const SB_CLIENT = 'import { createClient } from "@supabase/supabase-js";\nexport const sb = createClient(url, key);\nexport const load = (id) => sb.from("members").select("email, full_name").eq("id", id);\nexport const save = (row) => sb.from("ledger_users").insert(row);\n';
@@ -276,4 +276,51 @@ test('orphan detection turns itself off when import resolution looks unreliable'
   const files = [{ rel: 'package.json', content: '{}', kind: 'manifest' }];
   for (let i = 0; i < 10; i++) files.push({ rel: `lib/m${i}.ts`, content: `export const v${i} = ${i};\n`, kind: 'code' });
   assert.equal(orphanModules({ files, shared: {}, root: '.' }).size, 0, '10 of 10 unimported: resolution is not trusted');
+});
+
+// ------------------------------------------------------------------------------- 4–6. live notice, blocked requests, small ones
+import { checkPrivacyPages, controllerIdentity, cspBlocksEverywhere, blockedHosts, classifyLink } from '../src/live/util.js';
+import { evaluateLive } from '../src/live/rules.js';
+
+const LONG = (s) => `${s} ${'Lorem ipsum dolor sit amet. '.repeat(10)}`;
+const NOTICE_KVKK = LONG('Veri sorumlusu: Örnek Yazılım Ltd. Şti. Kişisel verileriniz hizmet amacıyla işlenir; hukuki sebep sözleşmedir. Veriler barındırma sağlayıcısına aktarılır. Elektronik ortamda toplanmaktadır. md.11 kapsamındaki haklarınız. İletişim: kvkk@example.test. Yurt dışına aktarım olabilir.');
+const liveOf = (check) => ({ finalUrl: 'https://example.test/', url: 'https://example.test/', pages: [{}], cookiesBeforeConsent: [], cookiesAfterAccept: [], privacyLinks: [{ kind: 'privacy', href: 'https://example.test/privacy' }], forms: [], headers: {}, thirdPartyHosts: [], requestsBeforeConsent: [], banner: { found: false }, privacyPageCheck: check });
+const web007 = (live) => evaluateLive(live).filter((f) => f.rule.id === 'WEB007').flatMap((f) => f.locations.map((l) => ({ sev: f.severity, label: L(l.label) })));
+
+test('WEB007: pages read together; retention is a GDPR element, not a KVKK md.10 one; the text says so', () => {
+  const onlyKvkk = checkPrivacyPages([{ url: 'https://example.test/kvkk', text: NOTICE_KVKK }]);
+  assert.deepEqual(onlyKvkk.missing, ['retention']);
+  const labels = web007(liveOf(onlyKvkk));
+  assert.equal(labels.length, 1);
+  assert.match(labels[0].label, /GDPR Art\.13\(2\)\(a\); not a required element of KVKK md\.10/);
+  const both = checkPrivacyPages([{ url: 'https://example.test/kvkk', text: NOTICE_KVKK }, { url: 'https://example.test/privacy', text: LONG('Retention: account data is kept while the account is active.') }]);
+  assert.deepEqual(both.missing, [], 'the privacy page names the retention period');
+  const rule = evaluateLive(liveOf(onlyKvkk)).find((f) => f.rule.id === 'WEB007').rule;
+  assert.ok(rule.refs.includes('Aydınlatma Yükümlülüğü Tebliği md.4'));
+  assert.match(rule.desc.tr, /Saklama süresi KVKK aydınlatmasında zorunlu değildir; GDPR Art\.13\(2\)\(a\) ister/);
+});
+
+test('controller: a heading followed only by a domain name is to verify; a company or person name satisfies it; no heading is missing', () => {
+  assert.deepEqual(controllerIdentity('Operator: example.test. A postal address has not been published.'), { status: 'domain-only', value: 'example.test' });
+  assert.equal(controllerIdentity('Veri sorumlusu: Örnek Yazılım A.Ş., İstanbul').status, 'named');
+  assert.equal(controllerIdentity('Data controller: Jane Roe, 1 Main Street').status, 'named');
+  assert.equal(controllerIdentity('We are a small team.').status, 'missing');
+  const check = checkPrivacyPages([{ url: 'https://example.test/kvkk', text: NOTICE_KVKK.replace('Örnek Yazılım Ltd. Şti.', 'example.test') }]);
+  const labels = web007(liveOf(check));
+  assert.ok(labels.some((l) => l.sev === 'low' && /only a domain name \("example\.test"\)/.test(l.label)));
+  assert.equal(classifyLink('GDPR', '/gdpr'), 'privacy');
+  assert.equal(classifyLink('Impressum', '/impressum'), 'imprint');
+});
+
+test('WEB018: a request the CSP blocks or that never completed is no data transfer; it is listed apart', () => {
+  const csp = "default-src 'self'; script-src 'self' https://accounts.example; img-src 'self' data:; connect-src 'self' https:";
+  assert.equal(cspBlocksEverywhere('https://beacon.example/b.js', "default-src 'self'; script-src 'self'; img-src 'self'"), true);
+  assert.equal(cspBlocksEverywhere('https://beacon.example/b.js', csp), false, 'connect-src https: lets it load');
+  assert.equal(cspBlocksEverywhere('https://cdn.example/x.js', "script-src https://cdn.example"), false, 'no default-src: not decided');
+  const blocked = blockedHosts([{ url: 'https://beacon.example/b.js', reason: 'net::ERR_BLOCKED_BY_CSP' }, { url: 'https://api.example/v1', reason: 'net::ERR_FAILED' }, { url: 'https://example.test/x', reason: 'x' }], 'example.test', [{ host: 'api.example' }]);
+  assert.deepEqual(blocked, [{ host: 'beacon.example', reasons: ['csp'], count: 1 }], 'a host that also got a completed request stays a recipient');
+  const live = { ...liveOf(null), thirdPartyHosts: [{ host: 'api.example', count: 1 }], blockedHosts: blocked };
+  const w = evaluateLive(live).filter((f) => f.rule.id === 'WEB018').flatMap((f) => f.locations.map((l) => L(l.label)));
+  assert.ok(w.some((x) => /api\.example/.test(x)) && !w.some((x) => /beacon\.example/.test(x)));
+  assert.match(toText({ findings: [], counts: {}, score: 100, live, url: 'https://example.test/' }, { lang: 'en', color: false }), /never completed \/ were blocked \(no data sent\): beacon\.example \(CSP\)/);
 });

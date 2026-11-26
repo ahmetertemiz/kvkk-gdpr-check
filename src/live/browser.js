@@ -189,7 +189,7 @@ async function settle(page, timeout) {
 
 async function openPage(context, url, timeout, requests) {
   const page = await context.newPage();
-  if (requests) page.on('request', (r) => requests.push(r.url()));
+  if (requests) page.on('request', (r) => requests.push(r));
   let status = 0;
   let headers = {};
   try {
@@ -297,7 +297,7 @@ export async function browserScan(browser, startUrl, { timeout = 30000, pages = 
     if (!o.error) {
       await detectBannerAllFrames(o.page);
       const after = [];
-      o.page.on('request', (r) => after.push(r.url()));
+      o.page.on('request', (r) => after.push(r));
       const pre = await rctx.cookies();
       rejectClicked = await clickConsent(o.page, 'reject');
       if (rejectClicked) {
@@ -333,7 +333,7 @@ export async function browserScan(browser, startUrl, { timeout = 30000, pages = 
     const o = await openPage(actx, startUrl, timeout, null);
     if (!o.error) {
       await detectBannerAllFrames(o.page);
-      o.page.on('request', (r) => requestsAfterAccept.push(r.url()));
+      o.page.on('request', (r) => requestsAfterAccept.push(r));
       if (await clickConsent(o.page, 'accept')) {
         await settle(o.page, timeout);
         cookiesAfterAccept = (await actx.cookies()).map((c) => normaliseBrowserCookie(c, siteHost));
@@ -342,6 +342,10 @@ export async function browserScan(browser, startUrl, { timeout = 30000, pages = 
     await actx.close();
   }
 
+  // A request that never completed (blocked by the page's Content Security Policy, aborted or failed) sent nothing
+  // to its host: it is kept apart from the third parties that received data.
+  const sent = (list) => (list ? list.filter((r) => !r.failure()).map((r) => r.url()) : list);
+  const failed = [requests, requestsAfterReject || [], requestsAfterAccept].flat().filter((r) => r.failure()).map((r) => ({ url: r.url(), reason: r.failure()?.errorText || '' }));
   return {
     finalUrl,
     siteHost,
@@ -352,9 +356,10 @@ export async function browserScan(browser, startUrl, { timeout = 30000, pages = 
     cookiesAfterReject,
     cookiesSetAfterReject,
     cookiesAfterAccept,
-    requestsBefore: requests,
-    requestsAfterReject,
-    requestsAfterAccept,
+    requestsBefore: sent(requests),
+    requestsAfterReject: sent(requestsAfterReject),
+    requestsAfterAccept: sent(requestsAfterAccept),
+    requestsFailed: failed,
     rejectClicked,
     botProtection,
     storage: storage.map((s) => ({ ...s, ...classifyCookieName(s.key) })),

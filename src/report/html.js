@@ -4,7 +4,7 @@ import { displayRoot } from '../display-root.js';
 import { skippedDirsText, testsSkippedText } from '../skipped-dirs.js';
 import { basisNote } from '../data/legal-basis.js';
 import { CATEGORIES, CATEGORY_ORDER } from '../data/categories.js';
-import { REPORT_STRINGS, SEV_LABEL, L, loc, scoreGrade, HEADER_NAMES, isNonEssentialCookie, liveSummary } from '../report.js';
+import { REPORT_STRINGS, SEV_LABEL, L, loc, scoreGrade, HEADER_NAMES, isNonEssentialCookie, liveSummary, blockedWhy } from '../report.js';
 
 const SEVS = ['critical', 'high', 'medium', 'low', 'info'];
 
@@ -274,7 +274,10 @@ function liveSection(live, t, lang) {
   if ('cookiesAfterAccept' in live) parts.push(`<div class="card"><h3>${esc(t.cookiesAfterAccept)} <span class="count">${arr(live.cookiesAfterAccept).length}</span></h3>${cookieTable(live.cookiesAfterAccept, t, lang)}</div>`);
   if (arr(live.storageBeforeConsent).length) parts.push(`<div class="card"><h3>${esc(t.storage)}</h3><ul class="plain">${arr(live.storageBeforeConsent).map((s) => `<li><span class="pill">${esc(s.type)}</span> <code>${esc(s.key)}</code></li>`).join('')}</ul></div>`);
   if ('requestsBeforeConsent' in live) parts.push(`<div class="card"><h3>${esc(t.requestsBefore)}</h3>${hostTable(live.requestsBeforeConsent, t, false)}</div>`);
-  parts.push(`<div class="card"><h3>${esc(t.thirdParty)} <span class="count">${ls.thirdParty.length}</span></h3>${hostTable(live.thirdPartyHosts, t, true)}</div>`);
+  const blockedNote = (live.blockedHosts || []).length
+    ? `<p class="muted">ℹ ${esc(REPORT_STRINGS[lang]?.blocked || 'Requests that never completed / were blocked (no data sent)')}: ${esc(live.blockedHosts.map((h) => `${h.host} (${blockedWhy(h)})`).join(', '))}</p>`
+    : '';
+  parts.push(`<div class="card"><h3>${esc(t.thirdParty)} <span class="count">${ls.thirdParty.length}</span></h3>${hostTable(live.thirdPartyHosts, t, true)}${blockedNote}</div>`);
   if (arr(live.forms).length) {
     parts.push(`<div class="card"><h3>${esc(t.forms)}</h3>${arr(live.forms)
       .map((f) => `<div class="form-item"><div><code>${esc((f.method || 'GET').toUpperCase())}</code> ${esc(f.action || '')} <span class="muted small">${esc(f.page || '')}</span></div><div class="small">${arr(f.fields).map((x) => `<span class="pill">${esc(x.name || '?')}:${esc(x.type || '')}</span>`).join(' ')}</div><ul class="checks small">${check(!arr(f.preChecked).length, `${t.preChecked}: ${arr(f.preChecked).join(', ') || t.none}`)}${check(!!f.hasPrivacyLinkNearby, t.privacyNearby)}</ul></div>`)

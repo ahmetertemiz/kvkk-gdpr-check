@@ -3,7 +3,7 @@
  * Live (runtime) rules evaluated against the `live` facts collected from a real site.
  * Same rule shape as src/rules.js. Not legal advice.
  */
-import { PRIVACY_ELEMENTS, formCollectsPII, isSessionLike } from './util.js';
+import { PRIVACY_ELEMENTS, GDPR_ONLY_ELEMENTS, formCollectsPII, isSessionLike } from './util.js';
 
 const COOKIE_GUIDE = 'KVKK Çerez Uygulamaları Hakkında Rehber (2025)';
 
@@ -90,14 +90,14 @@ export const LIVE_RULES = [
     id: 'WEB007', category: 'transparency', severity: 'medium',
     title: { tr: 'Aydınlatma metninde zorunlu unsurlar eksik', en: 'Privacy notice is missing required elements' },
     desc: {
-      tr: 'Gizlilik/aydınlatma sayfası okundu ancak KVKK md.10 ve Aydınlatma Tebliği\'nin (GDPR Art.13) zorunlu tuttuğu bazı unsurlara rastlanmadı. (Anahtar kelime kontrolüdür; elle doğrulayın.)',
-      en: 'The privacy page was read but some elements required by GDPR Art.13 / KVKK md.10 were not found. (Keyword check — verify manually.)',
+      tr: 'Sitenin gizlilik, KVKK ve künye sayfaları birlikte okundu; bazı unsurlara hiçbirinde rastlanmadı. KVKK md.10 ve Aydınlatma Tebliği md.4 şunları ister: veri sorumlusunun kimliği, işleme amacı, verinin kimlere ve hangi amaçla aktarılabileceği, toplama yöntemi ve hukuki sebep, md.11 hakları. Saklama süresi KVKK aydınlatmasında zorunlu değildir; GDPR Art.13(2)(a) ister. (Anahtar kelime kontrolüdür; elle doğrulayın.)',
+      en: 'The site\'s privacy, KVKK and imprint pages were read together; some elements were found on none of them. KVKK md.10 and the Notice Communiqué md.4 ask for: the controller\'s identity, the purposes, to whom and why data may be transferred, the collection method and legal basis, and the Art.11 rights. The retention period is not required in a KVKK notice; GDPR Art.13(2)(a) asks for it. (Keyword check — verify manually.)',
     },
     fix: {
-      tr: 'Eksik başlıkları ekle: veri sorumlusu, amaçlar, hukuki sebepler, alıcılar, toplama yöntemi, md.11 hakları, saklama süresi, başvuru kanalı, yurt dışı aktarım.',
-      en: 'Add the missing sections: controller identity, purposes, legal bases, recipients, collection method, rights, retention, contact, international transfers.',
+      tr: 'KVKK için eksik unsurları ekle: veri sorumlusu (kişi ya da şirket adı ve adresi; alan adı yetmez), amaçlar, alıcılar ve aktarım amacı, toplama yöntemi ve hukuki sebep, md.11 hakları. AB\'deki kişilere de hizmet veriyorsan GDPR Art.13 için ayrıca: iletişim bilgileri, saklama süresi (ya da belirleme ölçütü), yurt dışı aktarımın güvencesi ve şikâyet hakkı.',
+      en: 'For KVKK add the missing elements: the controller (a person or company name and address; a domain name is not enough), purposes, recipients and transfer purpose, collection method and legal basis, Art.11 rights. If you also serve people in the EU, add for GDPR Art.13: contact details, the retention period (or the criteria), the safeguard for transfers abroad and the right to complain.',
     },
-    refs: ['KVKK md.10', 'Aydınlatma Yükümlülüğü Tebliği md.5', 'GDPR Art.13'],
+    refs: ['KVKK md.10', 'Aydınlatma Yükümlülüğü Tebliği md.4', 'GDPR Art.13'],
   },
   {
     id: 'WEB008', category: 'transparency', severity: 'medium',
@@ -237,7 +237,7 @@ export function evaluateLive(live, { disable = [] } = {}) {
   const off = new Set(disable);
   const add = (id, loc, severity) => {
     if (off.has(id)) return;
-    (hits[id] ||= { severity: null, locations: [] }).locations.push({ file: loc.file ?? live.finalUrl, line: null, label: loc.label, snippet: loc.snippet || null, count: loc.count || 1 });
+    (hits[id] ||= { severity: null, locations: [] }).locations.push({ file: loc.file ?? live.finalUrl, line: null, label: loc.label, snippet: loc.snippet || null, count: loc.count || 1, ...(loc.severity ? { severity: loc.severity } : {}) });
     if (severity) hits[id].severity = severity;
   };
   const page = live.finalUrl;
@@ -292,7 +292,21 @@ export function evaluateLive(live, { disable = [] } = {}) {
     add('WEB006', { label: { tr: `${live.pages.length} sayfada bağlantı yok`, en: `no link on ${live.pages.length} page(s)` } }, sev);
   }
   if (live.privacyPageCheck && live.privacyPageCheck.missing.length) {
-    for (const k of live.privacyPageCheck.missing) add('WEB007', { file: live.privacyPageCheck.url, label: { tr: PRIVACY_ELEMENTS[k].tr, en: PRIVACY_ELEMENTS[k].en } });
+    for (const k of live.privacyPageCheck.missing) {
+      const label = GDPR_ONLY_ELEMENTS.has(k)
+        ? { tr: `${PRIVACY_ELEMENTS[k].tr} (GDPR Art.13(2)(a); KVKK md.10'da zorunlu unsur değil)`, en: `${PRIVACY_ELEMENTS[k].en} (GDPR Art.13(2)(a); not a required element of KVKK md.10)` }
+        : { tr: PRIVACY_ELEMENTS[k].tr, en: PRIVACY_ELEMENTS[k].en };
+      add('WEB007', { file: live.privacyPageCheck.url, label });
+    }
+  }
+  // The controller heading is there but only a domain name follows it: who the controller is stays to be verified.
+  const ctl = live.privacyPageCheck?.controller;
+  if (ctl?.status === 'domain-only' && !(live.privacyPageCheck.missing || []).includes('controller')) {
+    add('WEB007', {
+      file: live.privacyPageCheck.url,
+      label: { tr: `Veri sorumlusunun kimliği: yalnızca alan adı ("${ctl.value}") — gerçek ya da tüzel kişi adını doğrulayın`, en: `Identity of the controller: only a domain name ("${ctl.value}") — verify the person or company name` },
+      severity: 'low',
+    });
   }
   const anyCookies = live.cookiesBeforeConsent.length > 0 || (live.cookiesAfterAccept || []).length > 0 || trackingPresent;
   if (anyCookies && !live.privacyLinks.some((l) => l.kind === 'cookie')) {
@@ -349,5 +363,15 @@ export function evaluateLive(live, { disable = [] } = {}) {
     add('WEB018', { label: `${h.host}${h.vendorName ? ` — ${h.vendorName}` : ''}${h.country ? ` [${h.country}]` : ''}`, count: h.count });
   }
 
-  return Object.entries(hits).map(([id, h]) => ({ rule: RULE[id], severity: h.severity || RULE[id].severity, locations: h.locations }));
+  // One finding per rule and level (a location may carry its own level, e.g. a controller named only by a domain).
+  const out = new Map();
+  for (const [id, h] of Object.entries(hits)) {
+    for (const l of h.locations) {
+      const sev = l.severity || h.severity || RULE[id].severity;
+      const key = `${id}|${sev}`;
+      if (!out.has(key)) out.set(key, { rule: RULE[id], severity: sev, locations: [] });
+      out.get(key).locations.push(l);
+    }
+  }
+  return [...out.values()];
 }

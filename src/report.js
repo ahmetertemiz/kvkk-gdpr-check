@@ -31,6 +31,7 @@ const T = {
     cookiesBefore: 'Rızadan önce set edilen çerez',
     cookiesAfterReject: 'Reddettikten sonra kalan izleme çerezi',
     thirdParty: 'Üçüncü taraf alan adı',
+    blocked: 'Tamamlanmayan / engellenen istek (veri gitmedi)',
     banner: 'Çerez banner\'ı',
     rejectBtn: '"Reddet" butonu (ilk katmanda)',
     missingHeaders: 'Eksik güvenlik header\'ları',
@@ -62,6 +63,7 @@ const T = {
     cookiesBefore: 'Cookies set before consent',
     cookiesAfterReject: 'Tracking cookies left after reject',
     thirdParty: 'Third-party hosts',
+    blocked: 'Requests that never completed / were blocked (no data sent)',
     banner: 'Cookie banner',
     rejectBtn: '"Reject" button (first layer)',
     missingHeaders: 'Missing security headers',
@@ -119,6 +121,9 @@ export { HEADER_NAMES };
 const NON_ESSENTIAL = new Set(['analytics', 'marketing', 'session-replay', 'embed', 'support', 'maps', 'fonts']);
 export const isNonEssentialCookie = (c) => !!c && (NON_ESSENTIAL.has(c.category) || c.nonEssential === true);
 
+/** Why a host received nothing: its request was blocked by the CSP, by the client (an extension), or failed. */
+export const blockedWhy = (h) => (h.reasons || []).map((r) => (r === 'csp' ? 'CSP' : r === 'client' ? 'client' : 'failed')).join('/');
+
 /** Compact facts about a live scan, shared by text and md reporters. */
 export function liveSummary(live) {
   if (!live) return null;
@@ -134,6 +139,7 @@ export function liveSummary(live) {
     nonEssentialBefore: before.filter(isNonEssentialCookie),
     afterReject,
     thirdParty: arr(live.thirdPartyHosts),
+    blocked: arr(live.blockedHosts),
     banner: live.banner || null,
     missingHeaders,
     privacyMissing: live.privacyPageCheck ? arr(live.privacyPageCheck.missing) : null,
@@ -170,6 +176,7 @@ export function toText(result, { lang = 'tr', color = true, verbose = false } = 
     out.push(`   ${t.cookiesBefore}: ${k.bold(ls.cookiesBefore.length)}${names ? k.dim(' — ') + names : ''}`);
     if (ls.afterReject.length) out.push(`   ${t.cookiesAfterReject}: ${k.red(ls.afterReject.map((c) => c.name).join(', '))}`);
     out.push(`   ${t.thirdParty}: ${k.bold(ls.thirdParty.length)}${ls.thirdParty.length ? k.dim(' — ' + ls.thirdParty.slice(0, 8).map((h) => h.host).join(', ') + (ls.thirdParty.length > 8 ? ' …' : '')) : ''}`);
+    if (ls.blocked.length) out.push(k.dim(`   ${t.blocked}: ${ls.blocked.map((h) => `${h.host} (${blockedWhy(h)})`).join(', ')}`));
     if (ls.banner) {
       out.push(`   ${t.banner}: ${yn(ls.banner.found)}   ${t.rejectBtn}: ${yn(ls.banner.rejectOnFirstLayer ?? ls.banner.hasReject)}`);
     }
@@ -260,6 +267,7 @@ export function toMarkdown(result, { lang = 'tr' } = {}) {
     out.push(`| ${t.cookiesBefore} | **${ls.cookiesBefore.length}**${ls.cookiesBefore.length ? ' — ' + ls.cookiesBefore.map((x) => (isNonEssentialCookie(x) ? `**\`${mdEsc(x.name)}\`**` : `\`${mdEsc(x.name)}\``)).join(', ') : ''} |`);
     if (ls.afterReject.length) out.push(`| ${t.cookiesAfterReject} | ${ls.afterReject.map((x) => `\`${mdEsc(x.name)}\``).join(', ')} |`);
     out.push(`| ${t.thirdParty} | **${ls.thirdParty.length}**${ls.thirdParty.length ? ' — ' + ls.thirdParty.slice(0, 12).map((h) => `\`${mdEsc(h.host)}\``).join(', ') : ''} |`);
+    if (ls.blocked.length) out.push(`| ${t.blocked} | ${ls.blocked.map((h) => `\`${mdEsc(h.host)}\` (${blockedWhy(h)})`).join(', ')} |`);
     if (ls.banner) {
       out.push(`| ${t.banner} | ${yn(ls.banner.found)} |`);
       out.push(`| ${t.rejectBtn} | ${yn(ls.banner.rejectOnFirstLayer ?? ls.banner.hasReject)} |`);

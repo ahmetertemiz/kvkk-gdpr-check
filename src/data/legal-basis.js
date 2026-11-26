@@ -78,6 +78,7 @@ const OTHER = [
   [/^Kurul Kararı 2018\/10$/, V('k2018_10', 'Özel nitelikli veride yeterli önlemler: ayrı politika, eğitim, şifreleme, loglama, iki kademeli doğrulama')],
   [/^KVKK Çerez (?:Rehberi|Uygulamaları Hakkında Rehber)/, { status: 'verified', source: 'cerez', claim: 'Davranışsal reklam çerezleri açık rıza ister (6.2); opt-in gerekir; rıza geri alınabilir (7.3)', note: 'Okunan baskı Temmuz 2025. Kurala özgü iddialar ayrı satırlarda.' }],
   [/^KVKK Kişisel Veri Güvenliği Rehberi$/, U('Teknik ve idari tedbirler', 'Rehber okunmadı.')],
+  [/^Aydınlatma Yükümlülüğü Tebliği md\.4$/, V('aydinlatma', 'md.4(1): asgari unsurlar — veri sorumlusunun (ve varsa temsilcisinin) kimliği, işleme amacı, kimlere ve hangi amaçla aktarılabileceği, toplama yöntemi ve hukuki sebep, md.11 hakları; saklama süresi sayılmaz')],
   [/^Aydınlatma Yükümlülüğü Tebliği(?: md\.[56])?$/, V('aydinlatma', 'md.5: usul, açık rızanın ayrı alınması, yanıltıcı bilgi yasağı; md.6: veri ilgiliden alınmadıysa aydınlatma zamanı')],
   [/^Silme, Yok Etme veya Anonim Hale Getirme Yönetmeliği$/, V('silme', 'md.7, 11, 12: silme yükümlülüğü, periyodik imha en çok altı ay, talep otuz gün')],
   [/^6563 s\. Kanun md\.6(?: \/ İYS)?$/, V('l6563', 'Önceden onay; İYS kaydı Ticari İletişim Yönetmeliğinde')],

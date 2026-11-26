@@ -1,6 +1,6 @@
 // Live site scanner: `kvkk-check url <URL>` / `--url`.
 import { sortFindings, summarize } from '../summary.js';
-import { aggregateHosts, pickPages, checkPrivacyText, hostOf, dedupeLinks } from './util.js';
+import { aggregateHosts, pickPages, checkPrivacyPages, hostOf, dedupeLinks, blockedHosts, cspBlocksEverywhere } from './util.js';
 import { fetchPage, securityHeaders, checkHttpsRedirect, httpScan, fetchText } from './http.js';
 import { launchBrowser, browserScan, browserText } from './browser.js';
 import { evaluateLive } from './rules.js';
@@ -87,6 +87,8 @@ export async function scanUrl(url, { lang = 'tr', pages = [], maxPages = 5, brow
         requestsBeforeConsent: aggregateHosts(raw.requestsBefore, siteHost),
         requestsAfterReject: raw.requestsAfterReject ? aggregateHosts(raw.requestsAfterReject, siteHost) : null,
         thirdPartyHosts: aggregateHosts([...raw.requestsBefore, ...raw.requestsAfterAccept], siteHost),
+        // Hosts whose requests never completed (CSP, aborted, failed): no data reached them.
+        blockedHosts: blockedHosts(raw.requestsFailed || [], siteHost, aggregateHosts([...raw.requestsBefore, ...raw.requestsAfterAccept], siteHost)),
         banner: raw.banner,
         rejectClicked: raw.rejectClicked,
         botProtection: raw.botProtection,
@@ -97,7 +99,10 @@ export async function scanUrl(url, { lang = 'tr', pages = [], maxPages = 5, brow
       };
     } else {
       const h = await httpScan(url, { timeout, pages, maxPages, pick });
-      const resourcesHosts = aggregateHosts(h.resources, h.siteHost);
+      // A resource the page's CSP lets load through no directive is not fetched by a browser.
+      const loads = h.resources.filter((u) => !cspBlocksEverywhere(u, h.headers?.csp));
+      const resourcesHosts = aggregateHosts(loads, h.siteHost);
+      const cspBlocked = h.resources.filter((u) => cspBlocksEverywhere(u, h.headers?.csp)).map((u) => ({ url: u, reason: 'csp' }));
       live = {
         url,
         finalUrl: h.finalUrl,
@@ -111,6 +116,7 @@ export async function scanUrl(url, { lang = 'tr', pages = [], maxPages = 5, brow
         requestsBeforeConsent: resourcesHosts,
         requestsAfterReject: null,
         thirdPartyHosts: resourcesHosts,
+        blockedHosts: blockedHosts(cspBlocked, h.siteHost, resourcesHosts),
         banner: { found: h.cmpDetected, text: '', hasAccept: false, hasReject: false, rejectOnFirstLayer: false, hasSettings: false, detectedBy: 'static' },
         privacyLinks: dedupeLinks(h.links),
         privacyPageCheck: null,
@@ -123,14 +129,30 @@ export async function scanUrl(url, { lang = 'tr', pages = [], maxPages = 5, brow
     live.headers.httpsRedirect = /^https:/i.test(live.finalUrl) ? await checkHttpsRedirect(live.finalUrl, timeout) : false;
 
     // Privacy notice content check
-    const target = live.privacyLinks.find((l) => l.kind === 'kvkk') || live.privacyLinks.find((l) => l.kind === 'privacy');
-    if (target) {
+    // The site's notices are read together (KVKK, privacy / GDPR, imprint; same site, at most four pages): one page
+    // may name the retention period, another the controller.
+    const sameSite = (href) => {
+      try {
+        return new URL(href).hostname.replace(/^www\./, '') === new URL(live.finalUrl || url).hostname.replace(/^www\./, '');
+      } catch {
+        return false;
+      }
+    };
+    const rank = { kvkk: 0, privacy: 1, imprint: 2 };
+    const targets = [...new Map(live.privacyLinks
+      .filter((l) => l.kind in rank && sameSite(l.href))
+      .sort((a, b) => rank[a.kind] - rank[b.kind])
+      .map((l) => [l.href.replace(/#.*$/, ''), l])).values()].slice(0, 4);
+    const noticePages = [];
+    for (const target of targets) {
       let text = '';
       try {
         text = br && mode === 'browser' ? await browserText(br, target.href, timeout) : await fetchText(target.href, timeout);
       } catch {}
-      if (text && text.length > 200) live.privacyPageCheck = { url: target.href, ...checkPrivacyText(text) };
+      if (text) noticePages.push({ url: target.href, kind: target.kind, text });
     }
+    const checked = checkPrivacyPages(noticePages.filter((p) => p.kind !== 'imprint').length ? noticePages : []);
+    if (checked) live.privacyPageCheck = checked;
   } finally {
     if (br) await br.close().catch(() => {});
   }
