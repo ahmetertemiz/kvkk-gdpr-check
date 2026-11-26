@@ -188,6 +188,28 @@ test('engine detection: wrangler / nitro D1 folders (relative paths and the defa
   assert.equal(e.get('db/commented.sql'), 'unknown', 'a Supabase word in a comment does not decide the engine');
 });
 
+test('engine detection: a later migration without its own dialect takes its folder\'s database; a Prisma provider names it', () => {
+  const files = (o) => Object.entries(o).map(([rel, content]) => ({ rel, content }));
+  const e = sqlEngines(files({
+    'db/migrations/001/migration.sql': 'CREATE TABLE "item" ("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "owner" TEXT);\n',
+    'db/migrations/002/migration.sql': 'ALTER TABLE "item" ADD COLUMN "email" TEXT;\n',
+    'orm/schema.prisma': 'datasource db {\n  provider = "mysql"\n  url = env("DATABASE_URL")\n}\n',
+    'orm/migrations/001/migration.sql': 'CREATE TABLE "person" ("id" TEXT NOT NULL, "email" TEXT);\n',
+    'pg/schema.prisma': 'datasource db {\n  provider = "postgresql"\n}\n',
+    'pg/migrations/001/migration.sql': 'CREATE TABLE "visit" ("id" TEXT NOT NULL);\n',
+  }));
+  assert.equal(e.get('db/migrations/002/migration.sql'), 'other');
+  assert.equal(e.get('orm/migrations/001/migration.sql'), 'other');
+  assert.equal(e.get('pg/migrations/001/migration.sql'), 'unknown', 'Postgres through Prisma may be Supabase: not decided');
+  // The Prisma datasource URL variable points at a Supabase database host in an env file: those migrations are Supabase's.
+  const s = sqlEngines(files({
+    'web/db/schema.prisma': 'datasource db {\n  provider = "postgresql"\n  url = env("PRIMARY_DB")\n}\n',
+    'web/db/migrations/001/migration.sql': 'CREATE TABLE "Person" ("id" TEXT NOT NULL, "email" TEXT);\n',
+    '.env.example': 'PRIMARY_DB="postgres://user:pw@db.example-ref.supabase.co:5432/postgres"\n',
+  }));
+  assert.equal(s.get('web/db/migrations/001/migration.sql'), 'supabase');
+});
+
 test('quick scan: RLS only for Supabase tables; D1 tables never; unknown-engine tables lower and to verify', () => {
   const r = scan(mk({ ...TWO_DBS, 'db/plain.sql': 'create table plain_rows (id uuid primary key, email text);\n' }));
   const sec = of(r, 'SEC003');

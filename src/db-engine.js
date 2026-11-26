@@ -79,19 +79,72 @@ export function d1MigrationDirs(files) {
   return [...out];
 }
 
+/**
+ * One database's migration history: the path up to its migrations folder (prisma/migrations/<ts>/migration.sql →
+ * prisma/migrations), else the file's folder. A later ALTER TABLE file carries no dialect of its own; it belongs to the
+ * database its folder's other files name.
+ */
+function migrationGroup(rel) {
+  const parts = rel.split('/');
+  parts.pop();
+  const i = parts.lastIndexOf('migrations');
+  return (i >= 0 ? parts.slice(0, i + 1) : parts).join('/');
+}
+
+// Prisma schema datasource provider without Row Level Security (MySQL, SQLite, SQL Server, CockroachDB, MongoDB).
+const PRISMA_OTHER_PROVIDER_RE = /datasource\s+\w+\s*\{[^}]*\bprovider\s*=\s*["'](?:mysql|sqlite|sqlserver|cockroachdb|mongodb)["']/;
+
+// The env variable a Prisma datasource reads its URL from (url = env("DATABASE_URL")).
+const PRISMA_URL_ENV_RE = /datasource\s+\w+\s*\{[^}]*\burl\s*=\s*env\(\s*["'](\w+)["']\s*\)/;
+const SUPABASE_DB_HOST_RE = /\.supabase\.(?:co|com)\b/;
+
+/** Folders of the Prisma schemas whose database is Supabase (its URL variable points at a Supabase host in an env file). */
+function prismaOnSupabase(files) {
+  const envs = files.filter((f) => f.kind === 'env' || /(?:^|\/)\.env(?:\.[\w-]+)?$/.test(f.rel));
+  const out = [];
+  for (const f of files) {
+    if (!/\.prisma$/.test(f.rel)) continue;
+    const v = stripComments(f.content || '', f.rel).match(PRISMA_URL_ENV_RE)?.[1];
+    if (!v) continue;
+    const re = new RegExp(`^\\s*(?:export\\s+)?${v}\\s*=\\s*["']?([^"'\\s#]+)`, 'm');
+    if (envs.some((e) => SUPABASE_DB_HOST_RE.test(String(e.content || '').match(re)?.[1] || ''))) out.push(f.rel.includes('/') ? f.rel.slice(0, f.rel.lastIndexOf('/')) : '');
+  }
+  return out;
+}
+
+const under = (dirs) => (rel) => dirs.some((d) => !d || rel.startsWith(`${d}/`));
+
 /** Engine of each .sql file: Map rel → 'supabase' | 'd1' | 'other' | 'unknown'. */
 export function sqlEngines(files) {
   const d1 = d1MigrationDirs(files);
   const inD1 = (rel) => d1.some((d) => rel === d || rel.startsWith(`${d}/`));
+  // Folders under a Prisma schema whose datasource has no RLS, or whose database is Supabase.
+  const underPrismaOther = under(files
+    .filter((f) => /\.prisma$/.test(f.rel) && PRISMA_OTHER_PROVIDER_RE.test(stripComments(f.content || '', f.rel)))
+    .map((f) => (f.rel.includes('/') ? f.rel.slice(0, f.rel.lastIndexOf('/')) : '')));
+  const underPrismaSupabase = under(prismaOnSupabase(files));
   const out = new Map();
   for (const f of files) {
     if (!/\.sql$/i.test(f.rel)) continue;
     const c = stripComments(f.content || '', f.rel);
     let e = 'unknown';
     if (inD1(f.rel)) e = 'd1';
-    else if (NON_POSTGRES_SQL_RE.test(c)) e = 'other';
-    else if (SUPABASE_DIR_RE.test(f.rel) || SUPABASE_SQL_RE.test(c)) e = 'supabase';
+    else if (NON_POSTGRES_SQL_RE.test(c) || underPrismaOther(f.rel)) e = 'other';
+    else if (SUPABASE_DIR_RE.test(f.rel) || SUPABASE_SQL_RE.test(c) || underPrismaSupabase(f.rel)) e = 'supabase';
     out.set(f.rel, e);
+  }
+  // A file whose own text names no database takes the one its migration folder names (when only one is named).
+  const named = new Map();
+  for (const [rel, e] of out) {
+    if (e === 'unknown') continue;
+    const g = migrationGroup(rel);
+    if (!named.has(g)) named.set(g, new Set());
+    named.get(g).add(e);
+  }
+  for (const [rel, e] of out) {
+    if (e !== 'unknown') continue;
+    const set = named.get(migrationGroup(rel));
+    if (set && set.size === 1) out.set(rel, [...set][0]);
   }
   return out;
 }
