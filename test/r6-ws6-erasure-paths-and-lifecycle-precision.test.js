@@ -24,6 +24,7 @@ import { deletionCoverage, retention, personLinked, isPublicContentTable, isDeri
 import { unverifiedDeletion, calibrate } from '../src/audit/legal/calibrate.js';
 import { parseSqlFiles } from '../src/audit/extract/sql.js';
 
+import { gapFinding } from './helpers/retention-gaps.js';
 const label = (l) => (typeof l.label === 'string' ? l.label : l.label.en);
 const all = (r) => [r].flat().filter(Boolean);
 const byRule = (r, id) => all(r).find((f) => f.rule.id === id) || null;
@@ -241,7 +242,8 @@ test('derived embedding table keyed by metadata (no FK, user-scoped policy) neve
   });
   const del = locsOf(res, 'AUD-DEL-01').concat(locsOf(res, 'AUD-DEL-02'));
   assert.ok(del.some((l) => /passages/.test(label(l)) && /never deleted/.test(label(l))), JSON.stringify(del.map(label)));
-  assert.ok(locsOf(res, 'AUD-RET-01').some((l) => /passages/.test(label(l))), JSON.stringify(locsOf(res, 'AUD-RET-01').map(label)));
+  const gaps = gapFinding(res.graph)?.locations || [];
+  assert.ok(gaps.some((l) => /passages/.test(label(l))), JSON.stringify(gaps.map(label)));
 });
 
 test('a derived table that some flow deletes is not "never deleted"; isDerivedTable reads the vector column', () => {
@@ -331,7 +333,7 @@ test('a public static-asset bucket with no upload into it is not personal data; 
       "export const uploadId = (uid: string, file: File) => sb.storage.from('kyc-docs').upload(`${uid}/id.png`, file);",
     ].join('\n'),
   });
-  const ret = locsOf(res, 'AUD-RET-01').map(label).join(' | ');
+  const ret = (gapFinding(res.graph)?.locations || []).map(label).join(' | ');
   assert.doesNotMatch(ret, /bucket marketing/);
   assert.doesNotMatch(ret, /bucket id\b/);
   assert.match(ret, /bucket kyc-docs/);
@@ -358,7 +360,7 @@ test('record-level delete of world-readable tables tied to nobody is neither cov
   const text = f.locations.map(label).join(' | ');
   assert.doesNotMatch(text, /refresh-standings/);
   assert.match(text, /unwatch/);
-  const r = byRule(check(retention, g), 'AUD-RET-01');
+  const r = gapFinding(g, []);
   assert.ok(!r || !r.locations.some((l) => /standings/.test(label(l))));
 });
 

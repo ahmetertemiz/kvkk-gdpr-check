@@ -5,6 +5,7 @@
  */
 import { REAL_COUNTS, REAL_PROVENANCE } from './real-precision.js';
 import { SUBS } from './audit/legal/rule-precision.js';
+import { CURRENT_SUBS, isRedefined, countsForRule } from './redefined-rules.js';
 
 // precision is null below PRECISION_MIN_N labels (JSON consumers get the counts, not a rate).
 const share = (c) => (c && c.tp + c.fp > 0 ? { tp: c.tp, fp: c.fp, n: c.tp + c.fp, precision: c.tp + c.fp < PRECISION_MIN_N ? null : c.tp / (c.tp + c.fp) } : null);
@@ -15,12 +16,18 @@ const share = (c) => (c && c.tp + c.fp > 0 ? { tp: c.tp, fp: c.fp, n: c.tp + c.f
  * @returns {{real: object|null, benchmark: object|null, kind: 'inventory'|'finding'}}
  */
 export function rulePrecision(source, ruleId, { counts = REAL_COUNTS, subs = SUBS } = {}) {
-  const real = share(counts[`${source}:${ruleId}`]);
+  // A redefined rule (redefined-rules.js) is measured only by its current sub-signals: its rule total is of the old meaning.
+  let real;
+  if (isRedefined(ruleId)) {
+    const sum = { tp: 0, fp: 0 };
+    for (const s of CURRENT_SUBS[ruleId] || []) { const c = counts[`${source}:${s}`]; if (c) { sum.tp += c.tp; sum.fp += c.fp; } }
+    real = share(sum);
+  } else real = share(counts[`${source}:${ruleId}`]);
   let benchmark = null;
   if (source === 'audit') {
     const short = String(ruleId).replace(/^AUD-/, '');
     const sum = { tp: 0, fp: 0 };
-    for (const [k, c] of Object.entries(subs)) if (k.startsWith(`${short}:`)) { sum.tp += c.tp; sum.fp += c.fp; }
+    for (const [k, c] of Object.entries(subs)) if (k.startsWith(`${short}:`) && countsForRule(k)) { sum.tp += c.tp; sum.fp += c.fp; }
     benchmark = share(sum);
   }
   return { real, benchmark };

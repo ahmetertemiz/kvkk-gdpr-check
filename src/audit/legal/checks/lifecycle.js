@@ -46,7 +46,8 @@
  * The measured TP/FP counts carrying each code are reported in the round-7 validation notes.
  */
 import { finding, loc, T, isRecordStore } from './_util.js';
-import { retentionHow, cascadeHow } from '../remedy.js';
+import { cascadeHow } from '../remedy.js';
+import { unenforcedPromises } from './retention-promise.js';
 import { assess, maxSensitivity } from '../risk.js';
 import {
   sinksWithData, sinkTransfer, nodeLabel, elLabel, where, personalStores, isAiSink, tableOf,
@@ -2746,7 +2747,13 @@ function retentionSub(g, p) {
 }
 
 // ---------------------------------------------------------------------------
-export function retention(g, model, lang) {
+/**
+ * Personal-data stores with no automatic cleanup seen in the code (no retention job, TTL or rotation), with their RET-01
+ * sub-signal and location. A fact since 0.2.1: most of these are kept for the life of the account, which is lawful. The
+ * audit model lists them (model.noAutoCleanup); the RET-01 verdict is raised only for unenforced promises (below).
+ */
+export function retentionGaps(g, files) {
+  const model = { files: Array.isArray(files) ? files : [] };
   const rotation = logRotationRetention(model);
   const stores = [...personalStores(g), ...derivedUserStores(g)]
     .filter(({ store }) => (isRecordStore(store) && !isPublicContentTable(g, store)) || store.id.startsWith('store:log') || store.kind === 'vector' || (store.kind === 'bucket' && store.dynamic !== true && bucketHoldsUserFiles(g, store)))
@@ -2766,24 +2773,65 @@ export function retention(g, model, lang) {
       if (sub === 'RET-01:record-user-ref-only') return linkedToPerson(g, store);
       return true;
     });
-  const missing = stores.filter(({ store }) => !g.in(store.id, 'expires').length);
-  if (!missing.length) return null;
   // Log and client stores aggregate every call site; point at the flow that carries the personal data.
   const locationOf = ({ store, ev }) => (/^store:(log|client)/.test(store.id) && ev?.file ? { file: ev.file, line: ev.line || null, snippet: ev.snippet || null } : where(store));
+  return stores.filter(({ store }) => !g.in(store.id, 'expires').length).map((p) => ({ ...p, ...retentionSub(g, p), location: locationOf(p) }));
+}
+
+/** JSON-safe inventory rows of retentionGaps: store, kind, data elements and where it is declared (one row per store). */
+export function noAutoCleanup(g, files, lang = 'tr') {
+  if (!g?.nodesOf) return [];
+  const seen = new Set();
+  const rows = [];
+  for (const p of retentionGaps(g, files)) {
+    if (seen.has(p.store.id)) continue;
+    seen.add(p.store.id);
+    rows.push({
+      store: nodeLabel(p.store, lang),
+      kind: p.store.id.startsWith('store:log') ? 'log' : p.store.id.startsWith('store:client') ? 'client' : p.store.kind || 'table',
+      elements: p.elements.map((e) => e.name),
+      labels: p.elements.map((e) => elLabel(e, lang)),
+      special: p.elements.some((e) => e.sensitivity === 'special'),
+      file: p.location?.file || null,
+      line: p.location?.line || null,
+      entity: p.store.id,
+    });
+  }
+  return rows;
+}
+
+const PROMISE_SUBJECT = {
+  backup: ['yedekler', 'backups'], inactive: ['hareketsiz hesaplar', 'inactive accounts'], session: ['oturumlar', 'sessions'], log: ['loglar', 'logs'],
+  ip: ['IP kayıtları / sayaçlar', 'IP records / counters'], trash: ['silinen öğeler', 'deleted items'], message: ['mesajlar', 'messages'],
+  upload: ['dosyalar', 'files'], account: ['hesap verileri', 'account data'], data: ['veriler', 'data'],
+};
+
+/**
+ * RET-01 (0.2.1): a notice or UI text promises a retention period or an automatic deletion, and the code carries no
+ * cleanup for that subject, or every matching cleanup is behind a switch that is off by default (retention-promise.js).
+ */
+export function retention(g, model, lang) {
+  // All files: the off-by-default switches are read from .env.example, which codeFiles leaves out with the manifests.
+  const issues = unenforcedPromises((Array.isArray(model?.files) ? model.files : []).filter((f) => f && typeof f.content === 'string'), g);
+  if (!issues.length) return null;
   return finding({
-    id: 'AUD-RET-01', category: 'retention', severity: 'low',
-    title: T('Saklama süresi / otomatik imha tanımlı değil', 'No retention period / automatic deletion'),
-    desc: T('Bu depolardaki kişisel veriler için kodda bir saklama süresi veya süresi dolanı silen bir iş (cron, TTL) bulunamadı. Veriler işleme amacının gerektirdiği süre kadar saklanabilir; süresiz saklama ilkelere aykırıdır ve Saklama ve İmha Politikası gerektirir.', 'No retention period or scheduled deletion was found for these stores. Indefinite storage breaches storage limitation.'),
-    fix: ((h) => T(`Her veri kategorisi için süre belirleyin (ör. destek talepleri 2 yıl, loglar 90 gün, pasif hesaplar 3 yıl) ve ${h.tr} ile silin veya anonimleştirin; loglar için log sağlayıcısında / döndürmede saklama süresi tanımlayın.`, `Define periods per category (e.g. support tickets 2 years, logs 90 days, inactive accounts 3 years) and delete/anonymise with ${h.en}; for logs, set retention at the log provider / rotation.`))(retentionHow(g)),
-    refs: ['KVKK md.4/2-d', 'KVKK md.7', 'GDPR Art.5(1)(e)'],
-  }, missing.map((p) => {
-    const { sub, strong } = retentionSub(g, p);
-    const l = tag(loc({ ...locationOf(p), label: T(`${nodeLabel(p.store, 'tr')} (${p.elements.map((e) => elLabel(e, 'tr')).join(', ') || '—'})`, `${nodeLabel(p.store, 'en')} (${p.elements.map((e) => elLabel(e, 'en')).join(', ') || '—'})`), severity: p.elements.some((e) => e.sensitivity === 'special') ? 'medium' : 'low', confidence: 0.7,
-      // Log / client stores are seen at the write call itself; their retention gap does not depend on the schema layer.
-      ...(/^store:(log|client)/.test(p.store.id) ? { layers: [] } : {}) }), sub, p.elements, strong);
-    // Several stores can share one anchor line (buckets created through one helper call): keep them distinct.
-    if (l) l.entity = p.store.id;
-    return l;
+    id: 'AUD-RET-01', category: 'retention', severity: 'medium',
+    title: T('Metindeki saklama süresi / otomatik silme vaadi kodda uygulanmıyor', 'A retention period or automatic deletion promised in the text is not carried out by the code'),
+    desc: T('Gizlilik ya da arayüz metni bir saklama süresi veya otomatik silme vaat ediyor, ama kodda bu veriyi silen bir iş yok ya da iş varsayılan olarak kapalı (ortam değişkeni örnek dosyada boş / false). Kullanıcıya söylenen süre uygulanmıyorsa aydınlatma yanıltıcı olur ve veri süresiz kalır.', 'A privacy or UI text promises a retention period or an automatic deletion, but no job in the code deletes that data, or the job is off by default (its environment switch is empty / false in the example file). If the period told to users is not applied, the notice is misleading and the data stays indefinitely.'),
+    fix: T('Vaat edilen süreyi uygulayan zamanlanmış bir silme işi ekleyin veya işi üretimde açın (ortam değişkenini ayarlayın, zamanlamayı doğrulayın); yedekler için yedekleme aracında / sağlayıcıda saklama süresini vaat edilen süreye ayarlayın. Uygulanamıyorsa metni gerçekte olana göre düzeltin.', 'Add a scheduled deletion job that applies the promised period, or turn the job on in production (set the environment switch, check the schedule); for backups, set the retention at the backup tool / provider to the promised period. If it cannot be applied, correct the text to match what happens.'),
+    refs: ['KVKK md.4/2-d', 'KVKK md.7', 'KVKK md.10', 'GDPR Art.5(1)(a),(e)', 'GDPR Art.13(2)(a)'],
+  }, issues.map(({ promise: p, reason, site, gate, idle }) => {
+    const [subTr, subEn] = PROMISE_SUBJECT[p.subject] || PROMISE_SUBJECT.data;
+    const at = site ? `${site.file}${site.line ? ':' + site.line : ''}` : '';
+    const why = reason === 'disabled'
+      ? { tr: `temizlik işi var (${at}) ama ${gate.env} örnek dosyada kapalı; varsayılan kurulumda çalışmaz`, en: `a cleanup exists (${at}) but ${gate.env} is off in the example file; it does not run in a default deployment` }
+      : reason === 'not-called'
+        ? { tr: `temizlik fonksiyonu var (${idle.fn}, ${at}) ama üretim kodunda onu çağıran ya da zamanlayan bir yer yok`, en: `a cleanup function exists (${idle.fn}, ${at}) but nothing in the production code calls or schedules it` }
+        : p.residual
+        ? { tr: 'yedeklerin saklama süresi kodda / yapılandırmada tanımlı değil (yedekleme aracı veya sağlayıcı ayarı görülmedi)', en: 'backup retention is not defined in code or configuration (no backup tool or provider setting seen)' }
+        : { tr: `${subTr} için süresi dolanı silen bir iş kodda görülmedi`, en: `no job in the code deletes expired ${subEn}` };
+    const quote = p.text.length > 140 ? `${p.text.slice(0, 140)}…` : p.text;
+    return tag(loc({ file: p.file, line: p.line, snippet: p.text, label: T(`"${quote}" — ${why.tr}`, `"${quote}" — ${why.en}`), severity: 'medium', confidence: 0.7, layers: [] }), 'RET-01:notice-period-unenforced', [], null);
   }));
 }
 

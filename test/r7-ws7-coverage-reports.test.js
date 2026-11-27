@@ -331,10 +331,10 @@ test('WS7-5: the score uses scored findings only; an unreliable score is N/A', a
   for (const f of res.review) for (const l of f.locations) assert.ok(l.reviewReason, `${f.rule.id} has a reason`);
 });
 
-test('WS7-6: examples/audit-app reports exactly 19 finding ids (scored or review) and ok coverage', async () => {
+test('WS7-6: examples/audit-app reports exactly 18 finding ids (scored or review) and ok coverage', async () => {
   const r = await audit(path.resolve('examples/audit-app'));
   const ids = new Set([...r.findings, ...r.review].map((f) => f.rule.id));
-  assert.equal(ids.size, 19, [...ids].join(' '));
+  assert.equal(ids.size, 18, [...ids].join(' ')); // 0.2.1: RET-01's store list is a fact (model.noAutoCleanup)
   // which of them are scored follows the measured precision of their signal; most must be
   assert.ok(r.findings.length >= 14, r.findings.map((f) => f.rule.id).join(' '));
   assert.equal(r.coverage, 'ok');

@@ -23,6 +23,7 @@ function fixture(files) {
   }
   return dir;
 }
+import { gapFinding } from './helpers/retention-gaps.js';
 const el = (n, ctx) => classifyField(n, ctx)?.element ?? null;
 const fid = (f) => f?.rule?.id ?? f?.id;
 const ev = (file, line, snippet = '') => ({ file, line, snippet, kind: 'static', confidence: 0.9 });
@@ -112,8 +113,8 @@ test('vector stores: a pgvector table with an ownership-function RLS policy is i
   assert.ok(store, 'table parsed');
   assert.ok(elementsInStore(res.graph, store).some(({ el: e }) => e.name === 'free_text'), 'page_content is user content');
   assert.ok(personAnchored(res.graph, store), 'ownership helper in the policy anchors the rows to a person');
-  const ret = res.findings.find((f) => fid(f) === 'AUD-RET-01');
-  assert.ok(ret && ret.locations.some((l) => /knowledge_chunks/.test(typeof l.label === 'string' ? l.label : l.label.en)), 'retention gap reported');
+  const ret = gapFinding(res.graph);
+  assert.ok(ret && ret.locations.some((l) => /knowledge_chunks/.test(typeof l.label === 'string' ? l.label : l.label.en)), 'listed among tables with no automatic cleanup');
 });
 
 // ------------------------------------------------------------------ (4) job-written content in tables tied to nobody

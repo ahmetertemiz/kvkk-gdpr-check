@@ -6,7 +6,7 @@
 
 **İncelemeyi yapay zekâ yaptı; hiçbir hukukçu doğrulamadı.** "Doğrulandı", atıf yapılan hükmün birincil kaynakta okunduğu ve burada özetleneni söylediği anlamına gelir. Bir bulgunun o hükmü gerçekten ihlal edip etmediği hukuki değerlendirmedir ve doğrulanmamıştır. Kaynak metinlerin ilgili bölümleri okundu, tamamı değil; kaynakların sonradan değişip değişmediğini siz kontrol edin.
 
-405 satır doğrulandı, 58 satır doğrulanmadı, 0 satır kaynakla çelişiyor. Doğrulanmayan ve çelişen dayanaklar raporda "doğrulanmamış dayanak" notuyla çıkar.
+407 satır doğrulandı, 58 satır doğrulanmadı, 0 satır kaynakla çelişiyor. Doğrulanmayan ve çelişen dayanaklar raporda "doğrulanmamış dayanak" notuyla çıkar.
 
 ## Kaynakla çelişen iddialar
 
@@ -414,7 +414,9 @@ Bilinen çelişki yok. İncelemede bulunan sekiz çelişkide kural ve belge meti
 | AUD-PUR-01 | GDPR Art.6(4) — Art.6: Hukuka uygunluk; 6(4) amaç uyumu | [GDPR 2016/679 (EUR-Lex, RG L 119/1 metni)](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32016R0679) | Doğrulandı |
 | AUD-RET-01 | KVKK md.4/2-d — md.4: Genel ilkeler (4/2: a dürüstlük, b doğruluk, c belirli amaç, ç ölçülülük, d gerekli süre) | [6698 sayılı KVKK (mevzuat.gov.tr)](https://www.mevzuat.gov.tr/anasayfa/MevzuatFihristDetayIframe?MevzuatTur=1&MevzuatNo=6698&MevzuatTertip=5) | Doğrulandı |
 | AUD-RET-01 | KVKK md.7 — md.7: İşleme sebebi kalkınca silme, yok etme, anonim hâle getirme | [6698 sayılı KVKK (mevzuat.gov.tr)](https://www.mevzuat.gov.tr/anasayfa/MevzuatFihristDetayIframe?MevzuatTur=1&MevzuatNo=6698&MevzuatTertip=5) | Doğrulandı |
-| AUD-RET-01 | GDPR Art.5(1)(e) — Art.5: İlkeler | [GDPR 2016/679 (EUR-Lex, RG L 119/1 metni)](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32016R0679) | Doğrulandı |
+| AUD-RET-01 | KVKK md.10 — md.10: Aydınlatma yükümlülüğünün unsurları (a–d) | [6698 sayılı KVKK (mevzuat.gov.tr)](https://www.mevzuat.gov.tr/anasayfa/MevzuatFihristDetayIframe?MevzuatTur=1&MevzuatNo=6698&MevzuatTertip=5) | Doğrulandı |
+| AUD-RET-01 | GDPR Art.5(1)(a),(e) — Art.5: İlkeler | [GDPR 2016/679 (EUR-Lex, RG L 119/1 metni)](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32016R0679) | Doğrulandı |
+| AUD-RET-01 | GDPR Art.13(2)(a) — Art.13: Veri ilgiliden toplanırken bilgilendirme | [GDPR 2016/679 (EUR-Lex, RG L 119/1 metni)](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32016R0679) | Doğrulandı |
 | AUD-SEC-01 | KVKK md.12/1 — md.12: Veri güvenliği; 12/2 veri işleyenle müşterek sorumluluk; 12/5 en kısa sürede bildirim | [6698 sayılı KVKK (mevzuat.gov.tr)](https://www.mevzuat.gov.tr/anasayfa/MevzuatFihristDetayIframe?MevzuatTur=1&MevzuatNo=6698&MevzuatTertip=5) | Doğrulandı |
 | AUD-SEC-01 | KVKK md.12/5 — md.12: Veri güvenliği; 12/2 veri işleyenle müşterek sorumluluk; 12/5 en kısa sürede bildirim | [6698 sayılı KVKK (mevzuat.gov.tr)](https://www.mevzuat.gov.tr/anasayfa/MevzuatFihristDetayIframe?MevzuatTur=1&MevzuatNo=6698&MevzuatTertip=5) | Doğrulandı |
 | AUD-SEC-01 | GDPR Art.25 — Art.25: Tasarımdan ve varsayılan olarak koruma | [GDPR 2016/679 (EUR-Lex, RG L 119/1 metni)](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32016R0679) | Doğrulandı |

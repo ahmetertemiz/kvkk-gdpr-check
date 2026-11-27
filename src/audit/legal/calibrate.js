@@ -53,6 +53,7 @@
 import { layerCovered } from './stack.js';
 import { SUBS, MODIFIERS, NAME_INFERRED_ELEMENTS, NONPROD_PATH_RE, PROVENANCE } from './rule-precision.js';
 import { realDemotion, realReason } from '../../real-calibration.js';
+import { countsForRule } from '../../redefined-rules.js';
 
 export const ABSENCE_MIN_CONFIDENCE = 0.6;
 
@@ -168,7 +169,7 @@ export function reviewRate(l, { ruleId = null, subs = SUBS, modifiers = MODIFIER
   const rid = String(ruleId || '').replace(/^AUD-/, '') || (typeof l?.sub === 'string' ? l.sub.split(':')[0] : '');
   if (!rid) return null;
   const sum = { tp: 0, fp: 0 };
-  for (const [k, x] of Object.entries(subs)) if (k.startsWith(`${rid}:`)) { sum.tp += x.tp; sum.fp += x.fp; }
+  for (const [k, x] of Object.entries(subs)) if (k.startsWith(`${rid}:`) && countsForRule(k)) { sum.tp += x.tp; sum.fp += x.fp; }
   return sum.tp + sum.fp > 0 ? of(sum, 'rule') : null;
 }
 

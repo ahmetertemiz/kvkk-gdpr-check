@@ -250,10 +250,10 @@ const MEASURED = {
   'AUD-DPIA-01': /^DPIA-01:(innovative-tech|systematic-monitoring|special-or-large|other-criterion)$/,
 };
 
-test('sub keys and elements on every transparency / DPIA location (examples/audit-app reports 19 finding ids)', async () => {
+test('sub keys and elements on every transparency / DPIA location (examples/audit-app reports 18 finding ids)', async () => {
   const r = await audit(path.resolve('examples/audit-app'), { lang: 'tr' });
   const ids = [...new Set(r.findings.map(fid))];
-  assert.equal(new Set([...r.findings, ...r.review].map(fid)).size, 19, `finding ids: ${ids.join(' ')}`);
+  assert.equal(new Set([...r.findings, ...r.review].map(fid)).size, 18, `finding ids: ${ids.join(' ')}`);
   assert.ok(ids.includes('AUD-TRN-02'), 'TRN-02 survives calibration');
   let n = 0;
   for (const list of [r.findings, r.review]) for (const f of list) {

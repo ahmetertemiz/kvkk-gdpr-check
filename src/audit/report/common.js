@@ -257,10 +257,21 @@ export const NAMED_VENDORS_T = {
   en: { title: 'Services named in the code, no data flow traced', note: 'Not in the transfer register: the code names them but the tool traced no data flow to them. Verify whether they are used and which data they receive.' },
 };
 
+/** Inventory block (0.2.1): personal-data stores with no automatic cleanup seen in the code (model.noAutoCleanup). */
+export const NO_CLEANUP_T = {
+  tr: { title: 'Otomatik temizliği olmayan tablolar', note: 'Olgu, hüküm yok: bu depolar için kodda süresi dolanı silen bir iş (cron, TTL, döndürme) görülmedi. Çoğu hesap ömrü boyunca saklanır ve bu meşrudur; süresiz kalmaması gerekenler (IP / tarayıcı kayıtları, loglar, davetler, silinen kayıtlar) için saklama süresi belirleyip uygulayın.' },
+  en: { title: 'Tables with no automatic cleanup', note: 'Facts, no verdict: no job that deletes expired rows (cron, TTL, rotation) was seen for these stores. Most are kept for the life of the account, which is lawful; for those that should not stay indefinitely (IP / browser records, logs, invitations, deleted records) define and apply a retention period.' },
+};
+/** One inventory line of model.noAutoCleanup: store (data elements). */
+export const noCleanupLine = (r) => {
+  const els = r.labels || r.elements || [];
+  return els.length ? `${r.store} (${els.join(', ')})` : r.store;
+};
+
 /** Model for the report: from result.model if present, else built from the graph. */
 export function getModel(result, lang) {
   if (result.model && result.model.inventory) return annotateCoverage(result.model, result.layers);
-  if (!result.graph) return { activities: [], transfers: [], namedVendors: [], deletionMatrix: { hasFlow: false, flows: [], rows: [] }, inventory: [], dpia: { criteria: [], required: false, labels: [] } };
+  if (!result.graph) return { activities: [], transfers: [], namedVendors: [], noAutoCleanup: [], deletionMatrix: { hasFlow: false, flows: [], rows: [] }, inventory: [], dpia: { criteria: [], required: false, labels: [] } };
   // result.layers goes to the model builder (deletion matrix coverage: WS7 contract); older builders ignore the extra arg.
   return annotateCoverage(serializeModel(buildAuditModel(result.graph, lang, { layers: result.layers || null })), result.layers);
 }

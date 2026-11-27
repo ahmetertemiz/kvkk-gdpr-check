@@ -22,7 +22,7 @@ _Veri akışı analizi ve ilke bazlı hukuki değerlendirme_
 
 | 🛑 KRİTİK | 🔴 YÜKSEK | 🟠 ORTA | 🟡 DÜŞÜK | 🔵 BİLGİ |
 |---|---|---|---|---|
-| 1 | 2 | 12 | 1 | 0 |
+| 1 | 2 | 11 | 1 | 0 |
 
 ## Yönetici özeti
 
@@ -188,6 +188,18 @@ flowchart LR
 | Supabase _(veritabanı barındırma)_ | US (bölge seçilebilir) | ✓ | ✓ | E-posta, Şifre, Ad soyad, Telefon, Doğum tarihi, TC Kimlik No / ulusal kimlik, Fotoğraf / avatar, Pazarlama tercihleri / izinleri, Sağlık bilgisi, Serbest metin / kullanıcı içeriği, Adres, Ödeme kaydı 🩺 |
 | Resend | US | ✓ | ✓ | E-posta, Ad soyad |
 | PostHog | US/EU | ✓ | ✓ | E-posta, Telefon |
+
+### Otomatik temizliği olmayan tablolar
+
+_Olgu, hüküm yok: bu depolar için kodda süresi dolanı silen bir iş (cron, TTL, döndürme) görülmedi. Çoğu hesap ömrü boyunca saklanır ve bu meşrudur; süresiz kalmaması gerekenler (IP / tarayıcı kayıtları, loglar, davetler, silinen kayıtlar) için saklama süresi belirleyip uygulayın._
+
+- tablo profiles (Ad soyad, E-posta, Telefon, Doğum tarihi, TC Kimlik No / ulusal kimlik, Fotoğraf / avatar, Pazarlama tercihleri / izinleri) — `supabase/migrations/0001_init.sql:2`
+- tablo health_logs (Sağlık bilgisi, Serbest metin / kullanıcı içeriği) — `supabase/migrations/0001_init.sql:17`
+- tablo orders (Adres, Ödeme kaydı) — `supabase/migrations/0001_init.sql:29`
+- tablo support_tickets (E-posta, Serbest metin / kullanıcı içeriği) — `supabase/migrations/0001_init.sql:39`
+- tablo chat_messages (Serbest metin / kullanıcı içeriği) — `supabase/migrations/0001_init.sql:48`
+- vector · chat_messages.embedding (Serbest metin / kullanıcı içeriği)
+- log · console (E-posta, Telefon) — `src/app/api/signup/route.ts:18`
 
 # ⚖️ Kontrol edilecekler
 
@@ -357,33 +369,6 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 **Ne yapmalı:** "Verilerimi indir" (JSON/CSV) ve profil düzenleme özelliği ekleyin veya en azından başvuru kanalını aydınlatma metninde belirtip manuel süreci tanımlayın.
 
 <sub>Dayanak: KVKK md.11 · KVKK md.13 · GDPR Art.15 · GDPR Art.16 · GDPR Art.20</sub>
-
-### ⏳ Saklama & imha
-
-#### 🟠 Saklama süresi / otomatik imha tanımlı değil `AUD-RET-01`
-
-<sub>İsabet: 3 gerçek projede (ayar seti) isabet %74 (25/34) · 84 projelik ölçüm setinde %88 (324/367)</sub>
-
-- 🟠 tablo health_logs (Sağlık bilgisi, Serbest metin / kullanıcı içeriği) — `supabase/migrations/0001_init.sql:17`
-  - Kalibrasyon: ölçülen isabet %91 (125/13, 51 proje)
-- 🟡 tablo profiles (Ad soyad, E-posta, Telefon, Doğum tarihi, TC Kimlik No / ulusal kimlik, Fotoğraf / avatar, Pazarlama tercihleri / izinleri) — `supabase/migrations/0001_init.sql:2`
-  - Kalibrasyon: ölçülen isabet %91 (125/13, 51 proje)
-- 🟡 tablo orders (Adres, Ödeme kaydı) — `supabase/migrations/0001_init.sql:29`
-  - Kalibrasyon: ölçülen isabet %91 (125/13, 51 proje)
-- 🟡 tablo support_tickets (E-posta, Serbest metin / kullanıcı içeriği) — `supabase/migrations/0001_init.sql:39`
-  - Kalibrasyon: ölçülen isabet %91 (125/13, 51 proje)
-- 🟡 tablo chat_messages (Serbest metin / kullanıcı içeriği) — `supabase/migrations/0001_init.sql:48`
-  - Kalibrasyon: ölçülen isabet %87 (59/9, 29 proje)
-- 🟡 vector · chat_messages.embedding (Serbest metin / kullanıcı içeriği)
-  - Kalibrasyon: ölçülen isabet %87 (59/9, 29 proje)
-- 🟡 log · console (E-posta, Telefon) — `src/app/api/signup/route.ts:18`
-  - Kalibrasyon: ölçülen isabet %67 (10/5, 20 proje) — güçlü kanıtla tutuldu: üretim kodu (src/app/api/signup/route.ts) loga iletişim/konum verisi yazıyor (email, phone)
-
-**Neden önemli:** Bu depolardaki kişisel veriler için kodda bir saklama süresi veya süresi dolanı silen bir iş (cron, TTL) bulunamadı. Veriler işleme amacının gerektirdiği süre kadar saklanabilir; süresiz saklama ilkelere aykırıdır ve Saklama ve İmha Politikası gerektirir.
-
-**Ne yapmalı:** Her veri kategorisi için süre belirleyin (ör. destek talepleri 2 yıl, loglar 90 gün, pasif hesaplar 3 yıl) ve pg_cron ile zamanlanmış silme ile silin veya anonimleştirin; loglar için log sağlayıcısında / döndürmede saklama süresi tanımlayın.
-
-<sub>Dayanak: KVKK md.4/2-d · KVKK md.7 · GDPR Art.5(1)(e)</sub>
 
 ### 🩺 Özel nitelikli veri
 

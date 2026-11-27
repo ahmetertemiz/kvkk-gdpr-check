@@ -88,7 +88,7 @@ test('quick scan: an unmeasured high rule shows medium with severityRaw; a real-
   }
   if (capped.length) assert.ok(json.findings.some((f) => f.severityRaw && f.locations.some((l) => l.severityRaw)));
   const inv = json.findings.filter((f) => f.kind === 'inventory').map((f) => f.id);
-  assert.ok(inv.every((id) => ['PII001', 'TRF001', 'WEB018'].includes(id)));
+  assert.ok(inv.every((id) => ['PII001', 'TRF001', 'WEB018', 'RET001'].includes(id)), inv.join(' '));
   fs.rmSync(dir, { recursive: true, force: true });
 });
 

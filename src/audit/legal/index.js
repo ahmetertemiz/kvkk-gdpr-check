@@ -6,7 +6,7 @@
  */
 import { pathToFileURL } from 'node:url';
 import { inferActivities } from './activities.js';
-import { buildTransfers, buildDeletionMatrix, LIFECYCLE_CHECKS } from './checks/lifecycle.js';
+import { buildTransfers, buildDeletionMatrix, LIFECYCLE_CHECKS, noAutoCleanup } from './checks/lifecycle.js';
 import { namedVendors } from './named-vendors.js';
 import { dpiaAssessment, TRANSPARENCY_CHECKS } from './checks/transparency.js';
 import { PRINCIPLE_CHECKS } from './checks/principles.js';
@@ -129,6 +129,8 @@ export function buildAuditModel(g, lang = 'tr', layers = undefined) {
     transfers,
     // Inventory only: vendors named in the code with no traced flow (never read by a check).
     namedVendors: namedVendors(g, transfers),
+    // Inventory only (0.2.1): personal-data stores with no automatic cleanup seen in the code; a fact, not a verdict.
+    noAutoCleanup: noAutoCleanup(g, g?._auditFiles, lang),
     deletionMatrix: buildDeletionMatrix(g, lang, lay),
     inventory: buildInventory(g, lang),
     dpia: dpiaAssessment(g),
@@ -217,6 +219,7 @@ export function serializeModel(model) {
     })),
     transfers: model.transfers,
     namedVendors: model.namedVendors || [],
+    noAutoCleanup: model.noAutoCleanup || [],
     deletionMatrix: {
       hasFlow: model.deletionMatrix.hasFlow,
       ...(model.deletionMatrix.analysed === false ? { analysed: false, analysis: model.deletionMatrix.analysisNote, note: model.deletionMatrix.note } : {}),

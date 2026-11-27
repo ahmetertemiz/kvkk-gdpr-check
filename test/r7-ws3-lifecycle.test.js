@@ -17,6 +17,7 @@ import { parseSqlFiles } from '../src/audit/extract/sql.js';
 import { deletionCoverage, retention, buildDeletionMatrix } from '../src/audit/legal/checks/lifecycle.js';
 import { buildGraph, audit } from '../src/audit/index.js';
 
+import { gapFinding } from './helpers/retention-gaps.js';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const APP = path.join(here, '../examples/audit-app');
 const MIG = 'db/init.sql';
@@ -211,7 +212,7 @@ test('RET-01 bucket split: an app-asset bucket is not listed; an owner-policy up
   g.addNode({ id: 'store:bucket:scans', type: 'Store', kind: 'bucket', name: 'scans', public: false, evidence: [ev(MIG, 31, 'insert into storage.buckets')],
     policies: [{ name: 'own uploads', cmd: 'insert', roles: ['authenticated'], check: "bucket_id = 'scans' and auth.uid()::text = (storage.foldername(name))[1]" }] });
   Object.defineProperty(g, '_auditFiles', { value: [{ rel: 'src/lib/storage.ts', kind: 'code', content: "export const logo = supabase.storage.from('site-assets').getPublicUrl('logo.png')" }], enumerable: false, configurable: true, writable: true });
-  const locs = locsOf(run(retention, g), 'AUD-RET-01');
+  const locs = (gapFinding(g)?.locations || []);
   assert.ok(!locs.some((l) => /site-assets/.test(l.label.en)));
   const scans = locs.find((l) => /scans/.test(l.label.en));
   assert.ok(scans, 'user upload bucket listed');
@@ -223,7 +224,7 @@ test('RET-01 bucket: a user-named bucket with no owner-keyed path carries no str
   const g = new PrivacyGraph();
   table(g, 'profiles'); column(g, 'profiles', 'email');
   g.addNode({ id: 'store:bucket:avatars', type: 'Store', kind: 'bucket', name: 'avatars', public: false, policies: [], evidence: [ev(MIG, 30, 'bucket')] });
-  const l = locsOf(run(retention, g), 'AUD-RET-01').find((x) => /avatars/.test(x.label.en));
+  const l = (gapFinding(g)?.locations || []).find((x) => /avatars/.test(x.label.en));
   assert.ok(l);
   assert.equal(l.sub, 'RET-01:bucket');
   assert.equal(l.strongEvidence, undefined);
@@ -248,7 +249,7 @@ class Contact(models.Model):
   });
   const res = await audit(dir, { lang: 'en' });
   const all = [...res.findings, ...(res.review || [])];
-  const ret = locsOf(all, 'AUD-RET-01').map((l) => l.label.en).join(' | ');
+  const ret = (gapFinding(res.graph)?.locations || []).map((l) => l.label.en).join(' | ');
   assert.doesNotMatch(ret, /\bschool\b|\bcourse\b/i);
   assert.match(ret, /contact/i);
 });
@@ -257,13 +258,13 @@ test('RET-01 log-store: prod-log-contact only for a production file writing cont
   const g = new PrivacyGraph();
   g.addNode({ id: 'store:log:console', type: 'Store', kind: 'log', name: 'console', evidence: [] });
   g.addEdge({ from: g.dataElement(classifyField('email'), 'email'), to: 'store:log:console', type: 'flowsTo', evidence: [ev('src/api/signup.ts', 9, 'console.log(email)')] });
-  const l = locsOf(run(retention, g), 'AUD-RET-01')[0];
+  const l = (gapFinding(g)?.locations || [])[0];
   assert.equal(l.sub, 'RET-01:log-store');
   assert.equal(l.strongEvidence?.code, 'prod-log-contact');
   const g2 = new PrivacyGraph();
   g2.addNode({ id: 'store:log:console', type: 'Store', kind: 'log', name: 'console', evidence: [] });
   g2.addEdge({ from: g2.dataElement(classifyField('bio'), 'bio'), to: 'store:log:console', type: 'flowsTo', evidence: [ev('src/api/profile.ts', 9, 'console.log(bio)')] });
-  const l2 = locsOf(run(retention, g2), 'AUD-RET-01')[0];
+  const l2 = (gapFinding(g2)?.locations || [])[0];
   if (l2) assert.equal(l2.strongEvidence, undefined);
 });
 
@@ -315,7 +316,7 @@ test('vendor-write-identifiers on a write call carrying an e-mail; absent for an
 const KEYS = {
   'AUD-TRF-01': /^TRF-01:(traced-vendor|sdk-implied|unknown-location-smtp|unknown-location-host|oauth-idp|config-only|declared-only)$/,
   'AUD-DSR-01': /^DSR-01:(no-export|no-rectification)$/,
-  'AUD-RET-01': /^RET-01:(record-user-ref-only|record-direct-identifier|log-store|record-content|bucket|record-name-or-inferred-only)$/,
+  'AUD-RET-01': /^RET-01:(notice-period-unenforced)$/,
   'AUD-DEL-01': /^DEL-01:(headline-no-account-erasure|record-level-evidence|account-created-never-deleted|derived-store-never-deleted|operator-only-evidence|deactivation-only|subcollection-orphan)$/,
   'AUD-DEL-02': /^DEL-02:(vendor-copy|vendor-sdk-ids|no-fk-link|fk-no-cascade|fk-parent-not-deleted|soft-delete|subject-never-deleted|document-store|bucket-files|embedded-copy|non-atomic)$/,
 };

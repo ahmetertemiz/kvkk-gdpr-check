@@ -2,6 +2,22 @@
 
 ## 0.2.1 — yayımlanmadı
 
+### Davranış değişikliği: saklama süresi (RET-01, RET001)
+
+**"Otomatik temizliği olmayan tablolar" artık bir olgu.** Derin denetim, kodda süresi dolanı silen bir iş (cron, TTL, döndürme) görülmeyen kişisel veri depolarını eskiden RET-01 hükmü olarak listeliyordu. Bu depoların çoğu hesap ömrü boyunca saklanıyor ve bu meşru: ayar setinde (yedi proje) RET-01 konumlarının %24'ü gerçek sorundu. Liste şimdi Envanter bölümünde, hükümsüz ve puansız duruyor. JSON'da `model.noAutoCleanup` alanında. Gerçek sorun olarak etiketlenmiş konumların tamamı listede: ayar setinde 46/46, 84 projelik sette 581/581.
+
+**RET-01 yalnızca bir vaat uygulanmıyorsa hüküm.** Gizlilik ya da arayüz metni bir saklama süresi veya otomatik silme vaat ediyorsa ("30 gün sonra silinir", "en geç bir gün içinde silinir", "hareketsiz hesaplar silinir") ve kod bunu yapmıyorsa üretiliyor. Önem: orta. Alt sinyal: `RET-01:notice-period-unenforced`. Kod şu durumlarda vaadi yapmıyor sayılıyor:
+- O konu için (oturum, IP sayacı, log, yedek, hareketsiz hesap …) süresi dolanı silen bir iş yok.
+- İş var ama varsayılan olarak kapalı: ortam değişkeni `.env.example`'da boş ya da `false`. Değişken iş dosyasında ya da onu çağıran dosyada okunuyor olabilir.
+- İş var ama hiçbir üretim kodu onu çağırmıyor ya da zamanlamıyor. Yalnızca testten çağrılan bir yardımcı da bu durumda.
+- Vaat silmeden sonra yedeklerde kalan kopyalarla ilgili, ama yedekleme aracında ya da altyapı yapılandırmasında bir saklama ayarı yok.
+
+En az süre ("en az 3 yıl"), yasal süre (vergi, muhasebe), deneme süresi, yaş ("12 yaşında") ve yorum satırları vaat sayılmıyor. Ayar setinde bilinen üç örneği yakalıyor ve yedi projede 6 konum üretiyor; 84 projelik sette konum üretmiyor. Sinyal henüz ölçülmediği için bu konumlar "Doğrulanmalı" listesinde duruyor.
+
+**Hızlı tarama:** RET001 ("Otomatik saklama / imha işi görülmedi") da Envanter'e geçti (önem: bilgi).
+
+**Puan:** Eski RET-01 konumları artık puana girmiyor; bu yüzden puan yükselebilir. Anlamı değişen kuralın eski ölçümleri (ayar seti %24, 84 projelik set %88) yeni hükmün yanında gösterilmiyor (`src/redefined-rules.js`).
+
 ### Belgeler
 
 **README (Türkçe ve İngilizce) ve `docs/ACCURACY.md`:** Araç geliştirilirken hiç görülmemiş dört projenin birleşik sonucu eklendi. Sonuçlar:

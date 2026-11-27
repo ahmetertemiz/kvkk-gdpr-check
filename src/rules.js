@@ -906,20 +906,23 @@ export const RULES = [
   {
     id: 'RET001',
     category: 'retention',
-    severity: 'low',
+    severity: 'info',
+    // 0.2.1: a fact, listed under "Envanter". Data kept for the life of the account is lawful, so "no cleanup job seen" is
+    // not a verdict on its own; the deep audit raises RET-01 only when a text promises a period the code does not apply.
+    kind: 'inventory',
     scope: 'project',
     check: ({ signals, hits }) => (hits.PII001?.length && !signals.retention ? [{}] : []),
     title: {
-      tr: 'Veri saklama / otomatik imha mekanizması bulunamadı',
-      en: 'No data retention / automatic deletion found',
+      tr: 'Otomatik saklama / imha işi görülmedi',
+      en: 'No automatic retention / deletion job seen',
     },
     desc: {
-      tr: 'Kişisel veriler işleme amacının gerektirdiği süre kadar saklanabilir. Süresiz saklama ilkelere aykırıdır.',
-      en: 'Personal data may be kept only as long as necessary for its purpose. Indefinite storage violates storage limitation.',
+      tr: 'Kodda süresi dolan kişisel verileri silen bir iş (cron, TTL, zamanlanmış görev) görülmedi. Hesap ömrü boyunca saklanan veriler için bu meşrudur; süresiz kalmaması gerekenler (loglar, IP kayıtları, davetler, hareketsiz hesaplar) için süre belirleyin.',
+      en: 'No job that deletes expired personal data (cron, TTL, scheduled task) was seen in the code. That is lawful for data kept for the life of the account; set a period for what should not stay indefinitely (logs, IP records, invitations, inactive accounts).',
     },
     fix: {
-      tr: 'Her veri türü için saklama süresi belirle (saklama ve imha politikası) ve süresi dolanları silen/anonimleştiren bir zamanlanmış görev (pg_cron, cron job) ekle. Pasif hesapları belirli süre sonra temizle.',
-      en: 'Define a retention period per data type and add a scheduled job (pg_cron, cron) to delete/anonymise expired data. Clean up inactive accounts.',
+      tr: 'Süresiz kalmaması gereken veri türleri için saklama süresi belirle (saklama ve imha politikası) ve süresi dolanları silen/anonimleştiren bir zamanlanmış görev (pg_cron, cron job) ekle.',
+      en: 'For data types that should not stay indefinitely, define a retention period and add a scheduled job (pg_cron, cron) to delete/anonymise expired data.',
     },
     refs: ['KVKK md.4/2-d, md.7', 'GDPR Art.5(1)(e)'],
   },

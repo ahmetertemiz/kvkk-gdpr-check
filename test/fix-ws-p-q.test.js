@@ -10,6 +10,7 @@ import { personalStores, chainFor } from '../src/audit/legal/model.js';
 import { isRecordStore } from '../src/audit/legal/checks/_util.js';
 import { deletionCoverage, retention, dataSubjectRights, internationalTransfers, buildTransfers } from '../src/audit/legal/checks/lifecycle.js';
 
+import { gapFinding } from './helpers/retention-gaps.js';
 const MIG = 'db/init.sql';
 const en = (f) => (f ? f.locations.map((l) => (typeof l.label === 'string' ? l.label : l.label.en)).join(' | ') : '');
 
@@ -57,7 +58,7 @@ test('MDL-1: user-linked table without classified columns is a personal store; c
   assert.equal(sub.elements[0].name, 'user_ref');
   assert.ok(!ps.some((p) => /products|prices/.test(p.store.id)), 'catalogue tables unaffected');
   assert.ok(!g.has('data:user_ref'), 'model does not mutate the graph');
-  assert.match(en(check(retention, g)), /subscriptions \(User-linked record\)/);
+  assert.match(en(gapFinding(g, [])), /subscriptions \(User-linked record\)/);
   // With an account flow (Stripe customer deletion), DEL-02 explains the missing ON DELETE.
   const stripe = g.vendorSink(vendorById('stripe'), ev('src/pay.ts', 1, 'stripe'));
   g.addEdge({ from: elementId(g, 'email'), to: stripe, type: 'flowsTo', evidence: [ev('src/pay.ts', 2, 'customers.create')] });
@@ -82,7 +83,7 @@ test('MDL-2: collections are record stores (retention + elements)', () => {
   const g = new PrivacyGraph();
   table(g, 'User', { kind: 'collection' }); column(g, 'User', 'email'); column(g, 'User', 'name');
   table(g, 'Token', { kind: 'collection' }); column(g, 'Token', 'user', 'ObjectId'); ref(g, 'Token', 'User', null, 'user');
-  const ret = en(check(retention, g));
+  const ret = en(gapFinding(g, []));
   assert.match(ret, /collection User/);
   assert.match(ret, /collection Token \(User-linked record\)/);
   assert.ok(isRecordStore(g.node('store:table:User')));
@@ -228,7 +229,7 @@ test('LIF-5: log retention location comes from the flow, not the first log call'
   const g = new PrivacyGraph();
   g.addNode({ id: 'store:log:console', type: 'Store', kind: 'log', evidence: [ev('src/unrelated.ts', 122, 'console.log(e)')] });
   g.addEdge({ from: elementId(g, 'message'), to: 'store:log:console', type: 'flowsTo', evidence: [ev('src/trace.ts', 18, 'console.log(message)')] });
-  const loc = check(retention, g).locations[0];
+  const loc = gapFinding(g, []).locations[0];
   assert.equal(loc.file, 'src/trace.ts');
   assert.equal(loc.line, 18);
 });

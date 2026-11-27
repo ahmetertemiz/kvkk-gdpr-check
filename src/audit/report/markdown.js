@@ -1,4 +1,4 @@
-import { pendingTop, S, L, SEVS, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText, NAMED_VENDORS_T } from './common.js';
+import { pendingTop, S, L, SEVS, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText, NAMED_VENDORS_T, NO_CLEANUP_T, noCleanupLine } from './common.js';
 import { reasonTexts } from '../../score-gate.js';
 import { displayRoot } from '../../display-root.js';
 import { supportNotice } from '../../support-notice.js';
@@ -86,6 +86,12 @@ export function auditMarkdown(result, { lang = 'tr' } = {}) {
     const N = NAMED_VENDORS_T[lang] || NAMED_VENDORS_T.tr;
     o.push(`### ${N.title}`, '', `_${N.note}_`, '');
     for (const v of m.namedVendors) o.push(`- **${cell(v.vendor)}**${v.country ? ` (${cell(v.country)})` : ''} — \`${cell(locWhere(v.evidence[0] || {}))}\``);
+    o.push('');
+  }
+  if (m.noAutoCleanup?.length) {
+    const N = NO_CLEANUP_T[lang] || NO_CLEANUP_T.tr;
+    o.push(`### ${N.title}`, '', `_${N.note}_`, '');
+    for (const r of m.noAutoCleanup) o.push(`- ${cell(noCleanupLine(r))}${r.file ? ` — \`${cell(locWhere(r))}\`` : ''}`);
     o.push('');
   }
 

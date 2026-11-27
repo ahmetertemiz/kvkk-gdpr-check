@@ -20,6 +20,7 @@ import {
   retention, dataSubjectRights, rectifyAbsenceConfidence, idpVendor, bucketHoldsUserFiles,
 } from '../src/audit/legal/checks/lifecycle.js';
 
+import { gapFinding } from './helpers/retention-gaps.js';
 const MIG = 'db/init.sql';
 const label = (l) => (typeof l.label === 'string' ? l.label : l.label.en);
 const all = (r) => [r].flat().filter(Boolean);
@@ -126,15 +127,15 @@ test('buckets need evidence of user files (RET-01 / matrix): stock images are no
   const stock = tempFiles({ 'convex/images.ts': "const response = await fetch(unsplashUrl)\nconst image = await response.blob()\nconst storageId = await ctx.storage.store(image)\n" }).files;
   Object.defineProperty(g, '_auditFiles', { value: stock, configurable: true, writable: true });
   assert.equal(bucketHoldsUserFiles(g, g.node('store:bucket:media-cache')), false);
-  const r = runChecks(g, { files: stock, lang: 'en' });
-  assert.doesNotMatch(en(byRule(r, 'AUD-RET-01')), /media-cache/);
+  runChecks(g, { files: stock, lang: 'en' });
+  assert.doesNotMatch(en(gapFinding(g, stock)), /media-cache/);
   // A user-keyed upload elsewhere makes the bucket personal.
   const g2 = new PrivacyGraph();
   usersTable(g2);
   g2.addNode({ id: 'store:bucket:media-cache', type: 'Store', kind: 'bucket', name: 'media-cache' });
   const up = tempFiles({ 'src/Edit.js': "const storageRef = ref(storage, `avatar/${userData.id}/` + filename)\nconst task = uploadBytesResumable(storageRef, localBlob)\n" }).files;
-  const r2 = runChecks(g2, { files: up, lang: 'en' });
-  assert.match(en(byRule(r2, 'AUD-RET-01')), /media-cache/);
+  runChecks(g2, { files: up, lang: 'en' });
+  assert.match(en(gapFinding(g2, up)), /media-cache/);
 });
 
 // --- (2) non-atomic account deletion ------------------------------------------------------------------
@@ -350,18 +351,18 @@ test('RET-01 on logs ignores writes from test configs / scripts / seeds and hono
   g.addEdge({ from: el(g, 'full_name'), to: 'store:log:console', type: 'flowsTo', evidence: [ev('scripts/setup.ts', 304, 'console.log(name)')] });
   g.addEdge({ from: el(g, 'email'), to: 'store:log:console', type: 'flowsTo', evidence: [ev('cypress.config.ts', 19, 'console.log(email)')] });
   g.addEdge({ from: el(g, 'email'), to: 'store:log:console', type: 'flowsTo', evidence: [ev('app/database/seed.server.ts', 79, 'console.log(email)')] });
-  assert.doesNotMatch(en(check(retention, g)), /console/);
+  assert.doesNotMatch(en(gapFinding(g, [])), /console/);
   g.addEdge({ from: el(g, 'full_name'), to: 'store:log:console', type: 'flowsTo', evidence: [ev('src/api/signup.ts', 9, 'console.log(name)')] });
-  const l = check(retention, g).locations.find((x) => /console/.test(label(x)));
+  const l = gapFinding(g, []).locations.find((x) => /console/.test(label(x)));
   assert.equal(l.file, 'src/api/signup.ts');
 
   const g2 = new PrivacyGraph();
   usersTable(g2);
   g2.addNode({ id: 'store:log:logger', type: 'Store', kind: 'log', evidence: [] });
   g2.addEdge({ from: el(g2, 'email'), to: 'store:log:logger', type: 'flowsTo', evidence: [ev('src/utils/mail.ts', 30, "logger.log('debug', opts)")] });
-  assert.match(en(byRule(runChecks(g2, { files: [], lang: 'en' }), 'AUD-RET-01')), /logger/);
+  assert.match(en(gapFinding(g2, [])), /logger/);
   const { files } = tempFiles({ 'src/utils/logger.ts': "import DailyRotateFile from 'winston-daily-rotate-file';\nexport const logger = createLogger({ transports: [new DailyRotateFile({ filename: 'app-%DATE%.log', maxFiles: '7d' })] });\n" });
-  assert.doesNotMatch(en(byRule(runChecks(g2, { files, lang: 'en' }), 'AUD-RET-01')), /logger/);
+  assert.doesNotMatch(en(gapFinding(g2, files)), /logger/);
 });
 
 // --- (9) rectification absence confidence -------------------------------------------------------------------------

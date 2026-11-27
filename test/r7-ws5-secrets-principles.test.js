@@ -228,10 +228,10 @@ test('PII: enum modes, generic names, org FKs, aggregate timestamps, process ste
 });
 
 // ------------------------------------------------------------------ sub keys + audit-app
-test('sub keys and elements on every WS5 location; examples/audit-app reports 19 finding ids and keeps its MIN-01 / MIN-02', async () => {
+test('sub keys and elements on every WS5 location; examples/audit-app reports 18 finding ids and keeps its MIN-01 / MIN-02', async () => {
   const r = await audit(path.resolve('examples/audit-app'));
   const all = new Set([...r.findings, ...r.review].map((f) => f.rule.id));
-  assert.equal(all.size, 19, [...all].join(' '));
+  assert.equal(all.size, 18, [...all].join(' '));
   const ids = ['AUD-SEC-SECRET', 'AUD-MIN-01', 'AUD-MIN-02', 'AUD-SPC-01', 'AUD-LB-01', 'AUD-LB-04', 'AUD-LB-05'];
   for (const f of [...r.findings, ...r.review].filter((x) => ids.includes(x.rule.id))) {
     for (const l of f.locations) {

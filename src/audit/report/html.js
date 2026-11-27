@@ -1,4 +1,4 @@
-import { pendingTop, S, L, SEVS, grade, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText, NAMED_VENDORS_T } from './common.js';
+import { pendingTop, S, L, SEVS, grade, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText, NAMED_VENDORS_T, NO_CLEANUP_T, noCleanupLine } from './common.js';
 import { reasonTexts } from '../../score-gate.js';
 import { displayRoot } from '../../display-root.js';
 import { supportNotice } from '../../support-notice.js';
@@ -15,6 +15,14 @@ function namedVendorsCard(m, lang) {
   const N = NAMED_VENDORS_T[lang] || NAMED_VENDORS_T.tr;
   const items = m.namedVendors.map((v) => `<li><b>${esc(v.vendor)}</b>${v.country ? ` (${esc(v.country)})` : ''} <code>${esc(locWhere(v.evidence[0] || {}))}</code></li>`).join('');
   return `<div class="card"><h2>${esc(N.title)}</h2><p class="small muted">${esc(N.note)}</p><ul>${items}</ul></div>`;
+}
+
+/** Inventory card (0.2.1): personal-data stores with no automatic cleanup seen in the code. */
+function noCleanupCard(m, lang) {
+  if (!m.noAutoCleanup?.length) return '';
+  const N = NO_CLEANUP_T[lang] || NO_CLEANUP_T.tr;
+  const items = m.noAutoCleanup.map((r) => `<li>${esc(noCleanupLine(r))}${r.file ? ` <code>${esc(locWhere(r))}</code>` : ''}</li>`).join('');
+  return `<div class="card"><h2>${esc(N.title)} (${m.noAutoCleanup.length})</h2><p class="small muted">${esc(N.note)}</p><ul>${items}</ul></div>`;
 }
 
 /** Measured precision of the finding's rule (real-project set and 84-project set), and the capped level if any. */
@@ -232,7 +240,7 @@ ${layersHtml}<div class="card"><h2>${esc(t.inventory)} (${m.inventory.length})</
 
 <section class="panel" data-panel="findings" hidden>${hasCalibration(result) ? `<p class="small muted calnote">${esc(t.calNote)}</p>` : ''}${findingsHtml}${reviewHtml}${suppressedHtml}</section>
 
-<section class="panel" data-panel="ropa" hidden><div class="card"><h2>${esc(t.activities)}</h2>${ropa}</div><div class="card"><h2>${esc(t.transfers)}</h2>${transfers}</div>${namedVendorsCard(m, lang)}</section>
+<section class="panel" data-panel="ropa" hidden><div class="card"><h2>${esc(t.activities)}</h2>${ropa}</div><div class="card"><h2>${esc(t.transfers)}</h2>${transfers}</div>${namedVendorsCard(m, lang)}${noCleanupCard(m, lang)}</section>
 
 <section class="panel" data-panel="deletion" hidden><div class="card"><h2>${esc(t.deletion)}</h2>${deletion}</div></section>
 
