@@ -1,4 +1,4 @@
-import { pendingTop, S, L, SEVS, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText } from './common.js';
+import { pendingTop, S, L, SEVS, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText, NAMED_VENDORS_T } from './common.js';
 import { reasonTexts } from '../../score-gate.js';
 import { displayRoot } from '../../display-root.js';
 import { supportNotice } from '../../support-notice.js';
@@ -82,6 +82,12 @@ export function auditMarkdown(result, { lang = 'tr' } = {}) {
   o.push(`| ${t.vendor} | ${t.country} | ${t.abroad} | ${t.third} | ${t.data} |`, '|---|---|---|---|---|');
   for (const r of m.transfers) o.push(`| ${cell(r.vendor)}${transferKindLabel(r, t) ? ` _(${cell(transferKindLabel(r, t))})_` : ''} | ${cell(r.country)} | ${trCell(r, t)} | ${r.thirdCountryGdpr === true ? '✓' : r.thirdCountryGdpr === false ? '–' : '?'} | ${cell(r.elements.map((e) => L(e.label, lang) || e.name).join(', '))}${r.special ? ' 🩺' : ''} |`);
   o.push('');
+  if (m.namedVendors?.length) {
+    const N = NAMED_VENDORS_T[lang] || NAMED_VENDORS_T.tr;
+    o.push(`### ${N.title}`, '', `_${N.note}_`, '');
+    for (const v of m.namedVendors) o.push(`- **${cell(v.vendor)}**${v.country ? ` (${cell(v.country)})` : ''} — \`${cell(locWhere(v.evidence[0] || {}))}\``);
+    o.push('');
+  }
 
   o.push(`# ⚖️ ${PART[lang].chk}`, '', `_${PART[lang].chkNote}_`, '');
   o.push(`## ${t.findings}`, '');

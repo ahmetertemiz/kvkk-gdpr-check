@@ -7,6 +7,7 @@
 import { pathToFileURL } from 'node:url';
 import { inferActivities } from './activities.js';
 import { buildTransfers, buildDeletionMatrix, LIFECYCLE_CHECKS } from './checks/lifecycle.js';
+import { namedVendors } from './named-vendors.js';
 import { dpiaAssessment, TRANSPARENCY_CHECKS } from './checks/transparency.js';
 import { PRINCIPLE_CHECKS } from './checks/principles.js';
 import { CONSENT_CHECKS } from './checks/consent.js';
@@ -122,9 +123,12 @@ export function buildInventory(g, lang = 'tr') {
 export function buildAuditModel(g, lang = 'tr', layers = undefined) {
   const activities = inferActivities(g);
   const lay = layers === undefined ? g?._auditLayers ?? null : layers;
+  const transfers = buildTransfers(g);
   return {
     activities,
-    transfers: buildTransfers(g),
+    transfers,
+    // Inventory only: vendors named in the code with no traced flow (never read by a check).
+    namedVendors: namedVendors(g, transfers),
     deletionMatrix: buildDeletionMatrix(g, lang, lay),
     inventory: buildInventory(g, lang),
     dpia: dpiaAssessment(g),
@@ -212,6 +216,7 @@ export function serializeModel(model) {
       retention: a.retention, special: a.special, transferAbroad: a.transferAbroad,
     })),
     transfers: model.transfers,
+    namedVendors: model.namedVendors || [],
     deletionMatrix: {
       hasFlow: model.deletionMatrix.hasFlow,
       ...(model.deletionMatrix.analysed === false ? { analysed: false, analysis: model.deletionMatrix.analysisNote, note: model.deletionMatrix.note } : {}),

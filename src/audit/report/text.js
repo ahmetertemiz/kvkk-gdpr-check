@@ -1,4 +1,4 @@
-import { pendingTop, S, L, SEVS, scoreView, coverageNote, coverageNotes, transferFlag, transferFlagLabel, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText } from './common.js';
+import { pendingTop, S, L, SEVS, scoreView, coverageNote, coverageNotes, transferFlag, transferFlagLabel, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText, NAMED_VENDORS_T } from './common.js';
 import { reasonTexts } from '../../score-gate.js';
 import { displayRoot } from '../../display-root.js';
 import { supportNotice } from '../../support-notice.js';
@@ -101,6 +101,12 @@ export function auditText(result, { lang = 'tr', color = false, verbose = false 
     o.push(k.d(`       ${tr.elements.map((e) => L(e.label, lang) || e.name).join(', ')}`));
   }
   o.push('');
+  if (m.namedVendors?.length) {
+    const N = NAMED_VENDORS_T[lang] || NAMED_VENDORS_T.tr;
+    o.push(k.b(`  ${N.title}`) + k.d(` (${m.namedVendors.length})  · ${N.note}`));
+    for (const v of m.namedVendors) o.push(`   • ${k.b(v.vendor)}${v.country ? ` (${v.country})` : ''}  ${k.d(locWhere(v.evidence[0] || {}))}`);
+    o.push('');
+  }
 
   // Part 2: findings to check (verdicts), each with its measured precision.
   hr();

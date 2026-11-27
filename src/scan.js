@@ -9,6 +9,7 @@ import { scoreReasons } from './score-gate.js';
 import { standInSecret, exposureGuard, realLookingCredential } from './secret-shape.js';
 import { capLocation, capEnabled } from './severity-cap.js';
 import { realDemotion, realReason } from './real-calibration.js';
+import { schemaPersonalColumns } from './schema-inventory.js';
 
 const TEST_NOTE = { tr: 'test dosyasında', en: 'in a test file' };
 const LOWER = { critical: 'high', high: 'medium', medium: 'low', low: 'info', info: 'info' };
@@ -160,6 +161,26 @@ export function scan(root, opts = {}) {
           if (m && record(p, m, i)) break;
         }
       }
+    }
+  }
+
+  // --- schema columns (inventory) ---
+  // Every personal-data column of the SQL / Prisma schema, classified like the deep audit does (src/schema-inventory.js),
+  // joins PII001 so the inventory is complete; one location per data element, like the field patterns.
+  const pii001 = rules.find((r) => r.id === 'PII001');
+  if (pii001) {
+    const schemaFiles = files.filter((f) => !/kvkk-ignore-file/.test(f.content.slice(0, 500)));
+    for (const c of schemaPersonalColumns(schemaFiles)) {
+      const lines = schemaFiles.find((f) => f.rel === c.file)?.content.split(/\r?\n/) || [];
+      if (c.line && isSuppressed(lines, c.line - 1, 'PII001')) continue;
+      const key = `PII001:${c.element}|`;
+      if (seenLabels[key]) {
+        seenLabels[key].count++;
+        continue;
+      }
+      const finding = { ruleId: 'PII001', file: c.file, line: c.line, snippet: c.snippet.trim().slice(0, 160), label: c.element, count: 1 };
+      seenLabels[key] = finding;
+      add(pii001, finding);
     }
   }
 

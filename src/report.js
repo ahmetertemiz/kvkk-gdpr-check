@@ -155,8 +155,8 @@ const REVIEW_T = {
 };
 /** The two parts of every report: facts (inventory) and verdicts (to check, with their measured precision). */
 const PART_T = {
-  tr: { inventory: 'Envanter', inventoryNote: 'Olgu, hüküm yok: kodun tuttuğu kişisel veriler, veri alan üçüncü taraflar ve canlı sitenin çerezleri. Aracın en güvenilir kısmı.', check: 'Kontrol edilecekler', checkNote: 'Hüküm içeren bulgular. Her kuralın yanında ölçülen isabeti var; her birini kodda doğrulayın.', precision: 'İsabet', capped: (raw) => `özgün önem: ${raw}` },
-  en: { inventory: 'Inventory', inventoryNote: 'Facts, no verdicts: the personal data the code holds, the third parties that receive data and the cookies of the live site. The most reliable part of the tool.', check: 'To check', checkNote: 'Findings with a verdict. Each rule shows its measured precision; verify each in the code.', precision: 'Precision', capped: (raw) => `original level: ${raw}` },
+  tr: { inventory: 'Envanter', inventoryNote: 'Olgu, hüküm yok: kodun ve şemanın tuttuğu kişisel veriler, izleyiciler, veri alan üçüncü taraflar ve canlı sitenin çerezleri. Aracın en güvenilir kısmı.', check: 'Kontrol edilecekler', checkNote: 'Hüküm içeren bulgular. Her kuralın yanında ölçülen isabeti var; her birini kodda doğrulayın.', precision: 'İsabet', capped: (raw) => `özgün önem: ${raw}` },
+  en: { inventory: 'Inventory', inventoryNote: 'Facts, no verdicts: the personal data the code and the schema hold, trackers, the third parties that receive data and the cookies of the live site. The most reliable part of the tool.', check: 'To check', checkNote: 'Findings with a verdict. Each rule shows its measured precision; verify each in the code.', precision: 'Precision', capped: (raw) => `original level: ${raw}` },
 };
 /** Measurement source of a rule id (live WEB…, deep audit AUD-…, quick scan otherwise). */
 export const sourceOfRule = (id) => (/^WEB\d/.test(id) ? 'live' : /^AUD-/.test(id) ? 'audit' : 'quick');
@@ -208,16 +208,15 @@ export function toText(result, { lang = 'tr', color = true, verbose = false } = 
     out.push('');
   }
 
-  // Inventory: what is there (facts), one compact block per rule.
+  // Inventory: what is there (facts), one compact block per rule, every item listed (one location per data element /
+  // vendor, so the list stays short).
   for (const f of inventory) {
     out.push(`  ${k.bold(f.rule.title[lang])} ${k.dim(f.rule.id)}`);
-    const max = verbose ? Infinity : 8;
-    for (const l of f.locations.slice(0, max)) {
+    for (const l of f.locations) {
       const where = loc(l);
       const label = l.label && l.label !== l.snippet ? L(l.label, lang) : '';
       if (label || where) out.push(`   ${k.dim('•')} ${[label, where && k.dim(where)].filter(Boolean).join('  ')}${l.count > 1 ? k.dim(' ' + t.times(l.count)) : ''}`);
     }
-    if (f.locations.length > max) out.push(`   ${k.dim(t.more(f.locations.length - max))}`);
     out.push(`   ${k.dim(t.fix + ': ' + f.rule.fix[lang])}`, '');
   }
 
@@ -342,7 +341,7 @@ export function toMarkdown(result, { lang = 'tr' } = {}) {
   if (inventory.length) {
     for (const f of inventory) {
       out.push(`### ${f.rule.title[lang]} \`${f.rule.id}\``, '');
-      for (const l of f.locations.slice(0, 15)) {
+      for (const l of f.locations) {
         const where = loc(l);
         const parts = [];
         if (l.label) parts.push(`**${mdEsc(L(l.label, lang))}**`);
@@ -350,7 +349,6 @@ export function toMarkdown(result, { lang = 'tr' } = {}) {
         if (l.count > 1) parts.push(t.times(l.count));
         if (parts.length) out.push(`- ${parts.join(' — ')}`);
       }
-      if (f.locations.length > 15) out.push(`- ${t.more(f.locations.length - 15)}`);
       out.push('', `**${t.fix}:** ${f.rule.fix[lang]}`, '');
     }
   }

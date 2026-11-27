@@ -6,7 +6,8 @@
 import { REAL_COUNTS, REAL_PROVENANCE } from './real-precision.js';
 import { SUBS } from './audit/legal/rule-precision.js';
 
-const share = (c) => (c && c.tp + c.fp > 0 ? { tp: c.tp, fp: c.fp, n: c.tp + c.fp, precision: c.tp / (c.tp + c.fp) } : null);
+// precision is null below PRECISION_MIN_N labels (JSON consumers get the counts, not a rate).
+const share = (c) => (c && c.tp + c.fp > 0 ? { tp: c.tp, fp: c.fp, n: c.tp + c.fp, precision: c.tp + c.fp < PRECISION_MIN_N ? null : c.tp / (c.tp + c.fp) } : null);
 
 /**
  * @param {'quick'|'audit'|'live'} source
@@ -28,12 +29,24 @@ export function rulePrecision(source, ruleId, { counts = REAL_COUNTS, subs = SUB
 const pct = (x) => `%${Math.round(x * 100)}`;
 const pctEn = (x) => `${Math.round(x * 100)}%`;
 
+/** Below this many labelled locations a rate says nothing: the report gives the counts only. */
+export const PRECISION_MIN_N = 5;
+
+/** "isabet %75 (3/4)", or with fewer than PRECISION_MIN_N labels "yetersiz veri: 1 konumda 0 doğru". */
+function rateText(c, en) {
+  if (c.n < PRECISION_MIN_N) return en ? `too little data: ${c.tp} correct of ${c.n} location${c.n === 1 ? '' : 's'}` : `yetersiz veri: ${c.n} konumda ${c.tp} doğru`;
+  return en ? `${pctEn(c.precision)} (${c.tp}/${c.n})` : `${pct(c.precision)} (${c.tp}/${c.n})`;
+}
+
 /** One line: "gerçek projelerde isabet %75 (3/4) · ölçüm setinde %90 (45/50)" or "isabet ölçülmedi". */
 export function precisionText(p, lang = 'tr') {
   const en = lang === 'en';
   const parts = [];
-  if (p?.real) parts.push(en ? `precision on ${REAL_PROVENANCE.projects} real projects (tuning set) ${pctEn(p.real.precision)} (${p.real.tp}/${p.real.n})` : `${REAL_PROVENANCE.projects} gerçek projede (ayar seti) isabet ${pct(p.real.precision)} (${p.real.tp}/${p.real.n})`);
-  if (p?.benchmark) parts.push(en ? `on the 84-project set ${pctEn(p.benchmark.precision)} (${p.benchmark.tp}/${p.benchmark.n})` : `84 projelik ölçüm setinde ${pct(p.benchmark.precision)} (${p.benchmark.tp}/${p.benchmark.n})`);
+  if (p?.real) {
+    const few = p.real.n < PRECISION_MIN_N;
+    parts.push(en ? `on ${REAL_PROVENANCE.projects} real projects (tuning set)${few ? ':' : ' precision'} ${rateText(p.real, en)}` : `${REAL_PROVENANCE.projects} gerçek projede (ayar seti)${few ? '' : ' isabet'} ${rateText(p.real, en)}`);
+  }
+  if (p?.benchmark) parts.push(en ? `on the 84-project set ${rateText(p.benchmark, en)}` : `84 projelik ölçüm setinde ${rateText(p.benchmark, en)}`);
   if (!parts.length) return en ? 'precision not measured' : 'isabet ölçülmedi';
   if (!p.real) parts.push(en ? 'not measured on real projects' : 'gerçek projelerde ölçülmedi');
   return parts.join(' · ');

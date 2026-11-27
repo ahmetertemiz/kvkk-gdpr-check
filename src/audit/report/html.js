@@ -1,4 +1,4 @@
-import { pendingTop, S, L, SEVS, grade, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText } from './common.js';
+import { pendingTop, S, L, SEVS, grade, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText, NAMED_VENDORS_T } from './common.js';
 import { reasonTexts } from '../../score-gate.js';
 import { displayRoot } from '../../display-root.js';
 import { supportNotice } from '../../support-notice.js';
@@ -8,6 +8,14 @@ import { ORG_STATUS, ORG_TEXT } from '../legal/org.js';
 import { buildDataMap } from './datamap.js';
 import { rulePrecision, precisionText } from '../../precision-note.js';
 import { SEVERITY_BASIS_NOTE } from '../../severity-cap.js';
+
+/** Inventory card: vendors named in the code with no traced data flow. */
+function namedVendorsCard(m, lang) {
+  if (!m.namedVendors?.length) return '';
+  const N = NAMED_VENDORS_T[lang] || NAMED_VENDORS_T.tr;
+  const items = m.namedVendors.map((v) => `<li><b>${esc(v.vendor)}</b>${v.country ? ` (${esc(v.country)})` : ''} <code>${esc(locWhere(v.evidence[0] || {}))}</code></li>`).join('');
+  return `<div class="card"><h2>${esc(N.title)}</h2><p class="small muted">${esc(N.note)}</p><ul>${items}</ul></div>`;
+}
 
 /** Measured precision of the finding's rule (real-project set and 84-project set), and the capped level if any. */
 function precisionP(f, lang) {
@@ -224,7 +232,7 @@ ${layersHtml}<div class="card"><h2>${esc(t.inventory)} (${m.inventory.length})</
 
 <section class="panel" data-panel="findings" hidden>${hasCalibration(result) ? `<p class="small muted calnote">${esc(t.calNote)}</p>` : ''}${findingsHtml}${reviewHtml}${suppressedHtml}</section>
 
-<section class="panel" data-panel="ropa" hidden><div class="card"><h2>${esc(t.activities)}</h2>${ropa}</div><div class="card"><h2>${esc(t.transfers)}</h2>${transfers}</div></section>
+<section class="panel" data-panel="ropa" hidden><div class="card"><h2>${esc(t.activities)}</h2>${ropa}</div><div class="card"><h2>${esc(t.transfers)}</h2>${transfers}</div>${namedVendorsCard(m, lang)}</section>
 
 <section class="panel" data-panel="deletion" hidden><div class="card"><h2>${esc(t.deletion)}</h2>${deletion}</div></section>
 

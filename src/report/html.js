@@ -170,7 +170,9 @@ function gauge(score, t) {
 }
 
 function locationList(f, t, lang) {
-  const items = f.locations.slice(0, 50).map((l) => {
+  // The inventory lists every item (one location per data element / vendor); a verdict at most 50 locations.
+  const cap = isInventory(f) ? Infinity : 50;
+  const items = f.locations.slice(0, cap).map((l) => {
     const where = loc(l);
     const label = L(l.label, lang);
     const parts = [];
@@ -183,7 +185,7 @@ function locationList(f, t, lang) {
     if (!parts.length && !l.snippet) return '';
     return `<li>${parts.join(' ')}${l.snippet ? `<code class="snippet">${esc(l.snippet)}</code>` : ''}</li>`;
   });
-  const more = f.locations.length > 50 ? `<li class="muted">+${f.locations.length - 50}</li>` : '';
+  const more = f.locations.length > cap ? `<li class="muted">+${f.locations.length - cap}</li>` : '';
   const body = items.filter(Boolean).join('') + more;
   return body ? `<div class="block"><h4>${esc(t.where)}</h4><ul class="locs">${body}</ul></div>` : '';
 }

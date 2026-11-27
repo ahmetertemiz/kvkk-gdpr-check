@@ -101,7 +101,7 @@ export const SIGNALS = {
 // File rules
 // ---------------------------------------------------------------------------
 
-const TRACKERS = [
+export const TRACKERS = [
   { label: 'Google Analytics / GTM', re: /(googletagmanager\.com|google-analytics\.com|gtag\(\s*['"]config['"]|['"]react-ga4?['"]|vue-gtag|@next\/third-parties\/google|<GoogleAnalytics\b|<GoogleTagManager\b)/ },
   { label: 'Meta (Facebook) Pixel', re: /(connect\.facebook\.net|fbq\(\s*['"]init|react-facebook-pixel)/ },
   { label: 'Hotjar', re: /hotjar/i },
@@ -124,7 +124,7 @@ const AI_PROVIDERS = [
   { label: 'Mistral / Groq / Replicate / Together', re: /(@mistralai\/|mistralai|groq-sdk|from groq|replicate|together-ai|togetherai)/i },
 ];
 
-const PROCESSORS = [
+export const PROCESSORS = [
   { label: 'Supabase', re: /(@supabase\/|supabase_flutter|supabase-py|\.supabase\.co)/ },
   { label: 'Firebase / Google Cloud', re: /(['"]firebase(\/[\w-]+)?['"]|firebase_core|firebase-admin|@google-cloud\/)/ },
   { label: 'Stripe', re: /(@stripe\/|['"]stripe['"]|js\.stripe\.com|^\s*import stripe|^stripe[=>~ ])/ },
@@ -133,7 +133,8 @@ const PROCESSORS = [
   { label: 'Vercel Analytics / Speed Insights', re: /(@vercel\/analytics|@vercel\/speed-insights)/ },
   { label: { tr: 'E-posta servisi (Resend/SendGrid/Mailchimp/Postmark/Mailgun/Brevo)', en: 'Email service (Resend/SendGrid/Mailchimp/Postmark/Mailgun/Brevo)' }, re: /(['"]resend['"]|api\.resend\.com|@sendgrid\/|mailchimp|postmark|mailgun|@getbrevo|sib-api-v3)/i },
   { label: 'Twilio', re: /twilio/i },
-  { label: 'Intercom / Crisp / Tawk / Zendesk', re: /(intercom|crisp\.chat|crisp-sdk|tawk\.to|zendesk)/i },
+  // "intercom" alone is also a common noun (a door intercom): only the SDK, its hosts and its globals count.
+  { label: 'Intercom / Crisp / Tawk / Zendesk', re: /(@intercom\/|intercom\.io|intercomcdn|intercomSettings|window\.Intercom|react-use-intercom|crisp\.chat|crisp-sdk|tawk\.to|zendesk)/i },
   { label: 'Cloudinary / Uploadthing', re: /(cloudinary|uploadthing)/i },
   { label: 'Iyzico / PayTR', re: /(iyzipay|iyzico|paytr)/i },
   { label: 'OneSignal / Expo Push / FCM', re: /(onesignal|expo-notifications|firebase\/messaging|firebase_messaging)/i },
@@ -177,7 +178,9 @@ export const RULES = [
   {
     id: 'TRK001',
     category: 'tracking',
-    severity: 'medium',
+    // A fact (which trackers the code loads), listed under "Envanter"; the verdict on consent is CNS001 / the consent rules.
+    severity: 'info',
+    kind: 'inventory',
     scope: 'file',
     kinds: CODE_MANIFEST,
     aggregate: true,

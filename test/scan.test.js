@@ -23,7 +23,8 @@ test('vibe-app: detects the planted problems', () => {
   for (const id of ['SEC002', 'SEC004', 'SEC003', 'SEC011', 'CNS001', 'CNS002', 'CNS003', 'DOC001', 'PII002', 'PII003', 'SEC006', 'TRK001', 'TRF002', 'FNT001', 'DSR001']) {
     assert.ok(ids(r).includes(id), `expected ${id}`);
   }
-  assert.ok(r.score < 30);
+  // 0.2: TRK001 is inventory (a fact, level info) and no longer weighs on the score; CNS001 carries the verdict.
+  assert.ok(r.score < 40, String(r.score));
 });
 
 test('clean-app: no findings', () => {

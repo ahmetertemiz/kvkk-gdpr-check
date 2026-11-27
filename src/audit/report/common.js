@@ -251,10 +251,16 @@ export function locWhere(l) {
   return l.line ? `${l.file}:${l.line}` : l.file;
 }
 
+/** Inventory block: vendors named in the code with no traced data flow (legal/named-vendors.js). */
+export const NAMED_VENDORS_T = {
+  tr: { title: 'Kodda adı geçen, veri akışı izlenmeyen servisler', note: 'Aktarım kaydında yok: kodda adları geçiyor ama araç bunlara giden bir veri akışı izleyemedi. Kullanılıp kullanılmadıklarını ve hangi veriyi aldıklarını doğrulayın.' },
+  en: { title: 'Services named in the code, no data flow traced', note: 'Not in the transfer register: the code names them but the tool traced no data flow to them. Verify whether they are used and which data they receive.' },
+};
+
 /** Model for the report: from result.model if present, else built from the graph. */
 export function getModel(result, lang) {
   if (result.model && result.model.inventory) return annotateCoverage(result.model, result.layers);
-  if (!result.graph) return { activities: [], transfers: [], deletionMatrix: { hasFlow: false, flows: [], rows: [] }, inventory: [], dpia: { criteria: [], required: false, labels: [] } };
+  if (!result.graph) return { activities: [], transfers: [], namedVendors: [], deletionMatrix: { hasFlow: false, flows: [], rows: [] }, inventory: [], dpia: { criteria: [], required: false, labels: [] } };
   // result.layers goes to the model builder (deletion matrix coverage: WS7 contract); older builders ignore the extra arg.
   return annotateCoverage(serializeModel(buildAuditModel(result.graph, lang, { layers: result.layers || null })), result.layers);
 }
