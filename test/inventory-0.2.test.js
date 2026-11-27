@@ -90,3 +90,15 @@ test('precision: below 5 labels the counts only, no rate', () => {
   const many = rulePrecision('quick', 'Y', { counts: { 'quick:Y': { tp: 4, fp: 1, unc: 0, fpRepos: 1 } } });
   assert.match(precisionText(many, 'tr'), /isabet %80 \(4\/5\)/);
 });
+
+test('0.2.1: reports say the inventory list is mostly right but not complete', async () => {
+  const { auditText } = await import('../src/audit/report/text.js');
+  const dir = tmp({ 'package.json': JSON.stringify({ name: 'x', dependencies: { next: '14.2.0' } }), 'db/001.sql': 'create table users (id uuid primary key, email text);\n' });
+  const q = toText(scan(dir, { realCounts: {} }), { lang: 'tr', color: false });
+  assert.match(q, /liste tam değildir/);
+  assert.doesNotMatch(q, /en güvenilir/);
+  const a = auditText(await audit(dir, { lang: 'en' }), { lang: 'en' });
+  assert.match(a, /the list is not complete/);
+  assert.doesNotMatch(a, /most reliable/);
+  fs.rmSync(dir, { recursive: true, force: true });
+});

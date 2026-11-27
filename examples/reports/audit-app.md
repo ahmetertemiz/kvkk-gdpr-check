@@ -32,7 +32,7 @@ _Veri akışı analizi ve ilke bazlı hukuki değerlendirme_
 
 # 📦 Envanter
 
-_Olgu, hüküm yok: kişisel veriler, işleme faaliyetleri, üçüncü taraflar ve yurt dışı aktarım. Aracın en güvenilir kısmı._
+_Olgu, hüküm yok: kişisel veriler, işleme faaliyetleri, üçüncü taraflar ve yurt dışı aktarım. Listelenenler büyük oranda doğrudur, ama liste tam değildir: eksik veri ya da alıcı olabilir._
 
 ## Veri haritası
 

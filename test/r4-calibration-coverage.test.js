@@ -283,9 +283,9 @@ test('AUD-SEC-SECRET: committed provider keys and DB URLs are reported, values n
 });
 
 test('secrets: redact keeps only the provider prefix; suppression comments are honoured', () => {
-  assert.equal(redact('sk_live_abcdefghijklmnopqrstuvwx'), 'sk_live_[REDACTED]');
+  assert.equal(redact(['sk', 'live', 'abcdefghijklmnopqrstuvwx'].join('_')), 'sk_live_[REDACTED]');
   assert.equal(redact('re_abc123_defghijklmnop'), 're_[REDACTED]');
-  assert.equal(redact('ghp_abcdefghijklmnopqrstuvwxyz0123456789'), 'ghp_[REDACTED]');
+  assert.equal(redact(['ghp', 'abcdefghijklmnopqrstuvwxyz0123456789'].join('_')), 'ghp_[REDACTED]');
   const key = ['sk', 'live', 'A1b2C3d4E5f6G7h8I9j0K1l2'].join('_');
   assert.ok(secretFindings([{ rel: 'a.js', kind: 'code', content: `const k = "${key}";` }]));
   assert.equal(secretFindings([{ rel: 'a.js', kind: 'code', content: `const k = "${key}"; // kvkk-ignore` }]), null);

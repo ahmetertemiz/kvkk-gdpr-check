@@ -225,7 +225,7 @@ export function auditHtml(result, { lang = 'tr' } = {}) {
 <div class="grid g3"><div class="card">${gauge(sv.score, t)}${reasonTexts(result, lang).map((x) => `<p class="small muted">${esc(t.scoreWhy)}: ${esc(x)}</p>`).join('')}</div>
 <div class="card"><h2>${esc(t.summary)}</h2><div class="tiles">${tiles}</div><h3>${esc(t.topRisks)}</h3>${topHtml}${pendHtml}</div>
 <div class="card"><h2>${esc(t.heatmap)}</h2>${heatmap(result.findings, t)}<h3>${esc(t.dpia)}</h3>${dpia}</div></div>
-${layersHtml}<div class="card"><h2>${esc(t.inventory)} (${m.inventory.length})</h2>${inv}</div>${warnHtml}
+${layersHtml}<div class="card"><h2>${esc(t.inventory)} (${m.inventory.length})</h2><p class="small muted">${esc(lang === 'en' ? 'What is listed is mostly right, but the list is not complete: data or recipients may be missing.' : 'Listelenenler büyük oranda doğrudur, ama liste tam değildir: eksik veri ya da alıcı olabilir.')}</p>${inv}</div>${warnHtml}
 </section>
 
 <section class="panel" data-panel="map" hidden><div class="card"><h2>${esc(t.datamap)}</h2><p class="small muted">${esc(t.datamapHint)}</p><div class="mapwrap"><svg id="map" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(t.datamap)}"></svg></div></div></section>

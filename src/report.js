@@ -155,8 +155,8 @@ const REVIEW_T = {
 };
 /** The two parts of every report: facts (inventory) and verdicts (to check, with their measured precision). */
 const PART_T = {
-  tr: { inventory: 'Envanter', inventoryNote: 'Olgu, hüküm yok: kodun ve şemanın tuttuğu kişisel veriler, izleyiciler, veri alan üçüncü taraflar ve canlı sitenin çerezleri. Aracın en güvenilir kısmı.', check: 'Kontrol edilecekler', checkNote: 'Hüküm içeren bulgular. Her kuralın yanında ölçülen isabeti var; her birini kodda doğrulayın.', precision: 'İsabet', capped: (raw) => `özgün önem: ${raw}` },
-  en: { inventory: 'Inventory', inventoryNote: 'Facts, no verdicts: the personal data the code and the schema hold, trackers, the third parties that receive data and the cookies of the live site. The most reliable part of the tool.', check: 'To check', checkNote: 'Findings with a verdict. Each rule shows its measured precision; verify each in the code.', precision: 'Precision', capped: (raw) => `original level: ${raw}` },
+  tr: { inventory: 'Envanter', inventoryNote: 'Olgu, hüküm yok: kodun ve şemanın tuttuğu kişisel veriler, izleyiciler, veri alan üçüncü taraflar ve canlı sitenin çerezleri. Listelenenler büyük oranda doğrudur, ama liste tam değildir: eksik veri ya da alıcı olabilir.', check: 'Kontrol edilecekler', checkNote: 'Hüküm içeren bulgular. Her kuralın yanında ölçülen isabeti var; her birini kodda doğrulayın.', precision: 'İsabet', capped: (raw) => `özgün önem: ${raw}` },
+  en: { inventory: 'Inventory', inventoryNote: 'Facts, no verdicts: the personal data the code and the schema hold, trackers, the third parties that receive data and the cookies of the live site. What is listed is mostly right, but the list is not complete: data or recipients may be missing.', check: 'To check', checkNote: 'Findings with a verdict. Each rule shows its measured precision; verify each in the code.', precision: 'Precision', capped: (raw) => `original level: ${raw}` },
 };
 /** Measurement source of a rule id (live WEB…, deep audit AUD-…, quick scan otherwise). */
 export const sourceOfRule = (id) => (/^WEB\d/.test(id) ? 'live' : /^AUD-/.test(id) ? 'audit' : 'quick');

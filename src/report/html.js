@@ -496,8 +496,8 @@ export function toHtml(result, { lang = 'tr' } = {}) {
   const inv = result.findings.filter(isInventory);
   const ver = result.findings.filter((f) => !isInventory(f));
   const PT = lang === 'en'
-    ? { inv: 'Inventory', invNote: 'Facts, no verdicts: personal data the code holds and the third parties that receive data.', chk: 'To check', chkNote: 'Findings with a verdict, each with its measured precision; verify each in the code.' }
-    : { inv: 'Envanter', invNote: 'Olgu, hüküm yok: kodun tuttuğu kişisel veriler ve veri alan üçüncü taraflar.', chk: 'Kontrol edilecekler', chkNote: 'Hüküm içeren bulgular; her birinin yanında ölçülen isabet var. Her birini kodda doğrulayın.' };
+    ? { inv: 'Inventory', invNote: 'Facts, no verdicts: personal data the code holds and the third parties that receive data. What is listed is mostly right, but the list is not complete: data or recipients may be missing.', chk: 'To check', chkNote: 'Findings with a verdict, each with its measured precision; verify each in the code.' }
+    : { inv: 'Envanter', invNote: 'Olgu, hüküm yok: kodun tuttuğu kişisel veriler ve veri alan üçüncü taraflar. Listelenenler büyük oranda doğrudur, ama liste tam değildir: eksik veri ya da alıcı olabilir.', chk: 'Kontrol edilecekler', chkNote: 'Hüküm içeren bulgular; her birinin yanında ölçülen isabet var. Her birini kodda doğrulayın.' };
   const partHead = (title, note) => `<h2 class="part">${esc(title)}</h2><p class="muted small">${esc(note)}</p>`;
   const cards = [
     inv.length ? partHead(PT.inv, PT.invNote) + inv.map((f) => findingCard(f, t, lang, 99)).join('\n') : '',

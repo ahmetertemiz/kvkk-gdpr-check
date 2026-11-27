@@ -14,8 +14,8 @@ function colors(on) {
 }
 
 const PART = {
-  tr: { inv: 'Envanter', invNote: 'Olgu, hüküm yok: kişisel veriler, işleme faaliyetleri, üçüncü taraflar ve yurt dışı aktarım. Aracın en güvenilir kısmı.', chk: 'Kontrol edilecekler', chkNote: 'Hüküm içeren bulgular; her kuralın yanında ölçülen isabet var. Her birini kodda doğrulayın.', prec: 'İsabet', raw: 'özgün önem' },
-  en: { inv: 'Inventory', invNote: 'Facts, no verdicts: personal data, processing activities, third parties and transfers abroad. The most reliable part of the tool.', chk: 'To check', chkNote: 'Findings with a verdict, each rule with its measured precision. Verify each in the code.', prec: 'Precision', raw: 'original level' },
+  tr: { inv: 'Envanter', invNote: 'Olgu, hüküm yok: kişisel veriler, işleme faaliyetleri, üçüncü taraflar ve yurt dışı aktarım. Listelenenler büyük oranda doğrudur, ama liste tam değildir: eksik veri ya da alıcı olabilir.', chk: 'Kontrol edilecekler', chkNote: 'Hüküm içeren bulgular; her kuralın yanında ölçülen isabet var. Her birini kodda doğrulayın.', prec: 'İsabet', raw: 'özgün önem' },
+  en: { inv: 'Inventory', invNote: 'Facts, no verdicts: personal data, processing activities, third parties and transfers abroad. What is listed is mostly right, but the list is not complete: data or recipients may be missing.', chk: 'To check', chkNote: 'Findings with a verdict, each rule with its measured precision. Verify each in the code.', prec: 'Precision', raw: 'original level' },
 };
 
 export function auditText(result, { lang = 'tr', color = false, verbose = false } = {}) {
