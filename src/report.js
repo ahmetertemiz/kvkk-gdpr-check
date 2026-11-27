@@ -146,6 +146,14 @@ export function liveSummary(live) {
   };
 }
 
+/** "To check" (review) texts: not counted, not scored, not seen by --fail-on unless --fail-on-review. */
+const REVIEW_T = {
+  tr: { title: 'Kontrol edilecekler', note: 'Puana, sayılara ve --fail-on sınırına katılmadı. Gerçek projelerde çoğu yanlış çıkan bulgular; her birini kodda doğrulayın.', why: 'Neden burada' },
+  en: { title: 'To check', note: 'Not scored, not counted and not seen by --fail-on. Findings that were mostly wrong on real projects; verify each in the code.', why: 'Why here' },
+};
+const reviewOf = (result) => (Array.isArray(result.review) ? result.review.filter((f) => f?.locations?.length) : []);
+const reviewWhy = (f, lang) => L(f.locations.find((l) => l.reviewReason)?.reviewReason, lang);
+
 function headerLines(result, t) {
   const parts = [];
   if (result.root) parts.push(`${t.project}: ${displayRoot(result.root)}`);
@@ -206,6 +214,25 @@ export function toText(result, { lang = 'tr', color = true, verbose = false } = 
     out.push(`   ${k.bold(t.fix + ':')} ${k.green(rule.fix[lang])}`);
     out.push(`   ${k.dim(t.refs + ': ' + rule.refs.join(' · '))}`);
     if (basisNote(rule, lang)) out.push(`   ${k.yellow('⚠ ' + basisNote(rule, lang))}`);
+    out.push('');
+  }
+
+  const rv = reviewOf(result);
+  if (rv.length) {
+    const R = REVIEW_T[lang];
+    out.push(k.bold(`  ${R.title} (${rv.reduce((n, f) => n + f.locations.length, 0)})`) + k.dim(`  · ${R.note}`));
+    for (const f of rv) {
+      out.push(`  ${k.dim('?')} ${k.bold(f.rule.title[lang])} ${k.dim(`${f.rule.id} · ${SEV_LABEL[lang][f.severity]}`)}`);
+      const max = verbose ? Infinity : 3;
+      for (const l of f.locations.slice(0, max)) {
+        const where = loc(l);
+        const label = l.label && l.label !== l.snippet ? L(l.label, lang) : '';
+        if (label || where) out.push(`     ${k.dim('→')} ${[label, where && k.cyan(where)].filter(Boolean).join('  ')}`);
+      }
+      if (f.locations.length > max) out.push(`     ${k.dim(t.more(f.locations.length - max))}`);
+      const why = reviewWhy(f, lang);
+      if (why) out.push(k.dim(`     ${R.why}: ${why}`));
+    }
     out.push('');
   }
 
@@ -314,6 +341,25 @@ export function toMarkdown(result, { lang = 'tr' } = {}) {
       out.push('');
     }
   }
+  const rv = reviewOf(result);
+  if (rv.length) {
+    const R = REVIEW_T[lang];
+    out.push(`## ❔ ${R.title}`, '', `_${R.note}_`, '');
+    for (const f of rv) {
+      out.push(`### ${f.rule.title[lang]} \`${f.rule.id}\` · ${SEV_LABEL[lang][f.severity]}`, '');
+      for (const l of f.locations.slice(0, 10)) {
+        const where = loc(l);
+        const parts = [];
+        if (l.label) parts.push(`**${mdEsc(L(l.label, lang))}**`);
+        if (where) parts.push(`\`${mdEsc(where)}\``);
+        if (parts.length) out.push(`- ${parts.join(' — ')}`);
+      }
+      if (f.locations.length > 10) out.push(`- ${t.more(f.locations.length - 10)}`);
+      const why = reviewWhy(f, lang);
+      if (why) out.push('', `<sub>${R.why}: ${mdEsc(why)}</sub>`);
+      out.push('');
+    }
+  }
   out.push('---');
   out.push(`> ⚖️ ${t.disclaimer}`);
   out.push('');
@@ -338,21 +384,27 @@ export function toJSON(result, { lang = 'tr' } = {}) {
       counts: result.counts,
       signals: result.signals,
       live: result.live,
-      findings: result.findings.map((f) => ({
-        id: f.rule.id,
-        category: f.rule.category,
-        severity: f.severity,
-        title: f.rule.title[lang],
-        description: f.rule.desc[lang],
-        fix: f.rule.fix[lang],
-        refs: f.rule.refs,
-        unverifiedBasis: unverifiedBasis(f.rule, lang),
-        locations: f.locations.map((l) => ({ file: l.file ?? null, url: l.url ?? null, line: l.line ?? null, label: L(l.label, lang) || null, snippet: l.snippet ?? null, count: l.count ?? 1 })),
-      })),
+      findings: result.findings.map((f) => jsonFinding(f, lang)),
+      // "To check": not counted, not scored, not seen by --fail-on unless --fail-on-review.
+      review: reviewOf(result).map((f) => jsonFinding(f, lang)),
     },
     null,
     2,
   );
+}
+
+function jsonFinding(f, lang) {
+  return {
+    id: f.rule.id,
+    category: f.rule.category,
+    severity: f.severity,
+    title: f.rule.title[lang],
+    description: f.rule.desc[lang],
+    fix: f.rule.fix[lang],
+    refs: f.rule.refs,
+    unverifiedBasis: unverifiedBasis(f.rule, lang),
+    locations: f.locations.map((l) => ({ file: l.file ?? null, url: l.url ?? null, line: l.line ?? null, label: L(l.label, lang) || null, snippet: l.snippet ?? null, count: l.count ?? 1, ...(l.reviewReason ? { reviewReason: L(l.reviewReason, lang) } : {}) })),
+  };
 }
 
 const SARIF_LEVEL = { critical: 'error', high: 'error', medium: 'warning', low: 'note', info: 'note' };
@@ -360,7 +412,8 @@ const SARIF_LEVEL = { critical: 'error', high: 'error', medium: 'warning', low: 
 export function toSarif(result, { lang = 'tr' } = {}) {
   const notice = supportNotice(result, lang, { quickScan: true });
   // One rule entry per id (a rule may have findings at two levels, e.g. a key in a test file one level lower).
-  const rules = result.findings.filter((f, i, all) => all.findIndex((x) => x.rule.id === f.rule.id) === i).map((f) => ({
+  const rv = reviewOf(result);
+  const rules = [...result.findings, ...rv].filter((f, i, all) => all.findIndex((x) => x.rule.id === f.rule.id) === i).map((f) => ({
     id: f.rule.id,
     name: f.rule.id,
     shortDescription: { text: f.rule.title[lang] },
@@ -383,6 +436,19 @@ export function toSarif(result, { lang = 'tr' } = {}) {
             },
           },
         ],
+      });
+    }
+  }
+  // "To check" locations: level note whatever their severity, marked as review, with the reason in the message.
+  for (const f of rv) {
+    for (const l of f.locations) {
+      const why = L(l.reviewReason, lang);
+      results.push({
+        ruleId: f.rule.id,
+        level: 'note',
+        message: { text: `${REVIEW_T[lang].title}: ${f.rule.title[lang]}${l.label ? ` — ${L(l.label, lang)}` : ''}${why ? ` (${why})` : ''}` },
+        locations: [{ physicalLocation: { artifactLocation: { uri: l.file || '.' }, ...(l.line ? { region: { startLine: l.line } } : {}) } }],
+        properties: { review: true, severity: f.severity },
       });
     }
   }

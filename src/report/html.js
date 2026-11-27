@@ -109,6 +109,22 @@ const S = {
   },
 };
 
+/** "To check" (review) block: not counted, not scored, not seen by --fail-on unless --fail-on-review. */
+function reviewBlock(result, lang) {
+  const rv = Array.isArray(result.review) ? result.review.filter((f) => f?.locations?.length) : [];
+  if (!rv.length) return '';
+  const R = lang === 'en'
+    ? { title: 'To check', note: 'Not scored, not counted and not seen by --fail-on. Findings that were mostly wrong on real projects; verify each in the code.', why: 'Why here' }
+    : { title: 'Kontrol edilecekler', note: 'Puana, sayılara ve --fail-on sınırına katılmadı. Gerçek projelerde çoğu yanlış çıkan bulgular; her birini kodda doğrulayın.', why: 'Neden burada' };
+  const n = rv.reduce((s, f) => s + f.locations.length, 0);
+  const items = rv.map((f) => {
+    const why = L(f.locations.find((l) => l.reviewReason)?.reviewReason, lang);
+    const locs = f.locations.slice(0, 10).map((l) => `<li>${esc(L(l.label, lang) || '')}${loc(l) ? ` <code>${esc(loc(l))}</code>` : ''}</li>`).join('');
+    return `<div class="card"><div><span class="badge b-${esc(f.severity)}">${esc(SEV_LABEL[lang][f.severity])}</span> <strong>${esc(f.rule.title[lang])}</strong> <span class="f-id">${esc(f.rule.id)}</span></div><ul>${locs}</ul>${why ? `<p class="muted small">${esc(R.why)}: ${esc(why)}</p>` : ''}</div>`;
+  }).join('');
+  return `<h2>❔ ${esc(R.title)} (${n})</h2><p class="muted small">${esc(R.note)}</p>${items}`;
+}
+
 export function esc(s) {
   return String(s ?? '')
     .replace(/&/g, '&amp;')
@@ -518,6 +534,7 @@ ${notice ? `<div class="card" role="alert" style="border-left:4px solid #d97706;
   <div class="chips">${catChips}</div>` : ''}
   <div id="findings-list">${cards || `<div class="card empty">✅ ${esc(t.noFindings)}</div>`}</div>
   <div id="no-match" class="card empty" hidden>${esc(t.noMatch)}</div>
+  ${reviewBlock(result, lang)}
 </section>
 
 <section class="panel" data-panel="checklist" data-title="${esc(t.checklist)}" hidden>

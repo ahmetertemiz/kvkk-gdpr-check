@@ -28,7 +28,9 @@ Tarama seçenekleri:
   -o, --output <dosya>                Raporu dosyaya yaz
   -l, --lang <tr|en>                  Dil (varsayılan: tr)
       --fail-on <seviye>              Bu seviye veya üstünde bulgu varsa exit 1
-                                      (critical|high|medium|low|none, varsayılan: high)
+                                      (critical|high|medium|low|none, varsayılan: high);
+                                      "Kontrol edilecekler" sayılmaz
+      --fail-on-review                --fail-on "Kontrol edilecekler"i de saysın
       --ignore <glob,...>             Yok sayılacak yollar
       --include <klasör,...>          Varsayılan olarak atlanan ajan/editör klasörlerini
                                       (.claude, .cursor, .codex …) yine de tara
@@ -80,6 +82,7 @@ function parseArgs(argv) {
       case '-o': case '--output': a.output = next(); break;
       case '-l': case '--lang': a.lang = next(); break;
       case '--fail-on': a.failOn = next(); break;
+      case '--fail-on-review': a.failOnReview = true; break;
       case '--ignore': a.ignore.push(...next().split(',')); break;
       case '--disable': a.disable.push(...next().split(',').map((s) => s.trim().toUpperCase())); break;
       case '-v': case '--verbose': a.verbose = true; break;
@@ -197,8 +200,7 @@ async function main() {
     } else console.log(rendered);
     for (const w of result.warnings) process.stderr.write(`  ! ${w}
 `);
-    const threshold = SEVERITY_ORDER.indexOf(args.failOn);
-    if (args.failOn !== 'none' && threshold >= 0) process.exitCode = result.findings.some((f) => SEVERITY_ORDER.indexOf(f.severity) <= threshold) ? 1 : 0;
+    setExit(result, args);
     return;
   }
 
@@ -269,10 +271,18 @@ async function main() {
     console.log(rendered);
   }
 
+  setExit(result, args);
+}
+
+/**
+ * Exit 1 when a finding at or above --fail-on exists. "To check" (review) locations count only with --fail-on-review:
+ * they are the findings that were mostly wrong on real projects.
+ */
+function setExit(result, args) {
   const threshold = SEVERITY_ORDER.indexOf(args.failOn);
-  if (args.failOn !== 'none' && threshold >= 0) {
-    process.exitCode = result.findings.some((f) => SEVERITY_ORDER.indexOf(f.severity) <= threshold) ? 1 : 0;
-  }
+  if (args.failOn === 'none' || threshold < 0) return;
+  const pool = [...(result.findings || []), ...(args.failOnReview ? result.review || [] : [])];
+  process.exitCode = pool.some((f) => SEVERITY_ORDER.indexOf(f.severity) <= threshold) ? 1 : 0;
 }
 
 main().catch((e) => {

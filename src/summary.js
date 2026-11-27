@@ -41,20 +41,25 @@ export function summarize(findings) {
 /** Merge several results (e.g. code scan + live scan) into one report. */
 export function mergeResults(...results) {
   results = results.filter(Boolean);
-  const byId = new Map();
-  for (const r of results) {
-    for (const f of r.findings) {
-      // One finding per rule and level (a rule can report locations at two levels).
-      const key = `${f.rule.id}|${f.severity}`;
-      const prev = byId.get(key);
-      if (prev) prev.locations.push(...f.locations);
-      else byId.set(key, { ...f, locations: [...f.locations] });
+  // One finding per rule and level (a rule can report locations at two levels); review ("to check") kept apart.
+  const mergeList = (lists) => {
+    const byId = new Map();
+    for (const list of lists) {
+      for (const f of list || []) {
+        const key = `${f.rule.id}|${f.severity}`;
+        const prev = byId.get(key);
+        if (prev) prev.locations.push(...f.locations);
+        else byId.set(key, { ...f, locations: [...f.locations] });
+      }
     }
-  }
-  const findings = sortFindings([...byId.values()]);
+    return sortFindings([...byId.values()]);
+  };
+  const findings = mergeList(results.map((r) => r.findings));
+  const review = mergeList(results.map((r) => r.review));
   const merged = {
     filesScanned: results.reduce((n, r) => n + (r.filesScanned || 0), 0),
     findings,
+    review,
     ...summarize(findings),
   };
   for (const r of results) {

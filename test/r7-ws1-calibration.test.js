@@ -17,7 +17,8 @@ const L = (extra = {}) => ({ file: 'src/app.ts', line: 10, snippet: null, label:
 const trRate = (c) => new RegExp(`%${Math.round((100 * c.tp) / (c.tp + c.fp))} \\(${c.tp} TP / ${c.fp} FP${c.repos ? `, ${c.repos} proje` : ''}\\)`);
 const enRate = (c) => new RegExp(`${Math.round((100 * c.tp) / (c.tp + c.fp))}% \\(${c.tp} TP / ${c.fp} FP${c.repos ? `, ${c.repos} projects` : ''}\\)`);
 const laplace = (c) => +((c.tp + 1) / (c.tp + c.fp + 2)).toFixed(3);
-const one = (id, l) => calibrate([{ rule: rule(id), severity: 'medium', locations: [l] }]);
+// This file tests the benchmark calibration (C-R7); the real-project routing (src/real-calibration.js) has its own tests.
+const one = (id, l) => calibrate([{ rule: rule(id), severity: 'medium', locations: [l] }], { real: false });
 
 // --------------------------------------------------------------------------- data file and thresholds
 

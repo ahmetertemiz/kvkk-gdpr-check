@@ -7,6 +7,7 @@ import { sortFindings, summarize } from './summary.js';
 import { attachSupport } from './support-notice.js';
 import { scoreReasons } from './score-gate.js';
 import { standInSecret, exposureGuard } from './secret-shape.js';
+import { realDemotion, realReason } from './real-calibration.js';
 
 const TEST_NOTE = { tr: 'test dosyasında', en: 'in a test file' };
 const LOWER = { critical: 'high', high: 'medium', medium: 'low', low: 'info', info: 'info' };
@@ -193,20 +194,29 @@ export function scan(root, opts = {}) {
   // test file, information only for a sensitive word without a person-linked context).
   const ruleById = Object.fromEntries(RULES.map((r) => [r.id, r]));
   const groups = new Map();
+  const reviewGroups = new Map();
   for (const [id, list] of Object.entries(hits)) {
     const rule = ruleById[id];
+    // Real-project precision (src/real-calibration.js, demote-only): a rule mostly wrong on the hand-verified real
+    // projects goes to "to check" (review), with that rate; a location may also carry its own reviewReason.
+    const real = opts.real === false ? null : realDemotion({ source: 'quick', ruleId: id }, opts.realCounts);
+    const realWhy = real ? realReason(real, { ruleId: id }) : null;
     for (const loc of list) {
       const sev = loc.severity || rule.severity;
       const key = `${id}|${sev}`;
-      if (!groups.has(key)) groups.set(key, { rule, severity: sev, locations: [] });
-      groups.get(key).locations.push(loc);
+      const why = loc.reviewReason || realWhy;
+      const into = why ? reviewGroups : groups;
+      if (!into.has(key)) into.set(key, { rule, severity: sev, locations: [], ...(why ? { review: true } : {}) });
+      into.get(key).locations.push(why ? { ...loc, reviewReason: why } : loc);
     }
   }
   const findings = sortFindings([...groups.values()]);
+  // Not counted, not scored, not seen by --fail-on unless --fail-on-review.
+  const review = sortFindings([...reviewGroups.values()]);
   const { counts, score } = summarize(findings);
 
   // Manifests only; score-gate.js attachCoverage adds the analysis layers (CLI, web UI).
   const support = attachSupport(files);
   const reasons = scoreReasons({ support, filesScanned: files.length });
-  return { root, filesScanned: files.length, testsSkipped: testFiles.length, skippedDirs: all.skippedDirs || [], findings, counts, score, signals, support, scoreReliable: !reasons.length, scoreReasons: reasons };
+  return { root, filesScanned: files.length, testsSkipped: testFiles.length, skippedDirs: all.skippedDirs || [], findings, review, counts, score, signals, support, scoreReliable: !reasons.length, scoreReasons: reasons };
 }

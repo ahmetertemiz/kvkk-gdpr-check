@@ -52,6 +52,7 @@
  */
 import { layerCovered } from './stack.js';
 import { SUBS, MODIFIERS, NAME_INFERRED_ELEMENTS, NONPROD_PATH_RE, PROVENANCE } from './rule-precision.js';
+import { realDemotion, realReason } from '../../real-calibration.js';
 
 export const ABSENCE_MIN_CONFIDENCE = 0.6;
 
@@ -350,12 +351,13 @@ function worst(locs, rule, fallback) {
 /**
  * Annotate every location with basis/confidence and split findings into findings + review.
  * Absence/layer routing first (unchanged), then the C-R7 measured-precision routing (opts.precision === false
- * switches the latter off, e.g. to compare).
+ * switches the latter off, e.g. to compare), then the real-project routing (src/real-calibration.js, demote-only;
+ * opts.real === false switches it off).
  * @param {object[]} findings
- * @param {{layers?:object, threshold?:number, precision?:boolean}} opts
+ * @param {{layers?:object, threshold?:number, precision?:boolean, real?:boolean}} opts
  * @returns {{findings:object[], review:object[]}}
  */
-export function calibrate(findings, { layers = null, threshold = ABSENCE_MIN_CONFIDENCE, precision = true } = {}) {
+export function calibrate(findings, { layers = null, threshold = ABSENCE_MIN_CONFIDENCE, precision = true, real = true, realCounts = undefined } = {}) {
   const kept = [];
   const review = [];
   for (const f of findings || []) {
@@ -389,6 +391,19 @@ export function calibrate(findings, { layers = null, threshold = ABSENCE_MIN_CON
         if (cr.reviewReason) {
           if (!reason) reason = cr.reviewReason;
           else if (reason !== l.reviewReason) reason = { tr: `${reason.tr} ${cr.reviewReason.tr}`, en: `${reason.en} ${cr.reviewReason.en}` };
+        }
+      }
+      // Real-project precision (demote-only): a location still scored whose sub-signal (or rule) was mostly wrong on the
+      // hand-verified real projects goes to review with that rate.
+      if (real && !reason) {
+        const d = realDemotion({ source: 'audit', ruleId: f.rule.id, sub: l.sub || null }, realCounts);
+        // The rule total stands in only for a sub-signal that neither set measured: a sub-signal with at least
+        // CONFIDENCE_MIN_N benchmark labels keeps its own measured status (kept scored; the conflict is recorded).
+        if (d && d.basis === 'rule' && (l.calibration?.n ?? 0) >= CONFIDENCE_MIN_N) {
+          l.calibration = { ...l.calibration, realConflict: { key: d.stats.key, tp: d.stats.tp, fp: d.stats.fp, own: d.own ? { tp: d.own.tp, fp: d.own.fp } : null } };
+        } else if (d) {
+          reason = realReason(d, { ruleId: f.rule.id, sub: l.sub || null });
+          l.calibration = { ...(l.calibration || {}), status: 'demoted', real: { basis: d.basis, key: d.stats.key, tp: d.stats.tp, fp: d.stats.fp, fpProjects: d.stats.fpProjects } };
         }
       }
       const { layers: _drop, absenceConfidence: _ac, ...clean } = l;
