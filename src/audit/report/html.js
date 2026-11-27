@@ -1,4 +1,4 @@
-import { pendingTop, S, L, SEVS, grade, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText, NAMED_VENDORS_T, NO_CLEANUP_T, noCleanupLine } from './common.js';
+import { pendingTop, S, L, SEVS, grade, scoreView, coverageNote, coverageNotes, transferFlag, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText, NAMED_VENDORS_T, NO_CLEANUP_T, noCleanupLine, UNVERIFIED_T, namedSourceLabel } from './common.js';
 import { reasonTexts } from '../../score-gate.js';
 import { displayRoot } from '../../display-root.js';
 import { supportNotice } from '../../support-notice.js';
@@ -13,8 +13,16 @@ import { SEVERITY_BASIS_NOTE } from '../../severity-cap.js';
 function namedVendorsCard(m, lang) {
   if (!m.namedVendors?.length) return '';
   const N = NAMED_VENDORS_T[lang] || NAMED_VENDORS_T.tr;
-  const items = m.namedVendors.map((v) => `<li><b>${esc(v.vendor)}</b>${v.country ? ` (${esc(v.country)})` : ''} <code>${esc(locWhere(v.evidence[0] || {}))}</code></li>`).join('');
+  const items = m.namedVendors.map((v) => `<li><b>${esc(v.vendor)}</b>${v.country ? ` (${esc(v.country)})` : ''}${namedSourceLabel(v, lang) ? ` <span class="muted">[${esc(namedSourceLabel(v, lang))}]</span>` : ''} <code>${esc(locWhere(v.evidence[0] || {}))}</code></li>`).join('');
   return `<div class="card"><h2>${esc(N.title)}</h2><p class="small muted">${esc(N.note)}</p><ul>${items}</ul></div>`;
+}
+
+/** Inventory card (0.2.1): unknown domains and operator-configured services, apart from the known services. */
+function unverifiedCard(m, lang) {
+  if (!m.unverifiedRecipients?.length) return '';
+  const U = UNVERIFIED_T[lang] || UNVERIFIED_T.tr;
+  const items = m.unverifiedRecipients.map((r) => `<li><b>${esc(r.name)}</b> <span class="muted">[${esc(U.kind[r.kind] || r.kind)}]</span> <code>${esc(locWhere(r.evidence[0] || {}))}</code></li>`).join('');
+  return `<div class="card"><h2>${esc(U.title)} (${m.unverifiedRecipients.length})</h2><p class="small muted">${esc(U.note)}</p><ul>${items}</ul></div>`;
 }
 
 /** Inventory card (0.2.1): personal-data stores with no automatic cleanup seen in the code. */
@@ -240,7 +248,7 @@ ${layersHtml}<div class="card"><h2>${esc(t.inventory)} (${m.inventory.length})</
 
 <section class="panel" data-panel="findings" hidden>${hasCalibration(result) ? `<p class="small muted calnote">${esc(t.calNote)}</p>` : ''}${findingsHtml}${reviewHtml}${suppressedHtml}</section>
 
-<section class="panel" data-panel="ropa" hidden><div class="card"><h2>${esc(t.activities)}</h2>${ropa}</div><div class="card"><h2>${esc(t.transfers)}</h2>${transfers}</div>${namedVendorsCard(m, lang)}${noCleanupCard(m, lang)}</section>
+<section class="panel" data-panel="ropa" hidden><div class="card"><h2>${esc(t.activities)}</h2>${ropa}</div><div class="card"><h2>${esc(t.transfers)}</h2>${transfers}</div>${namedVendorsCard(m, lang)}${unverifiedCard(m, lang)}${noCleanupCard(m, lang)}</section>
 
 <section class="panel" data-panel="deletion" hidden><div class="card"><h2>${esc(t.deletion)}</h2>${deletion}</div></section>
 

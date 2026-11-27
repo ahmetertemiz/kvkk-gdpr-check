@@ -1,4 +1,4 @@
-import { pendingTop, S, L, SEVS, scoreView, coverageNote, coverageNotes, transferFlag, transferFlagLabel, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText, NAMED_VENDORS_T, NO_CLEANUP_T, noCleanupLine } from './common.js';
+import { pendingTop, S, L, SEVS, scoreView, coverageNote, coverageNotes, transferFlag, transferFlagLabel, catLabel, dataCatLabel, groupFindings, locWhere, getModel, viewFinding, summaryFindings, isLowConfidence, findingLowConfidence, deletionState, deletionStateLabel, deletionReason, DEL_MARK, dpiaView, usedState, viewResult, layerRows, stackLabels, transferKindLabel, deletionHeader, deletionRowTag, calibrationText, hasCalibration, reviewSummaryText, reviewGroups, reviewRateText, reviewLabel, reviewSuppressedText, NAMED_VENDORS_T, NO_CLEANUP_T, noCleanupLine, UNVERIFIED_T, namedSourceLabel } from './common.js';
 import { reasonTexts } from '../../score-gate.js';
 import { displayRoot } from '../../display-root.js';
 import { supportNotice } from '../../support-notice.js';
@@ -104,7 +104,13 @@ export function auditText(result, { lang = 'tr', color = false, verbose = false 
   if (m.namedVendors?.length) {
     const N = NAMED_VENDORS_T[lang] || NAMED_VENDORS_T.tr;
     o.push(k.b(`  ${N.title}`) + k.d(` (${m.namedVendors.length})  · ${N.note}`));
-    for (const v of m.namedVendors) o.push(`   • ${k.b(v.vendor)}${v.country ? ` (${v.country})` : ''}  ${k.d(locWhere(v.evidence[0] || {}))}`);
+    for (const v of m.namedVendors) o.push(`   • ${k.b(v.vendor)}${v.country ? ` (${v.country})` : ''}${namedSourceLabel(v, lang) ? k.d(` [${namedSourceLabel(v, lang)}]`) : ''}  ${k.d(locWhere(v.evidence[0] || {}))}`);
+    o.push('');
+  }
+  if (m.unverifiedRecipients?.length) {
+    const U = UNVERIFIED_T[lang] || UNVERIFIED_T.tr;
+    o.push(k.b(`  ${U.title}`) + k.d(` (${m.unverifiedRecipients.length})  · ${U.note}`));
+    for (const r of m.unverifiedRecipients) o.push(`   • ${k.b(r.name)} ${k.d(`[${U.kind[r.kind] || r.kind}]`)}  ${k.d(locWhere(r.evidence[0] || {}))}`);
     o.push('');
   }
   if (m.noAutoCleanup?.length) {

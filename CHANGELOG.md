@@ -18,6 +18,20 @@ En az süre ("en az 3 yıl"), yasal süre (vergi, muhasebe), deneme süresi, ya�
 
 **Puan:** Eski RET-01 konumları artık puana girmiyor; bu yüzden puan yükselebilir. Anlamı değişen kuralın eski ölçümleri (ayar seti %24, 84 projelik set %88) yeni hükmün yanında gösterilmiyor (`src/redefined-rules.js`).
 
+### Envanter: veri alan üçüncü taraflar daha eksiksiz
+
+Derin denetimin aktarım kaydı yalnızca veri akışı izlenen servisleri listeliyordu. Dört kör projede bağımsız envanterdeki 71 alıcının 40'ını gösteriyordu (%56). Kaçanlar şu genel yollarla bulunuyor; hepsi yalnızca Envanter'de, hiçbir hükme ve puana girmiyor:
+- **Tarayıcıdan ya da sunucudan giden istekler:** istek çağrıları (`fetch`, `axios`, `sendBeacon` …), kaynak öznitelikleri (`src`, `srcSet`, `poster`), `<link href>`, CSS `url()` ve veriyle kurulan kaynak / API adresleri. Örnek: simge servisleri, durum rozeti, gömmeler, belge görüntüleyici, sürüm kontrolü. Bağlantılar (`<a href>`, `<Link href>`), paylaşım ve arama adresleri sayılmıyor.
+- **Tek SDK arkasındaki sağlayıcılar:** her `@ai-sdk/<sağlayıcı>` paketi ayrı satır.
+- **Paketler:** giriş, ödeme ve mağaza paketleri (uygulama içi satın alma, RevenueCat), CAPTCHA, e-imza, analitik.
+- **Diğer yollar:** kimlik doğrulama yapılandırmasındaki giriş sağlayıcıları, servisi adlandıran ortam değişkenleri, barındırma dosyaları (`vercel.json`, `netlify.toml`, `fly.toml` …).
+
+Bilinen servisler "Kodda adı geçen, veri akışı izlenmeyen servisler" listesine, nasıl bulunduklarıyla birlikte ekleniyor. Katalogda olmayanlar ayrı bir alt listede duruyor: "Bilinmeyen alan adları ve işletmecinin yapılandırdığı servisler — doğrulayın". Bu listede bilinmeyen alan adları, işletmecinin OIDC kimlik sağlayıcısı ve uzak tarayıcı gibi adresi yalnızca ortam değişkeninde duran servisler var. JSON'da `model.unverifiedRecipients`.
+
+Katalog genel servis bilgisiyle genişledi (alan adı, paket, ortam değişkeni öneki; proje adı yok). Yeni katalog girdileri veri akışı katmanına girmiyor; aktarım kaydı, hükümler ve canlı tarama değişmedi.
+
+Ölçüm (dört kör proje, artık ayar verisi): eksiksizlik %56 → %94 (bilinen servisler), "doğrulayın" listesiyle %100. Yedi projede 67 yeni satır kodda tek tek doğrulandı: 50 doğru, 7 yanlış, 10 işletmeci ayarına bağlı. Bilinen servis satırlarında 39 doğru, 1 yanlış; "doğrulayın" listesinde 11 doğru, 6 yanlış (yanlışların çoğu projenin kendi alan adı). Dört projede derin denetim envanter isabeti, belirsizler yanlış sayılarak, %84'ten %82'ye indi.
+
 ### Belgeler
 
 **README (Türkçe ve İngilizce) ve `docs/ACCURACY.md`:** Araç geliştirilirken hiç görülmemiş dört projenin birleşik sonucu eklendi. Sonuçlar:

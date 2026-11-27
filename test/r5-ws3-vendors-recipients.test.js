@@ -69,6 +69,7 @@ test('vendor table: new vendors, IdP mapping, env keys, dependency names', () =>
   assert.equal(vendorForUrl('https://app.lemonsqueezy.com/checkout').id, 'lemonsqueezy');
   assert.equal(vendorForUrl('https://api.github.com/user/emails').id, 'github');
   assert.equal(vendorForUrl('https://api.github.com/repos/a/b'), null, 'repository API is not the OAuth identity provider');
+  assert.equal(vendorForUrl('https://api.github.com/repos/a/b', { inventory: true }).id, 'github-api', 'the inventory names it as the GitHub API');
   assert.equal(idpVendorForProvider('github').id, 'github');
   assert.equal(idpVendorForProvider('azure-ad').id, 'microsoft-login');
   assert.equal(idpVendorForProvider('apple.com').id, 'apple-signin');

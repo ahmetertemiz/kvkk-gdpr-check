@@ -257,6 +257,19 @@ export const NAMED_VENDORS_T = {
   en: { title: 'Services named in the code, no data flow traced', note: 'Not in the transfer register: the code names them but the tool traced no data flow to them. Verify whether they are used and which data they receive.' },
 };
 
+/** How a named service was found (legal/side-recipients.js); absent for the older named-vendor rows. */
+export const NAMED_SOURCE_T = {
+  tr: { url: 'istek / kaynak adresi', package: 'paket', 'sign-in': 'giriş sağlayıcısı', env: 'ortam değişkeni', hosting: 'barındırma dosyası' },
+  en: { url: 'request / resource URL', package: 'package', 'sign-in': 'sign-in provider', env: 'environment variable', hosting: 'deployment file' },
+};
+export const namedSourceLabel = (v, lang) => (v?.source && NAMED_SOURCE_T[lang]?.[v.source]) || '';
+
+/** Inventory block (0.2.1): recipients the catalogue cannot name (model.unverifiedRecipients), kept apart from known services. */
+export const UNVERIFIED_T = {
+  tr: { title: 'Bilinmeyen alan adları ve işletmecinin yapılandırdığı servisler — doğrulayın', note: 'Olgu, hüküm yok: kod bu alan adlarına istek gönderiyor ya da kaynak yüklüyor, ya da adresi yalnızca ortam değişkeninde duran bir servise bağlanıyor. Bilinen servislerle karıştırılmasın: her birinin kim olduğunu, hangi veriyi aldığını ve projenin kendi alan adı olup olmadığını doğrulayın.', kind: { domain: 'alan adı', 'operator-idp': 'kimlik sağlayıcısı (OIDC / OAuth)', 'operator-endpoint': 'uzak servis' } },
+  en: { title: 'Unknown domains and services configured by the operator — verify', note: 'Facts, no verdict: the code sends requests or loads resources from these domains, or connects to a service whose address is only in the environment. Not mixed with known services: verify who runs each, which data it receives and whether it is the project\'s own domain.', kind: { domain: 'domain', 'operator-idp': 'identity provider (OIDC / OAuth)', 'operator-endpoint': 'remote service' } },
+};
+
 /** Inventory block (0.2.1): personal-data stores with no automatic cleanup seen in the code (model.noAutoCleanup). */
 export const NO_CLEANUP_T = {
   tr: { title: 'Otomatik temizliği olmayan tablolar', note: 'Olgu, hüküm yok: bu depolar için kodda süresi dolanı silen bir iş (cron, TTL, döndürme) görülmedi. Çoğu hesap ömrü boyunca saklanır ve bu meşrudur; süresiz kalmaması gerekenler (IP / tarayıcı kayıtları, loglar, davetler, silinen kayıtlar) için saklama süresi belirleyip uygulayın.' },
@@ -271,7 +284,7 @@ export const noCleanupLine = (r) => {
 /** Model for the report: from result.model if present, else built from the graph. */
 export function getModel(result, lang) {
   if (result.model && result.model.inventory) return annotateCoverage(result.model, result.layers);
-  if (!result.graph) return { activities: [], transfers: [], namedVendors: [], noAutoCleanup: [], deletionMatrix: { hasFlow: false, flows: [], rows: [] }, inventory: [], dpia: { criteria: [], required: false, labels: [] } };
+  if (!result.graph) return { activities: [], transfers: [], namedVendors: [], unverifiedRecipients: [], noAutoCleanup: [], deletionMatrix: { hasFlow: false, flows: [], rows: [] }, inventory: [], dpia: { criteria: [], required: false, labels: [] } };
   // result.layers goes to the model builder (deletion matrix coverage: WS7 contract); older builders ignore the extra arg.
   return annotateCoverage(serializeModel(buildAuditModel(result.graph, lang, { layers: result.layers || null })), result.layers);
 }

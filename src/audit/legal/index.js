@@ -8,6 +8,7 @@ import { pathToFileURL } from 'node:url';
 import { inferActivities } from './activities.js';
 import { buildTransfers, buildDeletionMatrix, LIFECYCLE_CHECKS, noAutoCleanup } from './checks/lifecycle.js';
 import { namedVendors } from './named-vendors.js';
+import { sideRecipients } from './side-recipients.js';
 import { dpiaAssessment, TRANSPARENCY_CHECKS } from './checks/transparency.js';
 import { PRINCIPLE_CHECKS } from './checks/principles.js';
 import { CONSENT_CHECKS } from './checks/consent.js';
@@ -124,11 +125,16 @@ export function buildAuditModel(g, lang = 'tr', layers = undefined) {
   const activities = inferActivities(g);
   const lay = layers === undefined ? g?._auditLayers ?? null : layers;
   const transfers = buildTransfers(g);
+  const named = namedVendors(g, transfers);
+  // 0.2.1: recipients reached by browser-side requests, provider packages, sign-in / store packages, env-configured
+  // services and the hosting platform (side-recipients.js). Known services join the named list; the rest is "verify".
+  const side = sideRecipients(g, [...transfers, ...named]);
   return {
     activities,
     transfers,
     // Inventory only: vendors named in the code with no traced flow (never read by a check).
-    namedVendors: namedVendors(g, transfers),
+    namedVendors: [...named, ...side.known],
+    unverifiedRecipients: side.verify,
     // Inventory only (0.2.1): personal-data stores with no automatic cleanup seen in the code; a fact, not a verdict.
     noAutoCleanup: noAutoCleanup(g, g?._auditFiles, lang),
     deletionMatrix: buildDeletionMatrix(g, lang, lay),
@@ -219,6 +225,7 @@ export function serializeModel(model) {
     })),
     transfers: model.transfers,
     namedVendors: model.namedVendors || [],
+    unverifiedRecipients: model.unverifiedRecipients || [],
     noAutoCleanup: model.noAutoCleanup || [],
     deletionMatrix: {
       hasFlow: model.deletionMatrix.hasFlow,

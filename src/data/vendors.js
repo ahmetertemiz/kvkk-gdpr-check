@@ -406,7 +406,7 @@ const BASE_VENDORS = [
   {
     id: 'youtube', name: 'YouTube', company: 'Google LLC', country: 'US',
     category: 'embed', consentRequired: true, group: G.content,
-    labels: ['YouTube embed'], domains: ['youtube.com', 'ytimg.com', 'googlevideo.com'], cookies: ['^YSC$', '^VISITOR_INFO1_LIVE$', '^VISITOR_PRIVACY_METADATA$', '^PREF$', '^__Secure-YEC$'],
+    labels: ['YouTube embed'], domains: ['youtube.com', 'ytimg.com', 'googlevideo.com'], inventoryDomains: ['youtube-nocookie.com'], cookies: ['^YSC$', '^VISITOR_INFO1_LIVE$', '^VISITOR_PRIVACY_METADATA$', '^PREF$', '^__Secure-YEC$'],
     purpose: { tr: 'Gömülü video oynatma', en: 'Embedded video playback' },
     privacyUrl: 'https://policies.google.com/privacy',
   },
@@ -1362,6 +1362,175 @@ const BASE_VENDORS = [
     purpose: { tr: 'Arka plan işlerinin çalıştırılması (görev içeriği)', en: 'Background jobs (task payloads)' },
     privacyUrl: 'https://trigger.dev/legal/privacy',
   },
+  // ---------------- 0.2.1: services reached by browser-side requests, SDK provider packages, store APIs ----------------
+  // General catalogue knowledge (domains, packages, env-variable prefixes); legal/side-recipients.js reads it for the
+  // inventory only. pkgs: npm / pub package names whose import means the app talks to this service.
+  {
+    id: 'perplexity', name: 'Perplexity', company: 'Perplexity AI Inc.', country: 'US',
+    category: 'ai', consentRequired: false, group: G.ai,
+    labels: ['Perplexity'], domains: ['api.perplexity.ai'], cookies: [], pkgs: ['^@ai-sdk/perplexity$'],
+    purpose: { tr: 'Yapay zekâ modeli ile metin üretimi', en: 'Text generation with an AI model' },
+    privacyUrl: 'https://www.perplexity.ai/hub/legal/privacy-policy',
+  },
+  {
+    id: 'xai', name: 'xAI (Grok)', company: 'X.AI Corp.', country: 'US',
+    category: 'ai', consentRequired: false, group: G.ai,
+    labels: ['xAI'], domains: ['api.x.ai'], cookies: [], pkgs: ['^@ai-sdk/xai$'],
+    purpose: { tr: 'Yapay zekâ modeli ile metin üretimi', en: 'Text generation with an AI model' },
+    privacyUrl: 'https://x.ai/legal/privacy-policy',
+  },
+  {
+    id: 'cohere', name: 'Cohere', company: 'Cohere Inc.', country: 'CA',
+    category: 'ai', consentRequired: false, group: G.ai,
+    labels: ['Cohere'], domains: ['api.cohere.com', 'api.cohere.ai'], cookies: [], pkgs: ['^@ai-sdk/cohere$', '^cohere-ai$'],
+    purpose: { tr: 'Yapay zekâ modeli ile metin üretimi / gömme', en: 'Text generation / embeddings with an AI model' },
+    privacyUrl: 'https://cohere.com/privacy',
+  },
+  {
+    id: 'google-workspace-apis', name: "Google API'leri (Takvim, Meet …)", company: 'Google LLC', country: 'US',
+    category: 'processor', consentRequired: false, group: G.hosting,
+    labels: ['Google APIs'], domains: ['www.googleapis.com/calendar', 'calendar-json.googleapis.com', 'meet.googleapis.com', 'people.googleapis.com'], cookies: [],
+    pkgs: ['^@googleapis/(calendar|meet|people|gmail|oauth2)$', '^googleapis$'],
+    purpose: { tr: 'Kullanıcının Google hesabındaki takvim / toplantı verisine erişim', en: "Access to calendar / meeting data in the user's Google account" },
+    privacyUrl: 'https://policies.google.com/privacy',
+  },
+  {
+    id: 'cloudflare-turnstile', name: 'Cloudflare Turnstile', company: 'Cloudflare Inc.', country: 'US',
+    category: 'infra', consentRequired: false, group: G.hosting,
+    labels: ['Cloudflare Turnstile'], domains: [], cookies: [], pkgs: ['^(@marsidev/react-turnstile|react-turnstile|@cloudflare/turnstile|vue-turnstile|svelte-turnstile)$'],
+    envKeys: ['(?:^|_)TURNSTILE_'],
+    purpose: { tr: "Bot koruması (ziyaretçi IP'si ve tarayıcı sinyalleri)", en: 'Bot protection (visitor IP and browser signals)' },
+    privacyUrl: 'https://www.cloudflare.com/privacypolicy/',
+  },
+  {
+    id: 'openstatus', name: 'OpenStatus', company: 'OpenStatus', country: 'EU',
+    category: 'infra', consentRequired: false, group: G.hosting,
+    labels: ['OpenStatus'], domains: ['openstatus.dev'], cookies: [],
+    purpose: { tr: "Durum sayfası / rozet (ziyaretçi IP'si)", en: 'Status page / badge (visitor IP)' },
+    privacyUrl: 'https://www.openstatus.dev/legal/privacy',
+  },
+  {
+    id: 'tinybird', name: 'Tinybird', company: 'Tinybird Inc.', country: 'US/EU',
+    category: 'analytics', consentRequired: false, group: G.analytics,
+    labels: ['Tinybird'], domains: ['tinybird.co'], cookies: [], pkgs: ['^@chronark/zod-bird$', '^@tinybirdco/'], envKeys: ['^TINYBIRD_'],
+    purpose: { tr: 'Olay / analitik verisinin saklanması ve sorgulanması', en: 'Storing and querying event / analytics data' },
+    privacyUrl: 'https://www.tinybird.co/privacy',
+  },
+  {
+    id: 'jitsu', name: 'Jitsu', company: 'Jitsu Labs Inc.', country: 'US',
+    category: 'analytics', consentRequired: true, group: G.analytics,
+    labels: ['Jitsu'], domains: ['jitsu.com'], cookies: [], pkgs: ['^@jitsu/'], envKeys: ['^(?:NEXT_PUBLIC_)?JITSU_'],
+    purpose: { tr: 'Olay toplama / ürün analitiği', en: 'Event collection / product analytics' },
+    privacyUrl: 'https://jitsu.com/privacy',
+  },
+  {
+    id: 'documenso', name: 'Documenso', company: 'Documenso Inc.', country: 'US/EU',
+    category: 'processor', consentRequired: false, group: G.hosting,
+    labels: ['Documenso'], domains: ['documenso.com', 'app.documenso.com'], cookies: [], pkgs: ['^@documenso/'], envKeys: ['^DOCUMENSO_'],
+    purpose: { tr: 'Elektronik imza (imzalayanın adı, e-postası)', en: 'Electronic signature (signer name, email)' },
+    privacyUrl: 'https://documenso.com/privacy',
+  },
+  {
+    id: 'dub', name: 'Dub', company: 'Dub Technologies Inc.', country: 'US',
+    category: 'marketing', consentRequired: false, group: G.marketing,
+    labels: ['Dub'], domains: ['dub.co', 'api.dub.co'], cookies: [], pkgs: ['^dub$', '^@dub/'], envKeys: ['^DUB_'],
+    purpose: { tr: 'Kısa bağlantı ve tavsiye / ortaklık takibi', en: 'Short links and referral / affiliate tracking' },
+    privacyUrl: 'https://dub.co/legal/privacy',
+  },
+  {
+    id: 'cal-com', name: 'Cal.com', company: 'Cal.com Inc.', country: 'US',
+    category: 'processor', consentRequired: false, group: G.hosting,
+    labels: ['Cal.com'], domains: ['app.cal.com', 'api.cal.com'], cookies: [], pkgs: ['^@calcom/'],
+    purpose: { tr: 'Toplantı planlama (ad, e-posta)', en: 'Meeting scheduling (name, email)' },
+    privacyUrl: 'https://cal.com/privacy',
+  },
+  {
+    id: 'hanko', name: 'Hanko (passkey)', company: 'Hanko GmbH', country: 'DE',
+    category: 'auth', consentRequired: false, group: G.auth,
+    labels: ['Hanko'], domains: ['hanko.io', 'passkeys.hanko.io'], cookies: [], pkgs: ['^@teamhanko/'], envKeys: ['^HANKO_'],
+    purpose: { tr: 'Passkey ile kimlik doğrulama', en: 'Authentication with passkeys' },
+    privacyUrl: 'https://www.hanko.io/privacy',
+  },
+  {
+    id: 'ms-office-viewer', name: 'Microsoft Office çevrimiçi görüntüleyici', company: 'Microsoft Corporation', country: 'US',
+    category: 'embed', consentRequired: false, group: G.content,
+    labels: ['Microsoft Office Online viewer'], domains: ['view.officeapps.live.com', 'officeapps.live.com'], cookies: [],
+    purpose: { tr: "Belgenin tarayıcıda görüntülenmesi (belge Microsoft'a gönderilir)", en: 'Viewing a document in the browser (the document is sent to Microsoft)' },
+    privacyUrl: 'https://privacy.microsoft.com/',
+  },
+  {
+    id: 'revenuecat', name: 'RevenueCat', company: 'RevenueCat Inc.', country: 'US',
+    category: 'payments', consentRequired: false, group: G.payments,
+    labels: ['RevenueCat'], domains: ['api.revenuecat.com'], cookies: [], pkgs: ['^react-native-purchases', '^purchases_flutter$', '^@revenuecat/'],
+    purpose: { tr: 'Uygulama içi abonelik yönetimi (kullanıcı kimliği, satın almalar)', en: 'In-app subscription management (user id, purchases)' },
+    privacyUrl: 'https://www.revenuecat.com/privacy',
+  },
+  {
+    id: 'apple-app-store', name: 'Apple App Store (uygulama içi satın alma)', company: 'Apple Inc.', country: 'US',
+    category: 'payments', consentRequired: false, group: G.payments,
+    labels: ['Apple App Store'], domains: ['buy.itunes.apple.com', 'sandbox.itunes.apple.com', 'api.storekit.itunes.apple.com'], cookies: [],
+    pkgs: ['^(expo-iap|react-native-iap|expo-in-app-purchases|in_app_purchase|in_app_purchase_storekit)$'],
+    purpose: { tr: 'Uygulama içi satın alma ve makbuz doğrulama', en: 'In-app purchases and receipt validation' },
+    privacyUrl: 'https://www.apple.com/legal/privacy/',
+  },
+  {
+    id: 'google-play', name: 'Google Play (uygulama içi satın alma)', company: 'Google LLC', country: 'US',
+    category: 'payments', consentRequired: false, group: G.payments,
+    labels: ['Google Play Billing'], domains: ['androidpublisher.googleapis.com'], cookies: [],
+    pkgs: ['^(expo-iap|react-native-iap|expo-in-app-purchases|in_app_purchase|in_app_purchase_android)$'],
+    purpose: { tr: 'Uygulama içi satın alma ve satın alma doğrulama', en: 'In-app purchases and purchase validation' },
+    privacyUrl: 'https://policies.google.com/privacy',
+  },
+  {
+    id: 'google-favicons', name: 'Google favicon servisi', company: 'Google LLC', country: 'US',
+    category: 'embed', consentRequired: false, group: G.content,
+    labels: ['Google favicon service'], domains: ['google.com/s2/favicons', 'gstatic.com/faviconV2'], cookies: [],
+    purpose: { tr: "Site simgelerinin alınması (istenen alan adları Google'a gider)", en: 'Fetching site icons (the requested domains go to Google)' },
+    privacyUrl: 'https://policies.google.com/privacy',
+  },
+  {
+    id: 'duckduckgo-icons', name: 'DuckDuckGo simge servisi', company: 'Duck Duck Go Inc.', country: 'US',
+    category: 'embed', consentRequired: false, group: G.content,
+    labels: ['DuckDuckGo icons'], domains: ['icons.duckduckgo.com'], cookies: [],
+    purpose: { tr: "Site simgelerinin alınması (istenen alan adları DuckDuckGo'ya gider)", en: 'Fetching site icons (the requested domains go to DuckDuckGo)' },
+    privacyUrl: 'https://duckduckgo.com/privacy',
+  },
+  {
+    id: 'internet-archive', name: 'Internet Archive (Wayback Machine)', company: 'Internet Archive', country: 'US',
+    category: 'processor', consentRequired: false, group: G.content,
+    labels: ['Internet Archive'], domains: ['web.archive.org', 'archive.org'], cookies: [],
+    purpose: { tr: 'Sayfaların arşivlenmesi (arşivlenen adresler)', en: 'Archiving pages (the archived addresses)' },
+    privacyUrl: 'https://archive.org/about/terms.php',
+  },
+  {
+    id: 'github-api', name: 'GitHub API / içerik', company: 'GitHub Inc. (Microsoft)', country: 'US',
+    category: 'infra', consentRequired: false, group: G.content,
+    labels: ['GitHub API'], domains: ['api.github.com', 'raw.githubusercontent.com', 'codeload.github.com', 'objects.githubusercontent.com'], cookies: [],
+    purpose: { tr: "Sürüm kontrolü / dosya alma (istemcinin IP'si)", en: "Version checks / fetching files (the client's IP)" },
+    privacyUrl: 'https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement',
+  },
+  {
+    id: 'tiktok-embed', name: 'TikTok (gömme)', company: 'TikTok Technology Ltd.', country: 'IE/SG',
+    category: 'embed', consentRequired: true, group: G.content,
+    labels: ['TikTok embed'], domains: ['tiktok.com/embed', 'tiktok.com/player'], cookies: [],
+    purpose: { tr: 'Gömülü video oynatma', en: 'Embedded video playback' },
+    privacyUrl: 'https://www.tiktok.com/legal/privacy-policy',
+  },
+  {
+    id: 'instagram-embed', name: 'Instagram (gömme)', company: 'Meta Platforms Ireland Ltd.', country: 'IE/US',
+    category: 'embed', consentRequired: true, group: G.content,
+    labels: ['Instagram embed'], domains: ['instagram.com'], cookies: [],
+    purpose: { tr: 'Gömülü gönderi gösterimi', en: 'Embedded post display' },
+    privacyUrl: 'https://privacycenter.instagram.com/policy',
+  },
+  {
+    id: 'x-embed', name: 'X / Twitter (gömme)', company: 'X Corp.', country: 'US',
+    category: 'embed', consentRequired: true, group: G.content,
+    labels: ['X embed'], domains: ['platform.twitter.com', 'syndication.twitter.com', 'publish.twitter.com', 'cdn.syndication.twimg.com'], cookies: [],
+    pkgs: ['^react-tweet$', '^react-twitter-embed$'],
+    purpose: { tr: 'Gömülü gönderi gösterimi', en: 'Embedded post display' },
+    privacyUrl: 'https://x.com/privacy',
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -1474,11 +1643,17 @@ const VENDOR_NAMES = {
 };
 
 // Vendors discovered on real sites (kept in the live scanner module).
-export const VENDORS = [...BASE_VENDORS, ...EXTRA_VENDORS].map((v) => {
+const ALL_VENDORS = [...BASE_VENDORS, ...EXTRA_VENDORS].map((v) => {
   const x = VENDOR_NAMES[v.id];
   if (!x) return v.aliases ? v : { ...v, aliases: [] };
   return { ...v, ...x, aliases: [...new Set([...(v.aliases || []), ...(x.aliases || [])])] };
 });
+// 0.2.1: entries added for the inventory of side recipients (legal/side-recipients.js). They stay out of VENDORS, so the
+// sink layer, the transfer register, the checks and the live scan see exactly what they saw before; only lookups called
+// with { inventory: true } (and vendorById) reach them. inventoryDomains on a regular entry work the same way.
+const INVENTORY_ONLY_IDS = new Set(['perplexity', 'xai', 'cohere', 'google-workspace-apis', 'cloudflare-turnstile', 'openstatus', 'tinybird', 'jitsu', 'documenso', 'dub', 'cal-com', 'hanko', 'ms-office-viewer', 'revenuecat', 'apple-app-store', 'google-play', 'google-favicons', 'duckduckgo-icons', 'internet-archive', 'github-api', 'tiktok-embed', 'instagram-embed', 'x-embed']);
+export const VENDORS = ALL_VENDORS.filter((v) => !INVENTORY_ONLY_IDS.has(v.id));
+export const INVENTORY_VENDORS = ALL_VENDORS.filter((v) => INVENTORY_ONLY_IDS.has(v.id));
 
 /**
  * Third-party SDKs in non-npm dependency manifests (requirements.txt / pyproject / Pipfile, Gemfile, composer.json, go.mod).
@@ -1625,7 +1800,7 @@ export function vendorForCookie(name) {
 }
 
 /** Find the vendor for a request URL / hostname. */
-export function vendorForUrl(url) {
+export function vendorForUrl(url, { inventory = false } = {}) {
   let host = url;
   let full = url;
   try {
@@ -1633,8 +1808,8 @@ export function vendorForUrl(url) {
     host = u.hostname;
     full = u.hostname + u.pathname;
   } catch {}
-  for (const v of VENDORS) {
-    for (const d of v.domains) {
+  for (const v of inventory ? [...VENDORS, ...INVENTORY_VENDORS] : VENDORS) {
+    for (const d of inventory ? [...v.domains, ...(v.inventoryDomains || [])] : v.domains) {
       if (d.includes('/')) {
         if (full.includes(d)) return v;
       } else if (host === d || host.endsWith('.' + d)) return v;
@@ -1650,7 +1825,7 @@ export function vendorForLabel(label) {
 }
 
 export function vendorById(id) {
-  return VENDORS.find((v) => v.id === id) || unknownSdkVendor(id);
+  return VENDORS.find((v) => v.id === id) || INVENTORY_VENDORS.find((v) => v.id === id) || unknownSdkVendor(id);
 }
 
 /**
@@ -1690,10 +1865,12 @@ export function idpVendorForProvider(provider) {
 
 /** Vendor whose endpoint an env variable holds by its name (vendors.js envKeys: SLACK_WEBHOOK_URL → Slack), or null. */
 let envKeyIndex = null;
-export function vendorForEnvKey(key) {
+let invEnvKeyIndex = null;
+export function vendorForEnvKey(key, { inventory = false } = {}) {
   if (!key) return null;
   envKeyIndex ||= VENDORS.flatMap((v) => (v.envKeys || []).map((k) => ({ re: new RegExp(k), vendor: v })));
-  return envKeyIndex.find((x) => x.re.test(String(key)))?.vendor || null;
+  invEnvKeyIndex ||= [...envKeyIndex, ...INVENTORY_VENDORS.flatMap((v) => (v.envKeys || []).map((k) => ({ re: new RegExp(k), vendor: v })))];
+  return (inventory ? invEnvKeyIndex : envKeyIndex).find((x) => x.re.test(String(key)))?.vendor || null;
 }
 
 /**
