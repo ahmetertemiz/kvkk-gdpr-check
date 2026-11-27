@@ -5,10 +5,12 @@
 > **0.2.1.** `src/real-precision.js` is regenerated from seven projects: the three of 0.2.0 and the four measured blind
 > after it, which are now part of the tuning set. The rules below are unchanged. A sub-signal with ≥ 8 real-project labels
 > is judged on its own counts, whatever its 84-project rate; the conflict guard only concerns the rule-total fallback,
-> which stays off. Effect on the 84 benchmark checkouts: 55 deep-audit locations move to review
-> (SEC-03:no-auth 49, DEL-02:vendor-copy 6; of the labelled ones 33 TP and 11 FP), none leaves the report, 2 locations
-> (SEC-09:password-in-email) keep high instead of medium. On the seven projects, scored critical / high / medium
-> deep-audit precision goes from 47 / 94 to 44 / 76.
+> which stays off. A location kept on strong evidence by the benchmark calibration is its own real-project subset
+> (`<sub>:strong`, `strongSub` in `src/real-calibration.js`; bench/real.js keys it the same way): decided on its own
+> counts when they pass the threshold, otherwise not by the real set. Effect on the 84 benchmark checkouts: 49
+> deep-audit locations move to review (SEC-03:no-auth; of the labelled ones 27 TP and 11 FP), none leaves the report,
+> 2 locations (SEC-09:password-in-email) keep high instead of medium, 1 (TRN-02:recipient-not-listed) goes from high to
+> medium. On the seven projects, scored critical / high / medium deep-audit precision goes from 47 / 94 to 45 / 81.
 
 0.2 adds a second measurement, the real-project set (`bench/real.js`, private labels).
 - **Projects:** three hand-verified applications, with the quick scan, the deep audit and the live scan all measured.

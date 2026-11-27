@@ -130,3 +130,15 @@ test('--fail-on ignores "to check" unless --fail-on-review', () => {
   if (!demoted.length) assert.equal(withReview, plain);
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('0.2.1: a location with strong evidence is its own real-project subset; too few labels of its own leave it to the benchmark', async () => {
+  const { strongSub, realDemotion: rd } = await import('../src/real-calibration.js');
+  assert.equal(strongSub({ sub: 'SEC-03:no-auth', strongEvidence: { code: 'x' } }), 'SEC-03:no-auth:strong');
+  assert.equal(strongSub({ sub: 'SEC-03:no-auth' }), 'SEC-03:no-auth');
+  assert.equal(strongSub({}), null);
+  const counts = { 'audit:AUD-SEC-03': { tp: 21, fp: 69, fpRepos: 5 }, 'audit:SEC-03:no-auth': { tp: 12, fp: 20, fpRepos: 3 }, 'audit:SEC-03:no-auth:strong': { tp: 1, fp: 3, fpRepos: 2 } };
+  assert.ok(rd({ source: 'audit', ruleId: 'AUD-SEC-03', sub: 'SEC-03:no-auth' }, counts), 'the other locations are judged on their own counts');
+  assert.equal(rd({ source: 'audit', ruleId: 'AUD-SEC-03', sub: 'SEC-03:no-auth:strong' }, counts), null, 'four labels: the real set does not decide');
+  const many = { ...counts, 'audit:SEC-03:no-auth:strong': { tp: 2, fp: 14, fpRepos: 5 } };
+  assert.equal(rd({ source: 'audit', ruleId: 'AUD-SEC-03', sub: 'SEC-03:no-auth:strong' }, many)?.basis, 'sub', 'enough labels: its own precision decides');
+});

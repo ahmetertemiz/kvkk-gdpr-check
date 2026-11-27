@@ -21,7 +21,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { flattenLocations, labelSim, matchRepo, shortRule, subKey, missOrigin } from './lib.js';
+import { flattenLocations, labelSim, matchRepo, shortRule, subKey as baseSubKey, missOrigin } from './lib.js';
+
+// 0.2.1: a location with strong evidence counts under its own key ("SEC-03:no-auth:strong"), so its real-project
+// precision is measured apart from the sub-signal's other locations (src/real-calibration.js strongSub).
+const subKey = (loc) => (loc?.sub && loc.strong ? `${loc.sub}:strong` : baseSubKey(loc));
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const REAL_DATA = path.resolve(process.env.KVKK_REAL_DATA || path.join(ROOT, 'private', 'bench', 'real'));

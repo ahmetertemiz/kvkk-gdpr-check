@@ -52,7 +52,7 @@
  */
 import { layerCovered } from './stack.js';
 import { SUBS, MODIFIERS, NAME_INFERRED_ELEMENTS, NONPROD_PATH_RE, PROVENANCE } from './rule-precision.js';
-import { realDemotion, realReason } from '../../real-calibration.js';
+import { realDemotion, realReason, strongSub } from '../../real-calibration.js';
 import { countsForRule } from '../../redefined-rules.js';
 
 export const ABSENCE_MIN_CONFIDENCE = 0.6;
@@ -397,13 +397,16 @@ export function calibrate(findings, { layers = null, threshold = ABSENCE_MIN_CON
       // Real-project precision (demote-only): a location still scored whose sub-signal (or rule) was mostly wrong on the
       // hand-verified real projects goes to review with that rate.
       if (real && !reason) {
-        const d = realDemotion({ source: 'audit', ruleId: f.rule.id, sub: l.sub || null }, realCounts, realFallback === undefined ? {} : { fallback: realFallback });
+        // A location with strong evidence is its own real-project subset ("SEC-03:no-auth:strong"): decided on its own
+        // counts when they pass the threshold, otherwise not by the real set at all (the benchmark routing stands).
+        const realSub = strongSub(l);
+        const d = realDemotion({ source: 'audit', ruleId: f.rule.id, sub: realSub }, realCounts, realFallback === undefined ? {} : { fallback: realFallback });
         // The rule total stands in only for a sub-signal that neither set measured: a sub-signal with at least
         // CONFIDENCE_MIN_N benchmark labels keeps its own measured status (kept scored; the conflict is recorded).
         if (d && d.basis === 'rule' && (l.calibration?.n ?? 0) >= CONFIDENCE_MIN_N) {
           l.calibration = { ...l.calibration, realConflict: { key: d.stats.key, tp: d.stats.tp, fp: d.stats.fp, own: d.own ? { tp: d.own.tp, fp: d.own.fp } : null } };
         } else if (d) {
-          reason = realReason(d, { ruleId: f.rule.id, sub: l.sub || null });
+          reason = realReason(d, { ruleId: f.rule.id, sub: realSub });
           l.calibration = { ...(l.calibration || {}), status: 'demoted', real: { basis: d.basis, key: d.stats.key, tp: d.stats.tp, fp: d.stats.fp, fpProjects: d.stats.fpProjects } };
         }
       }

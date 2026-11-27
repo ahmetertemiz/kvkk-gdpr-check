@@ -437,12 +437,20 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 ### 🗑️ Silme kapsamı
 
-#### 🟠 Silme işlemi verinin her kopyasına ulaşmıyor `AUD-DEL-02`
+#### 🟠 Silme işlemi verinin her kopyasına ulaşmıyor `AUD-DEL-02` <sub>(özgün önem: YÜKSEK)</sub>
 
-<sub>İsabet: 7 gerçek projede (ayar seti) isabet %38 (23/61) · 84 projelik ölçüm setinde %42 (26/62)</sub>
+<sub>İsabet: 7 gerçek projede (ayar seti) isabet %38 (23/61) · 84 projelik ölçüm setinde %42 (26/62) · önem "orta" ile sınırlandı: bu kural için gerçek projelerde yeterli isabet ölçülmedi</sub>
 
+- 🟠 OpenAI: OpenAI tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/app/api/chat/route.ts:10`
+  - Kalibrasyon: ölçülen isabet %57 (4/3, 6 proje) — güçlü kanıtla tutuldu: OpenAI: tanımlayıcılar (health) yazma çağrısıyla gönderiliyor (src/app/api/health/route.ts:8)
 - 🟠 tablo orders: profiles tablosuna referans var ama ON DELETE tanımsız (NO ACTION) — kullanıcı silinince veri kalır veya silme hata verir — `supabase/migrations/0001_init.sql:29`
   - Kalibrasyon: ölçülen isabet %48 (10/11, 8 proje) — güçlü kanıtla tutuldu: orders → profiles: son FK durumu ON DELETE tanımsız (SQL migrations replayed); tablo doğrudan tanımlayıcı tutuyor (address, payment_info)
+- 🟠 Stripe: Stripe tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/app/api/checkout/route.ts:8`
+  - Kalibrasyon: ölçülen isabet %57 (4/3, 6 proje) — güçlü kanıtla tutuldu: Stripe: tanımlayıcılar (email, full_name, address) yazma çağrısıyla gönderiliyor (src/app/api/checkout/route.ts:8)
+- 🟠 Resend: Resend tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/app/api/signup/route.ts:19`
+  - Kalibrasyon: ölçülen isabet %57 (4/3, 6 proje) — güçlü kanıtla tutuldu: Resend: tanımlayıcılar (email, full_name) yazma çağrısıyla gönderiliyor (src/app/api/signup/route.ts:19)
+- 🟠 PostHog: PostHog tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/components/Analytics.tsx:7`
+  - Kalibrasyon: ölçülen isabet %57 (4/3, 6 proje) — güçlü kanıtla tutuldu: PostHog: tanımlayıcılar (email, phone) yazma çağrısıyla gönderiliyor (src/components/Analytics.tsx:8)
 
 **Neden önemli:** Silme akışı (POST /api/account/delete) aşağıdaki depolara ve üçüncü taraflara ulaşmıyor. Kullanıcı "hesabımı sil" dediğinde bu veriler kalmaya devam eder; bu, silme talebinin eksik yerine getirilmesi demektir. Türetilmiş veriler (embedding'ler) ve yedekler de kapsama alınmalıdır.
 
@@ -477,7 +485,7 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 _Bu maddeler puana katılmadı: ya aranan katman kapsanmadı, ya güven düşük, ya da bu sinyalin görülmemiş projelerdeki isabeti düşük veya henüz ölçülmedi. Önemli bir kısmı gerçek sorundur; elle doğrulayın._
 
-**15:** 13 ölçülen düşük isabet, 1 kontrol doğrulama istedi, 1 henüz ölçülmemiş sinyal
+**11:** 9 ölçülen düşük isabet, 1 kontrol doğrulama istedi, 1 henüz ölçülmemiş sinyal
 
 ### Muhtemelen gerçek (1)
 
@@ -490,7 +498,7 @@ _Bu maddeler puana katılmadı: ya aranan katman kapsanmadı, ya güven düşük
 
 <sub>⚠️ doğrulanmamış dayanak: “Yeterlilik kararı bulunmuyor” (docs/hukuki-dayanaklar.md)</sub>
 
-### Belirsiz (13)
+### Belirsiz (9)
 
 #### ❔ Aydınlatma metni gerçekte olanla örtüşmüyor `AUD-TRN-02`
 
@@ -529,33 +537,10 @@ _Bu maddeler puana katılmadı: ya aranan katman kapsanmadı, ya güven düşük
 
 - POST /api/health kimlik doğrulaması olmadan kişisel veri işliyor (Sağlık bilgisi, Serbest metin / kullanıcı içeriği) — `src/app/api/health/route.ts:5`
   - ilk görüşte bu tür 33 konumdan 20 tanesi gerçekti
-  - Neden doğrulanmalı: Kontrol edilecek: elle doğrulanmış 7 gerçek projede bu sinyal (SEC-03:no-auth) konumlarının 14/48 kadarı doğru çıktı (isabet %29, %90 aralık %20–%41; yanlışlar 5 projeden). Puana ve --fail-on sınırına katılmadı; kodda doğrulayın. Bu sinyal (SEC-03:no-auth) için ölçülen isabet %61 (20/13, 12 proje), n=33; puana katılmadı.
+  - Neden doğrulanmalı: Kontrol edilecek: elle doğrulanmış 7 gerçek projede bu sinyal (SEC-03:no-auth:strong) konumlarının 2/16 kadarı doğru çıktı (isabet %13, %90 aralık %4–%32; yanlışlar 5 projeden). Puana ve --fail-on sınırına katılmadı; kodda doğrulayın. Bu sinyal (SEC-03:no-auth) için ölçülen isabet %61 (20/13, 12 proje), n=33; puana katılmadı.
   - Kalibrasyon: ölçülen isabet %61 (20/13, 12 proje) — ölçülen isabet düşük — puana katılmadı
 
 <sub>⚠️ doğrulanmamış dayanak: OWASP API1:2023 BOLA (docs/hukuki-dayanaklar.md)</sub>
-
-#### ❔ Silme işlemi verinin her kopyasına ulaşmıyor `AUD-DEL-02`
-
-- OpenAI: OpenAI tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/app/api/chat/route.ts:10`
-  - ilk görüşte bu tür 7 konumdan 4 tanesi gerçekti
-  - Neden doğrulanmalı: Kontrol edilecek: elle doğrulanmış 7 gerçek projede bu sinyal (DEL-02:vendor-copy) konumlarının 2/12 kadarı doğru çıktı (isabet %17, %90 aralık %6–%40; yanlışlar 5 projeden). Puana ve --fail-on sınırına katılmadı; kodda doğrulayın. Bu sinyal (DEL-02:vendor-copy) için ölçülen isabet %57 (4/3, 6 proje), n=7; puana katılmadı.
-  - Kalibrasyon: ölçülen isabet %57 (4/3, 6 proje) — ölçülen isabet düşük — puana katılmadı
-- Stripe: Stripe tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/app/api/checkout/route.ts:8`
-  - ilk görüşte bu tür 7 konumdan 4 tanesi gerçekti
-  - Neden doğrulanmalı: Kontrol edilecek: elle doğrulanmış 7 gerçek projede bu sinyal (DEL-02:vendor-copy) konumlarının 2/12 kadarı doğru çıktı (isabet %17, %90 aralık %6–%40; yanlışlar 5 projeden). Puana ve --fail-on sınırına katılmadı; kodda doğrulayın. Bu sinyal (DEL-02:vendor-copy) için ölçülen isabet %57 (4/3, 6 proje), n=7; puana katılmadı.
-  - Kalibrasyon: ölçülen isabet %57 (4/3, 6 proje) — ölçülen isabet düşük — puana katılmadı
-- Resend: Resend tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/app/api/signup/route.ts:19`
-  - ilk görüşte bu tür 7 konumdan 4 tanesi gerçekti
-  - Neden doğrulanmalı: Kontrol edilecek: elle doğrulanmış 7 gerçek projede bu sinyal (DEL-02:vendor-copy) konumlarının 2/12 kadarı doğru çıktı (isabet %17, %90 aralık %6–%40; yanlışlar 5 projeden). Puana ve --fail-on sınırına katılmadı; kodda doğrulayın. Bu sinyal (DEL-02:vendor-copy) için ölçülen isabet %57 (4/3, 6 proje), n=7; puana katılmadı.
-  - Kalibrasyon: ölçülen isabet %57 (4/3, 6 proje) — ölçülen isabet düşük — puana katılmadı
-- PostHog: PostHog tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/components/Analytics.tsx:7`
-  - ilk görüşte bu tür 7 konumdan 4 tanesi gerçekti
-  - Neden doğrulanmalı: Kontrol edilecek: elle doğrulanmış 7 gerçek projede bu sinyal (DEL-02:vendor-copy) konumlarının 2/12 kadarı doğru çıktı (isabet %17, %90 aralık %6–%40; yanlışlar 5 projeden). Puana ve --fail-on sınırına katılmadı; kodda doğrulayın. Bu sinyal (DEL-02:vendor-copy) için ölçülen isabet %57 (4/3, 6 proje), n=7; puana katılmadı.
-  - Kalibrasyon: ölçülen isabet %57 (4/3, 6 proje) — ölçülen isabet düşük — puana katılmadı
-- tablo support_tickets: kullanıcıya bağlayan yabancı anahtar yok — silme akışı bu tabloya ulaşmıyor — `supabase/migrations/0001_init.sql:39`
-  - ilk görüşte bu tür 15 konumdan 7 tanesi gerçekti
-  - Neden doğrulanmalı: Doğrulanmalı: bu sinyal (DEL-02:no-fk-link) için ilk görüşte ölçülen isabet %47 (7 TP / 8 FP, 7 proje), %90 aralık %28–%67; isabet %70'in altında ve alt sınır %60'ın altında. Puana katılmadı; elle doğrulayın.
-  - Kalibrasyon: ölçülen isabet %47 (7/8, 7 proje) — ölçülen isabet düşük — puana katılmadı
 
 #### ❔ İstemciye gereğinden fazla kişisel veri dönüyor `AUD-MIN-02`
 
@@ -563,6 +548,13 @@ _Bu maddeler puana katılmadı: ya aranan katman kapsanmadı, ya güven düşük
   - ilk görüşte bu tür 10 konumdan 5 tanesi gerçekti
   - Neden doğrulanmalı: Doğrulanmalı: bu sinyal (MIN-02:other-sensitive) için ilk görüşte ölçülen isabet %50 (5 TP / 5 FP, 3 proje), %90 aralık %27–%73; isabet %70'in altında ve alt sınır %60'ın altında. Puana katılmadı; elle doğrulayın.
   - Kalibrasyon: ölçülen isabet %50 (5/5, 3 proje) — ölçülen isabet düşük — puana katılmadı
+
+#### ❔ Silme işlemi verinin her kopyasına ulaşmıyor `AUD-DEL-02`
+
+- tablo support_tickets: kullanıcıya bağlayan yabancı anahtar yok — silme akışı bu tabloya ulaşmıyor — `supabase/migrations/0001_init.sql:39`
+  - ilk görüşte bu tür 15 konumdan 7 tanesi gerçekti
+  - Neden doğrulanmalı: Doğrulanmalı: bu sinyal (DEL-02:no-fk-link) için ilk görüşte ölçülen isabet %47 (7 TP / 8 FP, 7 proje), %90 aralık %28–%67; isabet %70'in altında ve alt sınır %60'ın altında. Puana katılmadı; elle doğrulayın.
+  - Kalibrasyon: ölçülen isabet %47 (7/8, 7 proje) — ölçülen isabet düşük — puana katılmadı
 
 ### Çoğunlukla gürültü (1)
 

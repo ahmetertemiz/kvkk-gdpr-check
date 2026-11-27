@@ -112,6 +112,8 @@ function flatLoc(ruleId, f, l, lang) {
     steps: (l.steps || []).map((s) => ({ file: normPath(s.file || null), line: s.line ?? null })),
     sub,
     calibration,
+    // 0.2.1: the code of the location's strong evidence (real-project counts keep these locations apart)
+    ...(l.strongEvidence?.code ? { strong: String(l.strongEvidence.code) } : {}),
     ...(l.reviewReason ? { reviewReason: redactSecrets(labelText(l.reviewReason, lang)) } : {}),
   };
 }

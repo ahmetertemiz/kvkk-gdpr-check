@@ -48,6 +48,16 @@ function statsOf(key, counts) {
   return { key, tp: c.tp, fp: c.fp, n, fpProjects: c.fpRepos || 0, precision: n ? c.tp / n : null, lower90: w.lower, upper90: w.upper };
 }
 
+/**
+ * Real-project key of a location (0.2.1): its sub-signal, or "<sub-signal>:strong" when it carries strong evidence. The
+ * strong subset is measured apart (bench/real.js keys it the same way); with too few labels of its own the real set does
+ * not decide it (the rule-total fallback is off), so the benchmark calibration that kept it stands.
+ */
+export function strongSub(l) {
+  const sub = typeof l?.sub === 'string' && l.sub ? l.sub : null;
+  return sub && l?.strongEvidence?.code ? `${sub}:strong` : sub;
+}
+
 /** Does a stats object meet the real-project demotion threshold? */
 export function realLow(s) {
   if (!s || s.n < REAL_MIN_N || s.fpProjects < REAL_MIN_FP_PROJECTS) return false;

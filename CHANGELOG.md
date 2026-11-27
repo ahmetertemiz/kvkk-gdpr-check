@@ -22,19 +22,22 @@ En az süre ("en az 3 yıl"), yasal süre (vergi, muhasebe), deneme süresi, ya�
 
 `src/real-precision.js` yedi projeden yeniden üretildi: 0.2.0'ın üç projesi ve sonra kör ölçülen dört proje. Bu dördü artık ayar setinde. Kurallar ve eşikler değişmedi.
 - **Gerçek set kararı:** Bir alt sinyalin gerçek sette yeterli verisi varsa (en az 8 etiket, yanlışlar en az 2 projeden) kararı gerçek set verir; 84 projelik setteki oranı onu korumaz. Koruma yalnızca gerçek sette yeterli verisi olmayan alt sinyaller için var.
-- **"Doğrulanmalı"ya inen alt sinyaller:**
-  - `SEC-03:no-auth`: 14 doğru / 34 yanlış;
-  - `DEL-02:vendor-copy`: 2 / 10;
+- **Güçlü kanıt ayrı alt küme:** 84 projelik kalibrasyonun güçlü kanıtla tuttuğu konumlar gerçek sette ayrı sayılıyor (ör. `SEC-03:no-auth:strong`). Kendi verisi eşiği geçiyorsa kendi isabeti karar verir; geçmiyorsa gerçek set karar vermez, 84 projelik kalibrasyon geçerli kalır.
+- **Gerçek sette güçlü kanıtlı alt kümeler (doğru / yanlış):**
+  - `SEC-03:no-auth:strong` 2 / 14: kendi verisiyle "Doğrulanmalı";
+  - `DEL-02:vendor-copy:strong` 1 / 4, `LB-01:asset-no-consent:strong` 1 / 1, `TRN-02:category-missing:strong` 0 / 2, `MIN-01:unused-body-field:strong` 0 / 1, `SEC-08:reset-oracle:strong` 1 / 0: veri yetersiz, gerçek set karar vermez.
+- **"Doğrulanmalı"ya inen alt sinyaller (güçlü kanıtsız kısım):**
+  - `SEC-03:no-auth`: 12 doğru / 20 yanlış;
   - `SEC-03:idor-suspect`: 7 / 20;
   - `DEL-02:fk-parent-not-deleted`: 9 / 17.
 
-  Son ikisinin konumları zaten "Doğrulanmalı"daydı.
+  Son ikisinin konumları zaten "Doğrulanmalı"daydı. `DEL-02:vendor-copy` iki kısma bölününce iki kısmın da verisi yetersiz kaldı (1 / 6 ve 1 / 4), puanlı kalıyor.
 - **Kritik / yüksek kalabilen kurallar:** `AUD-SEC-09`, `PII001`, `TRF001`, `TRF002`; `AUD-TRF-01` ve `CFG004` kalıyor.
-- **Etki, yedi projede:** Derin denetimin kritik, yüksek ve orta konumları 47/94'ten (%50) 44/76'ya (%58) çıktı. "Doğrulanmalı"ya inenler 15 yanlış, 3 doğru, 1 belirsiz. Hiçbir konum rapordan çıkmadı.
+- **Etki, yedi projede:** Derin denetimin kritik, yüksek ve orta konumları 47/94'ten (%50) 45/81'e (%56) çıktı. "Doğrulanmalı"ya inenler 11 yanlış, 2 doğru (`SEC-03:no-auth`). Hiçbir konum rapordan çıkmadı.
 - **Etki, 84 projelik sette:**
-  - 55 konum "Doğrulanmalı"ya indi. Etiketli olanlardan 33'ü doğru, 11'i yanlış.
+  - 49 konum (`SEC-03:no-auth`) "Doğrulanmalı"ya indi. Etiketli olanlardan 27'si doğru, 11'i yanlış.
   - Rapordan çıkan konum yok.
-  - 2 konum (`SEC-09:password-in-email`) ortadan yükseğe çıktı.
+  - 2 konum (`SEC-09:password-in-email`) ortadan yükseğe çıktı. 1 konum (`TRN-02:recipient-not-listed`) yüksekten ortaya indi, çünkü kural artık gerçek sette ölçülmüş ama desteklenmiyor.
 
 ### Envanter: veri alan üçüncü taraflar daha eksiksiz
 
