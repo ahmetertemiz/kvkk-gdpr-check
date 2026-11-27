@@ -313,6 +313,58 @@ export function evaluateExpect(e, ctx) {
 export const evaluateMiss = (miss, ctx) => evaluateExpect(miss.expect, ctx);
 
 /**
+ * Names the inventory shows (0.2.1): tables with no automatic cleanup (with the file that declares them), the stores of
+ * the personal-data inventory, and the recipients of the transfer register and of vendors named without a traced flow.
+ * Data element labels are left out: they name kinds of data ("E-posta"), not the table or the recipient a miss is about.
+ */
+export function inventoryRows(model) {
+  if (!model || typeof model !== 'object') return [];
+  const rows = [];
+  const table = (s) => String(s || '').replace(/^(?:tablo|table|koleksiyon|collection|kova|bucket|vektör|vector|log)\s*·?\s*/i, '').split(/[\s(]/)[0];
+  for (const r of model.noAutoCleanup || []) rows.push({ kind: 'table', names: [table(r.store)], files: [r.file].filter(Boolean) });
+  for (const e of model.inventory || []) for (const s of e.stores || []) rows.push({ kind: 'table', names: [String(s).split('.').slice(0, -1).join('.') || String(s), String(s).split('.').slice(-2, -1)[0] || ''].filter(Boolean), files: [] });
+  for (const t of [...(model.transfers || []), ...(model.namedVendors || [])]) rows.push({ kind: 'vendor', names: [t.vendor, t.vendorId, t.host].filter(Boolean), files: [] });
+  return rows;
+}
+
+// Same name: case, separators and a plural "s" do not matter ("daily_game_submissions" = "dailyGameSubmission").
+const nameKey = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9ğüşöçı]+/g, '').replace(/s$/, '');
+// Words of a recipient's name that say what kind of service it is, not which one ("Google Login", "Email (SMTP)").
+const GENERIC_NAME_WORD = new Set(['login', 'signin', 'signup', 'email', 'mail', 'eposta', 'service', 'servisi', 'analytic', 'storage', 'payment', 'server', 'smtp', 'oauth', 'cloud', 'database', 'notification', 'search', 'error', 'tracking', 'hosting', 'font', 'video', 'image', 'calendar', 'provider', 'sağlayıcı']);
+const nameTokens = (s) => String(s || '').replace(/([a-z0-9])([A-Z])/g, '$1 $2').split(/[^A-Za-z0-9ğüşöçıĞÜŞÖÇİ]+/).filter(Boolean);
+
+/** Location-kind leaves of an expectation (anyOf / allOf flattened). */
+function expectLeaves(e, out = []) {
+  if (!e) return out;
+  if (Array.isArray(e.anyOf)) for (const x of e.anyOf) expectLeaves(x, out);
+  else if (Array.isArray(e.allOf)) for (const x of e.allOf) expectLeaves(x, out);
+  else if (!e.graph && !e.model) out.push(e);
+  return out;
+}
+
+/**
+ * A miss whose table or recipient the inventory names: a keyword of the miss is the whole name of an inventory table, or
+ * the name (or a distinctive word of the name, 5+ letters) of a listed recipient; a leaf without keywords matches the
+ * tables its file declares. A word inside a longer name ("token" in VerificationToken) is not the name. The rule is not
+ * required: the row is a fact, not the finding the miss wanted.
+ */
+export function inInventory(miss, model) {
+  const rows = inventoryRows(model);
+  if (!rows.length) return false;
+  const named = (alt) => {
+    const k = nameKey(alt);
+    if (k.length < 4) return false;
+    return rows.some((r) => r.names.some((n) => nameKey(n) === k || (r.kind === 'vendor' && k.length >= 5 && !GENERIC_NAME_WORD.has(k) && nameTokens(n).some((t) => nameKey(t) === k))));
+  };
+  return expectLeaves(miss.expect).some((leaf) => {
+    const kws = leaf.keywords || [];
+    if (kws.length) return kws.some((group) => String(group).split('|').some(named));
+    const files = filesOf(leaf.file);
+    return !!files && rows.some((r) => r.kind === 'table' && files.some((f) => r.files.some((x) => sameFile(x, f))));
+  });
+}
+
+/**
  * Where a miss is satisfied, by what the reader of the report sees (round 9; best visibility wins):
  *   'scored'    a scored finding location
  *   'review'    a review ("Doğrulanmalı") location
@@ -321,7 +373,8 @@ export const evaluateMiss = (miss, ctx) => evaluateExpect(miss.expect, ctx);
  *   null        absent
  */
 export function missOrigin(miss, ctx) {
-  if (!evaluateExpect(miss.expect, ctx)) return null;
+  // 0.2.1: a table or recipient the inventory names counts as shown there, though no finding says so.
+  if (!evaluateExpect(miss.expect, ctx)) return inInventory(miss, ctx.model) ? 'register' : null;
   const shown = { ...ctx, graphNodes: [] };
   const ok = (x) => evaluateExpect(miss.expect, { ...shown, ...x });
   if (ok({ review: [], model: null })) return 'scored';
@@ -329,7 +382,7 @@ export function missOrigin(miss, ctx) {
   if (ok({ locations: [], review: [] })) return 'register';
   if (ok({ review: [] })) return 'scored'; // an allOf over a finding and a register row
   if (ok({})) return 'review';
-  return 'graph';
+  return inInventory(miss, ctx.model) ? 'register' : 'graph';
 }
 
 /**
@@ -426,7 +479,7 @@ export function computeTotals(rows) {
     precisionWithReview: tp + fp + tpDemoted + fpDemoted ? (tp + tpDemoted) / (tp + fp + tpDemoted + fpDemoted) : null,
     tpLabels, recall: tpLabels ? (tp + tpDemoted) / tpLabels : null, recallScored: tpLabels ? tp / tpLabels : null,
     unlabeled: sum('unlabeled'), tpLost: sum('tpLost'), fpGone: sum('fpGone'),
-    missesFixed: sum('missesFixed'), missesOpen: sum('missesOpen'), missesFixedViaReview: sum('missesFixedViaReview'),
+    missesFixed: sum('missesFixed'), missesOpen: sum('missesOpen'), missesFixedScored: sum('missesFixedScored'), missesFixedViaReview: sum('missesFixedViaReview'),
     missesFixedViaRegister: sum('missesFixedViaRegister'), missesInternal: sum('missesInternal'),
     // The honest one: real items shown (scored or review) against those plus the known open misses. Locations and issues
     // are different units, so read it as a trend.
@@ -470,7 +523,7 @@ export function compareReports(prev, cur) {
   // totals over the repos both reports have, recomputed from the rows (a --repo subset compares like with like);
   // a metric no old row carries is undefined (n/a), not 0
   const common = Object.keys(C).filter((s) => P[s]);
-  const keys = ['repos', 'tp', 'fp', 'uncertain', 'precision', 'reviewLocations', 'tpDemoted', 'fpDemoted', 'uncDemoted', 'reviewUnlabeled', 'recall', 'recallScored', 'unlabeled', 'tpLost', 'fpGone', 'missesOpen', 'missesHighOpen'];
+  const keys = ['repos', 'tp', 'fp', 'uncertain', 'precision', 'reviewLocations', 'tpDemoted', 'fpDemoted', 'uncDemoted', 'reviewUnlabeled', 'recall', 'recallScored', 'unlabeled', 'tpLost', 'fpGone', 'missesOpen', 'missesHighOpen', 'missesFixedScored', 'missesFixedViaReview', 'missesFixedViaRegister'];
   const needs = { recall: 'tpLabels', recallScored: 'tpLabels' };
   const side = (M) => {
     const rows = common.map((s) => M[s]);

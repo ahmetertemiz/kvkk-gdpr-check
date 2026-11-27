@@ -288,7 +288,7 @@ export function scoreOutput(stack, out, labels) {
   }
   const { pairs, lostLabels, ...rest } = s;
   return {
-    row: { ...rest, missesFixed: fixed, missesOpen: open, missesFixedViaReview: fixed.filter((m) => m.via === 'review').length, missesFixedViaRegister: fixed.filter((m) => m.via === 'register').length, missesInternal: open.filter((m) => m.via === 'graph').length, coverage: out.coverage ?? null, warnings: (out.warnings || []).length },
+    row: { ...rest, missesFixed: fixed, missesOpen: open, missesFixedScored: fixed.filter((m) => m.via === 'scored').length, missesFixedViaReview: fixed.filter((m) => m.via === 'review').length, missesFixedViaRegister: fixed.filter((m) => m.via === 'register').length, missesInternal: open.filter((m) => m.via === 'graph').length, coverage: out.coverage ?? null, warnings: (out.warnings || []).length },
     tally: { stack, pairs, lostLabels },
   };
 }
@@ -311,17 +311,17 @@ const where = (x) => `${x.stack ? x.stack + ' ' : ''}${x.ruleId || x.id || '?'} 
 /** Human-readable table of a bench report (exported for tests; never prints credential values). */
 export function renderTable(report, file, bySubFile) {
   const { totals } = report;
-  const cols = [['repo', 26, 'e'], ['locs', 5], ['TP', 4], ['FP', 4], ['unc', 4], ['sPrec', 6], ['rev', 4], ['tpDem', 5], ['fpDem', 5], ['recall', 6], ['sRecal', 6], ['unlab', 5], ['TPlost', 6], ['FPgone', 6], ['miss fix/open', 13]];
+  const cols = [['repo', 26, 'e'], ['locs', 5], ['TP', 4], ['FP', 4], ['unc', 4], ['sPrec', 6], ['rev', 4], ['tpDem', 5], ['fpDem', 5], ['recall', 6], ['sRecal', 6], ['unlab', 5], ['TPlost', 6], ['FPgone', 6], ['miss f/r/i/open', 16]];
   const fmt = (vals) => vals.map((v, i) => (cols[i][2] === 'e' ? String(v).padEnd(cols[i][1]) : String(v).padStart(cols[i][1]))).join(' ');
   const h = fmt(cols.map((c) => c[0]));
   const lines = [h, '-'.repeat(h.length)];
   const n = (v) => (typeof v === 'number' ? v : Array.isArray(v) ? v.length : 'n/a');
-  const line = (name, r) => fmt([name, n(r.locations), n(r.tp), n(r.fp), n(r.uncertain), pct(r.precision), n(r.reviewLocations), n(r.tpDemoted), n(r.fpDemoted), pct(r.recall), pct(r.recallScored), n(r.unlabeled), n(r.tpLost), n(r.fpGone), `${n(r.missesFixed)}/${n(r.missesOpen)}`]);
+  const line = (name, r) => fmt([name, n(r.locations), n(r.tp), n(r.fp), n(r.uncertain), pct(r.precision), n(r.reviewLocations), n(r.tpDemoted), n(r.fpDemoted), pct(r.recall), pct(r.recallScored), n(r.unlabeled), n(r.tpLost), n(r.fpGone), `${n(r.missesFixedScored)}/${n(r.missesFixedViaReview)}/${n(r.missesFixedViaRegister)}/${n(r.missesOpen)}`]);
   for (const r of report.repos) lines.push(r.error ? `${r.stack.padEnd(26)} ERROR ${cut(r.error, 80)}` : line(r.stack, r));
   lines.push('-'.repeat(h.length));
   lines.push(line(`TOTAL (${totals.repos})`, totals));
   lines.push(`sPrec = scored TP/(TP+FP), review excluded | rev = review locations; tpDem/fpDem = TP/FP labels found only in review | recall = TP labels in findings or review / all TP labels; sRecal = findings only`);
-  lines.push(`precision if review were scored: ${pct(totals.precisionWithReview).trim()} | review: ${totals.reviewLocations} locations = ${totals.tpDemoted} TP + ${totals.fpDemoted} FP + ${totals.uncDemoted} unc + ${totals.reviewUnlabeled} unlabeled | misses open (not visible in the report): ${totals.missesOpen}, high ${totals.missesHighOpen}, of which internal only: ${totals.missesInternal}; fixed via review only: ${totals.missesFixedViaReview}, via a register row only: ${totals.missesFixedViaRegister} | real items shown / (shown + open misses): ${pct(totals.shownShare).trim()}`);
+  lines.push(`precision if review were scored: ${pct(totals.precisionWithReview).trim()} | review: ${totals.reviewLocations} locations = ${totals.tpDemoted} TP + ${totals.fpDemoted} FP + ${totals.uncDemoted} unc + ${totals.reviewUnlabeled} unlabeled | misses open (not visible in the report): ${totals.missesOpen}, high ${totals.missesHighOpen}, of which internal only: ${totals.missesInternal}; misses shown as a finding: ${totals.missesFixedScored}, in review (Doğrulanmalı): ${totals.missesFixedViaReview}, only in the inventory / a register: ${totals.missesFixedViaRegister} | real items shown / (shown + open misses): ${pct(totals.shownShare).trim()}`);
   const st = Object.entries(totals.reviewByStatus || {});
   if (st.length) lines.push(`review by calibration status: ${st.map(([k, v]) => `${k} ${v}`).join(', ')}`);
   const subs = Object.entries(totals.reviewBySub || {}).sort((a, b) => b[1].n - a[1].n);

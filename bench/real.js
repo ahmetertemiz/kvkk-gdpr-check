@@ -21,7 +21,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { flattenLocations, labelSim, matchRepo, shortRule, subKey } from './lib.js';
+import { flattenLocations, labelSim, matchRepo, shortRule, subKey, missOrigin } from './lib.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const REAL_DATA = path.resolve(process.env.KVKK_REAL_DATA || path.join(ROOT, 'private', 'bench', 'real'));
@@ -69,7 +69,10 @@ async function runTool(repo, { live }) {
   const { audit } = await import('../src/audit/index.js');
   const s = scan(repo.dir, {});
   const a = await audit(repo.dir, { lang: 'tr' });
+  const { getModel } = await import('../src/audit/report/common.js');
   const out = {
+    // The report's registers (inventory, tables with no automatic cleanup, transfers): misses can be shown there.
+    model: getModel(a, 'tr'),
     quick: { scored: flat(s.findings), review: flat(s.review) },
     audit: { scored: flat(a.findings), review: flat(a.review) },
     live: null,
@@ -149,6 +152,32 @@ export function tally(rows) {
   return { rules: finish(byRule), subs: finish(bySub) };
 }
 
+/**
+ * Where each labelled miss (an issue found by reading the code) shows in the report, quick scan and deep audit together:
+ * as a finding, in the review list ("Doğrulanmalı"), only in the inventory (its table or recipient is named there, no
+ * finding says so), or not at all.
+ */
+export function scoreMisses(output, misses) {
+  const ctx = {
+    locations: [...(output.quick?.scored || []), ...(output.audit?.scored || [])],
+    review: [...(output.quick?.review || []), ...(output.audit?.review || [])],
+    graphNodes: [],
+    model: output.model || null,
+  };
+  const out = { finding: [], review: [], inventory: [], open: [] };
+  for (const m of misses || []) {
+    const via = missOrigin(m, ctx);
+    const k = via === 'scored' ? 'finding' : via === 'review' ? 'review' : via === 'register' ? 'inventory' : 'open';
+    out[k].push({ id: m.id, severity: m.severity || null });
+  }
+  return out;
+}
+function missCounts(list) {
+  const t = { finding: 0, review: 0, inventory: 0, open: 0, n: 0 };
+  for (const m of list) for (const k of ['finding', 'review', 'inventory', 'open']) { t[k] += m[k].length; t.n += m[k].length; }
+  return t;
+}
+
 /** Totals per source: critical/high/medium labels the tool still shows as scored. */
 export function totals(rows) {
   const out = {};
@@ -187,13 +216,15 @@ export async function main(argv = process.argv.slice(2)) {
   const all = [];
   const perRepo = [];
   for (const repo of repos) {
-    const labels = JSON.parse(fs.readFileSync(path.join(REAL_DATA, 'labels', `${repo.stack}.json`), 'utf8')).findings;
+    const labelFile = JSON.parse(fs.readFileSync(path.join(REAL_DATA, 'labels', `${repo.stack}.json`), 'utf8'));
+    const labels = labelFile.findings;
     if (!fs.existsSync(repo.dir)) { perRepo.push({ stack: repo.stack, error: 'checkout not found' }); continue; }
-    const rows = scoreReal(repo.stack, await runTool(repo, a), labels, a);
+    const output = await runTool(repo, a);
+    const rows = scoreReal(repo.stack, output, labels, a);
     all.push(...rows);
-    perRepo.push({ stack: repo.stack, unseen: !!repo.unseen, totals: totals(rows) });
+    perRepo.push({ stack: repo.stack, unseen: !!repo.unseen, totals: totals(rows), misses: scoreMisses(output, labelFile.misses) });
   }
-  const report = { tool: JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version, at: new Date().toISOString(), noClass: a.noClass, live: a.live, repos: perRepo, totals: totals(all), ...tally(all), ...(a.rows ? { rows: all.map(compactRow) } : {}) };
+  const report = { tool: JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version, at: new Date().toISOString(), noClass: a.noClass, live: a.live, repos: perRepo, totals: totals(all), misses: missCounts(perRepo.filter((r) => r.misses).map((r) => r.misses)), ...tally(all), ...(a.rows ? { rows: all.map(compactRow) } : {}) };
   if (a.out) fs.writeFileSync(a.out, JSON.stringify(report, null, 2) + '\n');
   if (a.json) { console.log(JSON.stringify(report, null, 2)); return 0; }
   const line = (name, t) => {
@@ -201,14 +232,17 @@ export async function main(argv = process.argv.slice(2)) {
     const n = s.tp + s.fp;
     return `${name.padEnd(10)} scored TP ${String(s.tp).padStart(3)} FP ${String(s.fp).padStart(3)} unc ${String(s.unc).padStart(2)} ${pct(n ? s.tp / n : null)} | high/med TP ${String(t.scoredHighMedium.tp).padStart(3)} FP ${String(t.scoredHighMedium.fp).padStart(3)} | review TP ${t.review.tp} FP ${t.review.fp} | gone TP ${t.gone.tp} FP ${t.gone.fp} | not run ${t.notRun} | unlabeled h/m ${t.unlabeledHighMedium}`;
   };
+  const missLine = (m) => `misses ${m.n}: as a finding ${m.finding} · in review ${m.review} · only in the inventory ${m.inventory} · not in the report ${m.open} | in the report ${pct(m.n ? (m.finding + m.review + m.inventory) / m.n : null)}`;
   console.log(`real-project set · tool ${report.tool}${a.noClass ? ' · without class-basis labels' : ''}${a.live ? '' : ' · live scan not run (--live)'}`);
   for (const r of perRepo) {
     if (r.error) { console.log(`${r.stack}: ${r.error}`); continue; }
     console.log(`\n${r.stack}${r.unseen ? ' (unseen when judged)' : ''}`);
     for (const src of ['quick', 'audit', 'live']) console.log('  ' + line(src, r.totals[src]));
+    console.log('  ' + missLine(missCounts([r.misses])));
   }
   console.log('\nTOTAL');
   for (const src of ['quick', 'audit', 'live']) console.log('  ' + line(src, report.totals[src]));
+  console.log('  ' + missLine(report.misses));
   console.log('\nper rule (source:rule  TP FP unc | review TP FP | gone TP FP | prec  lower90 upper90 | repos  fpRepos)');
   for (const r of report.rules) {
     const n = r.tp + r.fp + r.tpReview + r.fpReview + r.gone.tp + r.gone.fp;
