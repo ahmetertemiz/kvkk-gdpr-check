@@ -754,6 +754,71 @@ class FlowAnalyzer {
     });
   }
 
+  /**
+   * Latest definition of every SQL function in the migrations: lower-case name (schema `public.` dropped) → body text.
+   * Comments are blanked first; a later `create or replace` wins, a `drop function` removes it.
+   */
+  sqlFunctionBodies() {
+    if (this.ctx.shared.sqlFunctionBodies) return this.ctx.shared.sqlFunctionBodies;
+    const fns = new Map();
+    const files = (this.ctx.files || []).filter((f) => /\.sql$/i.test(f.rel) && typeof f.content === 'string').sort((a, b) => (a.rel < b.rel ? -1 : 1));
+    const key = (s) => s.replace(/"/g, '').toLowerCase().replace(/^public\./, '');
+    for (const f of files) {
+      const s = f.content.replace(/\r\n/g, '\n').replace(/--[^\n]*/g, (x) => ' '.repeat(x.length)).replace(/\/\*[\s\S]*?\*\//g, (x) => x.replace(/[^\n]/g, ' '));
+      // In text order: a migration often drops a function and creates it again with a new signature.
+      for (const m of s.matchAll(/\b(create\s+(?:or\s+replace\s+)?|drop\s+)function\s+(?:if\s+exists\s+)?((?:"?\w+"?\.)?"?\w+"?)\s*\(?/gi)) {
+        if (/^drop/i.test(m[1])) {
+          fns.delete(key(m[2]));
+          continue;
+        }
+        const q = s.slice(m.index, m.index + 3000).match(/\bas\s+(\$\w*\$)/i);
+        if (!q) continue;
+        const start = m.index + q.index + q[0].length;
+        const end = s.indexOf(q[1], start);
+        if (end < 0) continue;
+        fns.set(key(m[2]), { body: s.slice(start, end), file: f.rel });
+      }
+    }
+    this.ctx.shared.sqlFunctionBodies = fns;
+    return fns;
+  }
+  /**
+   * supabase.rpc('fn'): the rows the SQL function deletes (`delete from t`, also in the functions it calls with
+   * `perform` / `select`, two levels deep) are deleted by the calling code. A `delete from auth.users` is the account
+   * itself (its ON DELETE CASCADE children follow in the deletion matrix).
+   */
+  rpcDeletes(name, fx, node) {
+    const fns = this.sqlFunctionBodies();
+    const key = (s) => s.replace(/"/g, '').toLowerCase().replace(/^public\./, '');
+    const start = fns.get(key(String(name)));
+    if (!start) return;
+    const tables = new Set();
+    const seen = new Set();
+    const visit = (fn, depth) => {
+      if (!fn || seen.has(fn) || depth > 2) return;
+      seen.add(fn);
+      for (const m of fn.body.matchAll(/\bdelete\s+from\s+(?:only\s+)?((?:"?\w+"?\.)?"?\w+"?)/gi)) tables.add(m[1].replace(/"/g, '').toLowerCase());
+      for (const m of fn.body.matchAll(/\b(?:perform|select|from)\s+((?:"?\w+"?\.)?"?\w+"?)\s*\(/gi)) visit(fns.get(key(m[1])), depth + 1);
+    };
+    visit(start, 0);
+    const ids = [];
+    for (const t of tables) {
+      if (t === 'auth.users') {
+        const id = 'store:table:auth.users';
+        if (!this.g.has(id)) this.g.addNode({ id, type: 'Store', kind: 'table', table: 'auth.users', schema: 'auth', external: true, managed: 'supabase', rls: null, policies: [] });
+        ids.push(id);
+        continue;
+      }
+      const found = this.findTable(t.replace(/^public\./, '')) || this.findTable(t);
+      if (found && this.g.has(`store:table:${found}`)) ids.push(`store:table:${found}`);
+    }
+    if (ids.length) {
+      this.noteDeletion(fx, node, ids);
+      const d = this.deletes?.[this.deletes.length - 1];
+      if (d && d.site === `${fx.rel}:${lineOf(node)}`) d.rpc = true;
+    }
+  }
+
   /** Deletion-flow Controls from noted deletes, grouped by flow, then deduplicated by (delete site, target). */
   finalizeDeletions() {
     const groups = new Map();
@@ -768,7 +833,10 @@ class FlowAnalyzer {
       if (!bySig.has(sig)) bySig.set(sig, []);
       bySig.get(sig).push(key);
     }
-    for (const keys of bySig.values()) {
+    // Flows seen in code first, flows found inside SQL functions (rpc) after them: reports list a few flows only, and the
+    // ones written in the application are the clearer evidence.
+    const ordered = [...bySig.values()].sort((a, b) => Number(groups.get(a[0]).every((d) => d.rpc)) - Number(groups.get(b[0]).every((d) => d.rpc)));
+    for (const keys of ordered) {
       const ds = groups.get(keys[0]);
       const first = ds[0];
       const endpoints = [...new Set(keys.map((k) => groups.get(k)[0].endpointId).filter(Boolean))];
@@ -1519,6 +1587,12 @@ class FlowAnalyzer {
       } catch (e) {
         this.ctx.warn?.(`flow: adapter match failed at ${fx.rel}:${lineOf(node)}: ${e.message}`);
       }
+    }
+    // x.rpc('fn', …) naming a SQL function of this repository: whatever client object carries it (an injected or
+    // typed client is not recognised as Supabase by name), the function's own deletes are this code's deletes.
+    if (c.last?.name === 'rpc' && c.last.args?.length) {
+      const fnName = c.strValue(c.last.args[0]);
+      if (fnName) this.rpcDeletes(fnName, fx, node);
     }
 
     // Analyse callbacks / non-data args (closures may contain sinks), pushing the callee as condition context.

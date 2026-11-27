@@ -426,6 +426,8 @@ function headAllowed(element, last) {
   if (TECH_HEAD.has(last)) return false;
   if (URL_HEAD.has(last) && !URL_OK.has(element)) return false;
   if (last === 'address' && !ADDRESS_OK.has(element)) return false;
+  // prompt_fingerprint / content_checksum: a hash of the text, not the text (device / biometric readings: classifyField).
+  if (/^(?:fingerprints?|checksum|digest)$/.test(last) && element !== 'device_id' && element !== 'biometric') return false;
   return true;
 }
 
@@ -582,6 +584,14 @@ const COMMERCE_TOKEN = new Set(['order', 'purchase', 'cart', 'checkout', 'paymen
   'receipt', 'siparis', 'sepet', 'odeme', 'fatura', 'musteri']);
 const isCommerceTable = (cx) => cx.tTokens.some((t) => COMMERCE_TOKEN.has(t));
 const SORT_ORDER_NAME = new Set(['order', 'orders', 'sort', 'sort_order', 'order_index', 'order_idx', 'display_order', 'ordering', 'rank']);
+/** `<x>_order` is a purchase order only after a commerce word or a word that counts orders (last_order, open_order). */
+const ORDER_EVENT = new Set(['last', 'first', 'latest', 'recent', 'pending', 'open', 'current', 'next', 'previous', 'prev', 'total', 'active', 'placed', 'my', 'new']);
+/** Hash-named heads: `<thing>_fingerprint`. */
+const FINGERPRINT_HEAD = new Set(['fingerprint', 'fingerprints']);
+const DEVICE_QUALIFIER = new Set(['device', 'browser', 'visitor', 'client', 'canvas', 'audio', 'webgl', 'tls', 'ja3', 'user', 'session', 'install', 'installation', 'hardware', 'machine', 'cihaz', 'tarayici']);
+const BIOMETRIC_QUALIFIER = new Set(['finger', 'thumb', 'biometric', 'bio', 'palm', 'parmak', 'biyometrik']);
+/** Context words of an error report: a bare `name` there is the error's class name. */
+const ERROR_CONTEXT = new Set(['error', 'exception', 'crash', 'fault', 'stacktrace', 'hata']);
 
 // ---------------------------------------------------------------------------
 // Operator configuration tables (r8): model / provider / endpoint settings the operator maintains.
@@ -809,6 +819,18 @@ export function classifyField(name, ctx = {}) {
       if (cx.valueKind === 'number' && d.e === 'address' && !tokens.some((t) => /^(zip|postal|postcode|posta)/.test(t))) continue;
 
       const bareName = d.e === 'full_name' && AMBIGUOUS_NAME.has(joined);
+      // `<thing>_fingerprint` (prompt_fingerprint, content_fingerprint, key_fingerprint) is a hash of that thing: neither
+      // a fingerprint scan nor a device fingerprint. A device / browser / visitor qualifier keeps the device reading,
+      // a finger / biometric qualifier the biometric one.
+      if ((d.e === 'biometric' || d.e === 'device_id') && tokens.length > 1 && FINGERPRINT_HEAD.has(last) &&
+        !tokens.slice(0, -1).some((t) => DEVICE_QUALIFIER.has(singular(t)) || BIOMETRIC_QUALIFIER.has(singular(t)))) continue;
+      // A polysemous word stored as a number (position smallint, region integer) is a rank, slot or code, not the
+      // person attribute (job position, home region).
+      if (ctx.sqlType && NUMERIC_SQL_TYPE.test(ctx.sqlType) && d.ambf.some((f) => f(tokens))) continue;
+      // A bare `name` in an error / exception context (POST /api/client-error {boundary, route, name}, errorSchema) is
+      // the error's class name.
+      if (bareName && cx.kind !== 'person' && !cx.sib.personShape && !cx.sib.strongPerson && !cx.sib.personLink &&
+        ([...cx.ctxTokens].some((t) => ERROR_CONTEXT.has(t)) || cx.sib.names.has('stack') || cx.sib.names.has('digest'))) continue;
       // Shape of the name itself: option flags (include_income_statement, show_email), technical heads (contract_address,
       // email_provider, location_header), subject qualifiers (product_description, player_photo, user_location).
       // A plural rest is a list of values (includeHandles, excludeEmails), not an on/off option.
@@ -854,6 +876,13 @@ export function classifyField(name, ctx = {}) {
         if (last === 'order' && tokens.length > 1 && !isCommerceTable(cx) &&
           (SEQUENCE_WORD.has(tokens[tokens.length - 2]) || (ctx.sqlType && NUMERIC_SQL_TYPE.test(ctx.sqlType)) || cx.valueKind === 'number')) continue;
         if ((joined === 'order' || joined === 'orders') && cx.kind !== 'person' && !cx.sib.personLink && !cx.sib.strongPerson) continue;
+      }
+      // `<x>_order` outside commerce (mode_order, word_order, play_order, batting_order) is an ordering, and so is
+      // `ordering` / `reordering`.
+      if (d.e === 'order_history') {
+        const prev = tokens[tokens.length - 2];
+        if (last === 'order' && tokens.length > 1 && !isCommerceTable(cx) && cx.kind !== 'person' && !COMMERCE_TOKEN.has(singular(prev)) && !ORDER_EVENT.has(prev)) continue;
+        if (tokens.some((t) => /^(?:re)?ordering$|^ordinal$/.test(t))) continue;
       }
       // A bare name in an object shaped like a titled document ({ source_id, title, summary, content, display_name }) is
       // the document's name, unless another field identifies a person (email, user_id, avatar …).

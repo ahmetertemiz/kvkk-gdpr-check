@@ -6,6 +6,7 @@ import { RULES, SIGNALS } from './rules.js';
 import { sortFindings, summarize } from './summary.js';
 import { attachSupport } from './support-notice.js';
 import { scoreReasons } from './score-gate.js';
+import { standInSecret, exposureGuard } from './secret-shape.js';
 
 const TEST_NOTE = { tr: 'test dosyasında', en: 'in a test file' };
 const LOWER = { critical: 'high', high: 'medium', medium: 'low', low: 'info', info: 'info' };
@@ -109,6 +110,10 @@ export function scan(root, opts = {}) {
         const line = matchLines[i] ?? '';
         if (p.verify && !p.verify(m, line, file)) return false;
         if (isSuppressed(lines, i, rule.id)) return false;
+        // A stand-in value (SENTINEL, an alphabet run, Base64 of readable text, a documented example …) is not a leak,
+        // and a public-env secret name used to block a release is not an exposure (src/secret-shape.js).
+        if (rule.secret && standInSecret(m, matchLines, i)) return false;
+        if (rule.publicEnv && exposureGuard(matchLines, i, m)) return false;
         let label = (p.labelFrom ? p.labelFrom(m) : p.label) || m[0];
         // A pattern may set its own level (e.g. a sensitive word without a person-linked context is information only).
         let severity = typeof p.severity === 'function' ? p.severity(m, line, file) : p.severity || null;

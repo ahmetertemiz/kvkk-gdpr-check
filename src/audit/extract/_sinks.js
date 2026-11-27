@@ -1236,7 +1236,8 @@ const MATCHERS = [
     const from = seg(c, 'from');
     const table = from && c.strValue(from.args?.[0]);
     if (!table) {
-      if (c.last.name === 'rpc') return { kind: 'sink', target: { type: 'vendor', vendorId: 'supabase' }, dataArgs: lastArgs(c).slice(1) };
+      // rpc('fn', args): the SQL function's own deletes are followed in flow.js (rpcDeletes).
+      if (c.last.name === 'rpc') return { kind: 'sink', target: { type: 'vendor', vendorId: 'supabase' }, dataArgs: lastArgs(c).slice(1), rpc: c.strValue(lastArgs(c)[0]) || null };
       return null;
     }
     for (const op of ['insert', 'upsert', 'update']) {
@@ -1810,7 +1811,14 @@ const MATCHERS = [
     const hint = dynamicPathHint(urlNode);
     if (hint && isOwnAppBase(urlNode)) return { kind: 'endpoint-call', path: hint, method, dataArgs: data, dynamic: true };
     // A literal DELETE is still a deletion request to some backend (often the app's own API outside this repo).
-    if (method === 'DELETE') return { kind: 'endpoint-call', path: hint, method, dataArgs: data, dynamic: true, external: true };
+    // Not a request helper whose method AND url are its own parameters (sendJson(url, method, body)): the value
+    // 'DELETE' comes from one caller, the url from nowhere, so nothing says what is deleted. The caller with a
+    // literal path is analysed where it calls (endpoint-call with that path).
+    const methodU = unwrap(methodNode);
+    const literalMethod = (isAxios && c.segs[0] && c.segs[0] !== 'request') || methodU?.type === 'StringLiteral' ||
+      (methodU?.type === 'TemplateLiteral' && !methodU.expressions?.length);
+    const genericHelper = !literalMethod && unwrap(urlNode)?.type === 'Identifier';
+    if (method === 'DELETE' && !genericHelper) return { kind: 'endpoint-call', path: hint, method, dataArgs: data, dynamic: true, external: true };
     // Data sent to an unresolvable host: keep it as a low-confidence recipient instead of dropping it.
     if (data.length) return { kind: 'sink', target: { type: 'http', host: 'unknown', url: null, unresolved: true }, dataArgs: [urlNode, ...data].filter(Boolean), confidence: 0.4 };
     return null;

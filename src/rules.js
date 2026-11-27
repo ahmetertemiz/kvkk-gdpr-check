@@ -494,6 +494,7 @@ export const RULES = [
     severity: 'critical',
     scope: 'file',
     kinds: ['code', 'env', 'config'],
+    publicEnv: true, // a presence check that fails the release, or its message text, is a guard (src/secret-shape.js)
     patterns: [
       {
         label: { tr: 'Gizli değişken istemciye açılmış', en: 'Secret env var exposed to client' },

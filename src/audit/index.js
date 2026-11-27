@@ -54,6 +54,7 @@ import * as stackMod from './legal/stack.js';
 import { stackSupport } from './legal/support.js';
 import { scoreReasons } from '../score-gate.js';
 import { reviewRate, reviewBand } from './legal/calibrate.js';
+import { authIndicatorsIn } from './auth-indicators.js';
 
 const { detectStack, assessLayers, detectUnparsed, mergeUnparsed, NOT_PARSED_REASONS, TECHS } = stackMod;
 const CORE_LAYERS = stackMod.CORE_LAYERS || ['schema', 'routes', 'dbWrites', 'vendors'];
@@ -87,25 +88,6 @@ async function loadExtractors() {
   return mods.sort((a, b) => a.order - b.order);
 }
 
-// Signals that the app handles user accounts; with no data elements found they make the
-// coverage gap much more likely to be a parser miss than a privacy-free app.
-const AUTH_INDICATORS = [
-  ['password_hash', /\b(?:generate_|check_)?password_hash\b/],
-  ['flask_login', /\bflask[_-]login\b|\bUserMixin\b/i],
-  ['django.contrib.auth', /\bdjango\.contrib\.auth\b/],
-  ['bcrypt', /\bbcrypt/i],
-  ['argon2', /\bargon2\b/i],
-  ['passport', /\bpassport(?:-[\w-]+)?['"]|\bpassport\.(?:use|authenticate)\b/],
-  ['next-auth', /['"](?:next-auth|@auth\/[\w-]+)['"]/],
-  ['devise', /\bdevise\b/],
-  ['lucia', /['"](?:lucia|lucia-auth|@lucia-auth\/[\w-]+)['"]/],
-  ['firebase-auth', /['"]firebase\/auth['"]|@react-native-firebase\/auth|package:firebase_auth\/|\bFirebaseAuth\.(?:instance|getInstance)\b|^\s*firebase_auth\s*:/m],
-  ['supabase-auth', /\bsupabase\.auth\.(?:signUp|signInWith\w+|signIn)\b|\bSupabase\.instance\.client\.auth\b|\b(?:useSupabaseUser|serverSupabaseUser|useSupabaseAuthClient)\s*\(/],
-  ['clerk', /['"]@clerk\/[\w-]+['"]/],
-  ['better-auth', /['"]better-auth(?:\/[\w-]+)?['"]/],
-  ['laravel-auth', /\bAuth::(?:attempt|login|user)\b|\bHash::make\b/],
-  ['simplejwt', /\brest_framework(?:_simplejwt|_jwt)\b/],
-];
 
 /**
  * Coverage assessment after extraction. Pure function of the graph and ctx (exported for tests).
@@ -119,11 +101,7 @@ export function assessCoverage(graph, ctx, lang = 'tr', { vendorForPackage = nul
   const manifests = files.filter((f) => f.kind === 'manifest').length;
   const personalElements = graph.nodesOf('DataElement').length;
   const unparsed = Number(ctx.shared?.pythonModelsUnparsed) || 0;
-  const authIndicators = [];
-  const authText = files.filter((f) => f.kind === 'code' || f.kind === 'manifest').map((f) => (f.kind === 'manifest' ? stripConfigComments(f.content, f.rel) : f.content));
-  for (const [label, re] of AUTH_INDICATORS) {
-    if (authText.some((c) => re.test(c))) authIndicators.push(label);
-  }
+  const authIndicators = authIndicatorsIn(files, stripConfigComments);
   const en = lang === 'en';
   const stack = ctx.stack || detectStack(files);
   // Unparsed artefacts (C2): what extractors reported plus the generic detectors of stack.js.

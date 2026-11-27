@@ -54,6 +54,7 @@ import {
 } from '../model.js';
 import * as vendorDb from '../../../data/vendors.js';
 import { layerCovered } from '../stack.js';
+import { authIndicatorsIn } from '../../auth-indicators.js';
 
 // ---------------------------------------------------------------------------
 // C-R7 tagging helpers.
@@ -2008,6 +2009,9 @@ function deadHelperLocs(g, m) {
   });
 }
 
+/** Sign-up / sign-in / current-user calls on any auth client object (`_client.auth.signUp`, `auth.currentUser`). */
+const ACCOUNT_CALL_RE = /\.auth\s*\.\s*(?:signUp|signIn\w*|currentUser|getUser|getSession|onAuthStateChange)\b|\b(?:createUserWithEmailAndPassword|signInWithEmailAndPassword|signInWithPopup|signInAnonymously)\s*\(/;
+
 function deletionCoverageCore(g, model, lang) {
   const m = model.deletionMatrix;
   // Logs are limited by retention, on-device data is n/a: neither makes an erasure gap on its own.
@@ -2048,6 +2052,29 @@ function deletionCoverageCore(g, model, lang) {
       }, [...locs, ...dead]);
     }
     const recordFlows = m.recordFlows || [];
+    // "No account" needs more than no account table: accounts kept at a provider (Clerk, Supabase / Firebase Auth,
+    // password hashing, login libraries) leave no table either.
+    const noAccounts = !(m.subjects || []).length && !authIndicatorsIn(g._auditFiles || []).length &&
+      !(g._auditFiles || []).some((f) => f && typeof f.content === 'string' && f.kind === 'code' && ACCOUNT_CALL_RE.test(f.content)) &&
+      !g.nodesOf('Sink', (n) => n.kind === 'vendor' && n.category === 'auth').length && !g.nodesOf('Store', (n) => isManagedAuth(n)).length;
+    if (recordFlows.length && noAccounts) {
+      // No account record at all (no auth table, no users / profiles / members table, no table most others point at):
+      // the people in these stores have no account to erase (form senders, booking requests, contacts). Erasure on
+      // request runs through the record deletes below, so "no account erasure" is not established: open question.
+      const coreEls = core.flatMap((r) => r.elements || []);
+      const steps = groupRecordFlows(g, recordFlows, lang).slice(0, 6).map((grp) => ({ file: grp.where?.file || null, line: grp.where?.line || null })).filter((x) => x.file);
+      return finding({
+        id: 'AUD-DEL-01', category: 'deletion', severity: 'medium',
+        title: T('Kullanıcı hesabı kaydı bulunamadı; silme yalnızca kayıt düzeyinde (doğrulanmalı)', 'No user-account record found; deletes are record-level only (needs verification)'),
+        desc: T('Kodda kullanıcı hesabı tutan bir tablo (auth, users, profiles, members …) bulunamadı; kişisel veri form, başvuru veya iletişim kayıtlarında duruyor ve bu kayıtları tek tek silen işlemler var. Silme talepleri bu işlemlerle karşılanabilir; her depo için talep üzerine silmenin ve saklama süresinin işlediğini doğrulayın.', 'No table holds user accounts (auth, users, profiles, members …); personal data sits in form, request or contact records, and operations delete those records one by one. Erasure requests can be met through them; verify for each store that deletion on request and the retention period work.'),
+        fix: T('Kişi başına silme talebinin hangi işlemle karşılandığını (yönetici paneli, betik) ve her deponun saklama süresini belgeleyin.', 'Document which operation fulfils a per-person erasure request (admin panel, script) and the retention period of every store.'),
+        refs,
+      }, [tag(loc({
+        label: T(`${core.length} kişisel veri deposu: hesap kaydı yok, silme kayıt düzeyinde`, `${core.length} personal data stores: no account record, deletes are record-level`),
+        severity: 'medium', confidence: 0.5, steps,
+        reviewReason: T('Doğrulanmalı: projede kullanıcı hesabı tablosu yok; "hesap silme yok" sonucu bu yüzden kurulamaz. Kayıt düzeyindeki silme işlemlerinin silme taleplerini karşıladığını kontrol edin.', 'Needs verification: the project has no user-account table, so "no account erasure" cannot be concluded. Check that the record-level deletes fulfil erasure requests.'),
+      }), 'DEL-01:no-account-record-deletes', coreEls), ...neverDeletedLocs(g, core), ...dead]);
+    }
     if (recordFlows.length) {
       const coreEls = core.flatMap((r) => r.elements || []);
       const locs = [tag(loc({ label: T(`${core.length} kişisel veri deposu hesap silme kapsamı dışında`, `${core.length} personal data stores not covered by account erasure`), severity: 'high', confidence: 0.8 }), 'DEL-01:headline-no-account-erasure', coreEls)];

@@ -25,7 +25,7 @@ const ids = (r) => r.findings.map((f) => f.rule.id);
 const locs = (r, id, scored = true) => (scored ? r.findings : r.review).filter((f) => f.rule.id === id).flatMap((f) => f.locations);
 
 // ------------------------------------------------------------------------------------------------ 1. agent folders
-const LEAK = 'const live = "' + ['sk', 'live', 'q7Rm2Xv9Kp4L'.repeat(2)].join('_') + '";\n';
+const LEAK = 'const live = "' + ['sk', 'live', 'q7Rm2Xv9Kp4LsB8nW3tY6hDf'].join('_') + '";\n';
 const AGENT = {
   'package.json': pkg(['next', 'react']),
   'app/page.tsx': 'export default function P() { return <main>hi</main>; }\n',

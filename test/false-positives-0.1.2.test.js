@@ -18,7 +18,7 @@ function mk(files) {
 const pkg = (deps) => JSON.stringify({ name: 'x', dependencies: Object.fromEntries(deps.map((d) => [d, '1'])) });
 const of = (r, id) => r.findings.filter((f) => f.rule.id === id);
 const L = (l) => (typeof l === 'string' ? l : l?.en || '');
-const KEY = ['sk', 'live', 'Zp4Tq8Wn2Yb6'.repeat(2)].join('_');
+const KEY = ['sk', 'live', 'Zp4Tq8Wn2Yb6Hs3Jc7Lm5Rd1'].join('_');
 
 // ------------------------------------------------------------------------------- 1a. comments are not code
 test('comment stripper: comments become spaces, strings and line numbers stay', () => {

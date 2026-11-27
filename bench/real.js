@@ -2,7 +2,7 @@
 /**
  * Real-project measurement: precision of the quick scan, the deep audit and the live scan on hand-verified projects.
  *
- *   node bench/real.js [--repo <stack>] [--live] [--json] [--out <file>] [--no-class]
+ *   node bench/real.js [--repo <stack>] [--live] [--json] [--out <file>] [--rows] [--no-class]
  *
  * The data is not published (it names real projects and their weaknesses): it is read from private/bench/real or the
  * directory in KVKK_REAL_DATA, laid out like the benchmark (bench/README.md) plus, per label: source quick|audit|live,
@@ -28,7 +28,7 @@ export const REAL_DATA = path.resolve(process.env.KVKK_REAL_DATA || path.join(RO
 const HM = new Set(['critical', 'high', 'medium']);
 
 function args(argv) {
-  const a = { repos: [], live: false, json: false, out: null, noClass: false };
+  const a = { repos: [], live: false, json: false, out: null, rows: false, noClass: false };
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i];
     if (k === '--repo') a.repos.push(...String(argv[++i]).split(','));
@@ -36,6 +36,7 @@ function args(argv) {
     else if (k === '--json') a.json = true;
     else if (k === '--out') a.out = path.resolve(argv[++i]);
     else if (k === '--no-class') a.noClass = true;
+    else if (k === '--rows') a.rows = true;
     else throw new Error(`unknown argument ${k}`);
   }
   return a;
@@ -170,6 +171,12 @@ export function totals(rows) {
 
 const pct = (x) => (x == null ? '   –' : `${(100 * x).toFixed(0).padStart(3)}%`);
 
+/** One row for --rows: what was matched, where, and the verdict (labels and locations stay in the private output). */
+const compactRow = (r) => {
+  const x = r.label || r.loc || {};
+  return { stack: r.stack, source: r.source, origin: r.origin, ruleId: x.ruleId, sub: r.loc?.sub || null, file: x.file ?? null, line: x.line ?? null, severity: r.loc?.severity || r.label?.severity || null, verdict: r.label?.verdict || null, label: String((typeof r.loc?.label === 'object' ? r.loc.label.tr : r.loc?.label) || r.label?.label || '').slice(0, 160) };
+};
+
 export async function main(argv = process.argv.slice(2)) {
   const a = args(argv);
   if (!fs.existsSync(path.join(REAL_DATA, 'repos.json'))) {
@@ -186,7 +193,7 @@ export async function main(argv = process.argv.slice(2)) {
     all.push(...rows);
     perRepo.push({ stack: repo.stack, unseen: !!repo.unseen, totals: totals(rows) });
   }
-  const report = { tool: JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version, at: new Date().toISOString(), noClass: a.noClass, live: a.live, repos: perRepo, totals: totals(all), ...tally(all) };
+  const report = { tool: JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version, at: new Date().toISOString(), noClass: a.noClass, live: a.live, repos: perRepo, totals: totals(all), ...tally(all), ...(a.rows ? { rows: all.map(compactRow) } : {}) };
   if (a.out) fs.writeFileSync(a.out, JSON.stringify(report, null, 2) + '\n');
   if (a.json) { console.log(JSON.stringify(report, null, 2)); return 0; }
   const line = (name, t) => {

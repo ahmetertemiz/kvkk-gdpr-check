@@ -24,6 +24,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { RULES } from '../../rules.js';
 import { finding, loc, T } from './checks/_util.js';
+import { exposureGuard, fakeSecret, standInSecret } from '../../secret-shape.js';
 
 const LEGACY_IDS = ['SEC001', 'SEC002', 'CFG007'];
 
@@ -161,6 +162,9 @@ export function secretFindings(files = []) {
         if (p.verify && !p.verify(m, line)) continue;
         if (!p.exposed && PLACEHOLDER_RE.test(m[0])) continue;
         if (suppressed(lines, i, p.ruleId)) continue;
+        // Stand-in values and release guards (src/secret-shape.js), as in the quick scan.
+        if (!p.exposed && standInSecret(m, lines, i)) continue;
+        if (p.exposed && exposureGuard(lines, i, m)) continue;
         const label = typeof p.label === 'string' ? p.label : p.label?.en || 'credential';
         const sub = patternSub(p, label);
         if (sub === 'SEC-SECRET:gcp-service-account' && !SA_KEY_MATERIAL.test(f.content)) continue;
@@ -288,6 +292,7 @@ function envFileLocs(files, seen) {
         }
       }
       if (!label) continue;
+      if (fakeSecret(value)) continue;
       seen.add(key);
       const masked = redact(value);
       const snippet = maskRest(`${name ? `${name}=` : ''}${masked}`);
