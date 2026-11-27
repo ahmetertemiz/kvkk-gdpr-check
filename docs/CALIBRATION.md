@@ -1,5 +1,58 @@
 # Calibration by measured sub-signal precision (round 7, recalibrated in rounds 8 and 9)
 
+## 0.2: real-project calibration, severity cap, precision in reports
+
+0.2 adds a second measurement, the real-project set (`bench/real.js`, private labels).
+- **Projects:** three hand-verified applications, with the quick scan, the deep audit and the live scan all measured.
+- **Data:** the counts are generated into `src/real-precision.js` (`scripts/gen-real-precision.js --in <results.json>`). Only counts are kept: TP / FP / uncertain and FP projects per `source:rule` and `source:rule:sub`.
+- **In sample:** the tool is tuned on these projects, so their rates describe the tuning, not unseen code. Reports mark them as "(ayar seti)" / "(tuning set)".
+
+### Real-project calibration: demote only
+
+Code: `src/real-calibration.js`, applied after the benchmark routing in `calibrate.js` and in the quick scan's grouping (`scan.js`). A location moves to review (`result.review[]`, "Doğrulanmalı (puana katılmadı)") when its real-project precision is reliably low:
+- at least `REAL_MIN_N = 8` labels;
+- FPs from at least `REAL_MIN_FP_PROJECTS = 2` projects;
+- the Wilson 90% upper bound is below `REAL_UPPER90_MAX = 0.5`, or the point estimate is below `REAL_POINT_MAX = 0.4` and the lower bound is below `REAL_LOWER90_MAX = 0.3`.
+
+The calibration never promotes a location and never changes a level.
+- **Basis:** The sub-signal's own counts decide when it has ≥ 8 labels. Below that, a location without a sub-signal uses its rule's total.
+- **Fallback (off):** `REAL_RULE_FALLBACK = false` keeps a location that has a sub-signal on the rule total. Measured on the three projects, turning it on moved 12 locations that the 84-project labels show as right and 3 wrong ones to review, to remove 2 real-set FPs.
+- **Conflict guard:** A location demoted on its rule's total whose own sub-signal has at least `CONFIDENCE_MIN_N = 5` benchmark labels is kept, and the conflict is recorded (`realConflict`).
+
+### Severity cap
+
+Code: `src/severity-cap.js`, applied in `runAudit` and in the quick scan's grouping, so counts, score and `--fail-on` see the capped level. A location keeps critical / high only when a measurement supports it:
+
+| Basis (`severityBasis`) | Condition |
+|---|---|
+| `real` | the rule has ≥ 8 real-project labels and the Wilson 90% lower bound ≥ `CAP_LOWER90_MIN = 0.5` |
+| `benchmark` | deep audit only: the real-project rule has fewer than 8 labels and the location's sub-signal is `reliable` on the 84-project set |
+| `real-key` | a real-looking credential (`realLookingCredential`, `src/secret-shape.js`). It covers a random provider key, a connection string with a non-default password on a public host, a PEM with a body, and a committed `.env` holding such a value. |
+
+- **Capped levels:** Every other critical / high location becomes medium, with `severityRaw` on the location and on the finding when the finding's own level changed.
+- **Live scan:** The live scan is not capped.
+- **Rule tests:** `KVKK_NO_SEVERITY_CAP=1` switches the cap off for rule-logic tests.
+
+Effect when introduced, scored critical / high locations:
+
+| Where | Before | After |
+|---|---|---|
+| Benchmark checkouts (97 folders), quick scan | 124 | 8 (all real-looking keys) |
+| Benchmark checkouts (97 folders), deep audit | 450 | 321 |
+| Three real projects, quick scan | 3 | 1 |
+
+- **The 321 deep-audit locations:** 307 are kept on a reliable benchmark sub-signal (`benchmark`), 11 on the real set (`real`) and 3 as real-looking keys (`real-key`).
+- **Real projects:** The one location left is a committed `.env`, which is correct.
+
+### Precision in reports
+
+`src/precision-note.js` gives every finding one line, the real-project rate and the 84-project rate side by side, never merged.
+- **Benchmark side:** It is the sum over the rule's sub-signals in `rule-precision.js`, deep audit only.
+- **Small samples:** Below `PRECISION_MIN_N = 5` labels the line gives counts only ("yetersiz veri: 1 konumda 0 doğru"), and JSON `precision.real.precision` / `precision.benchmark.precision` is `null`.
+- **Inventory:** Inventory findings (`rule.kind === 'inventory'`: PII001, TRK001, TRF001, WEB018) carry no verdict and get no precision line.
+
+## Benchmark calibration (rounds 7 to 9)
+
 > **Round 9.** Two things differ from the text below, which documents rounds 7 and 8: the data is
 > `rule-precision-r9.json` (1464 labels, 60 repos; round 10), and a sub-signal **without any first-sight label goes to review** unless it
 > carries strong evidence (status `unmeasured`; a location without `loc.sub` is `unkeyed` and stays scored). Leave-one-round-out

@@ -6,7 +6,6 @@ _Veri akışı analizi ve ilke bazlı hukuki değerlendirme_
 
 **Kapsam notları:**
 
-- 2 yüksek / kritik önemde madde doğrulanmayı bekliyor ve skora dahil değil; skor bir üst sınırdır
 - Next.js: destekleniyor; daha önce görülmemiş 8 projede 253 maddeden 214 tanesi doğruydu, proje başına ortalama 5 sorun kaçırıldı
 
 **Analiz kapsamı (katmanlar)** · _Tespit edilen teknolojiler: Supabase (Postgres)_
@@ -23,22 +22,17 @@ _Veri akışı analizi ve ilke bazlı hukuki değerlendirme_
 
 | 🛑 KRİTİK | 🔴 YÜKSEK | 🟠 ORTA | 🟡 DÜŞÜK | 🔵 BİLGİ |
 |---|---|---|---|---|
-| 4 | 4 | 7 | 1 | 0 |
+| 1 | 2 | 12 | 1 | 0 |
 
 ## Yönetici özeti
 
-- 🛑 **Kişisel veri tutan tablolar herkese açık** — health_logs: "read all logs" politikası herkese select izni veriyor (Sağlık bilgisi, Serbest metin / kullanıcı içeriği)
-- 🛑 **Yetkisiz erişime açık uç noktalar** — POST /api/health kimlik doğrulaması olmadan kişisel veri işliyor (Sağlık bilgisi, Serbest metin / kullanıcı içeriği)
-- 🛑 **Özel nitelikli kişisel veri akışları** — Sağlık bilgisi → health_logs.symptoms (herkese açık erişim!)
 - 🛑 **Yurt dışına kişisel veri aktarımı** — OpenAI (US) ← Serbest metin / kullanıcı içeriği, Sağlık bilgisi
-- 🔴 **Silme işlemi verinin her kopyasına ulaşmıyor** — OpenAI: OpenAI tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli)
 - 🔴 **Veri koruma etki değerlendirmesi (DPIA) gerekli görünüyor** — Özel nitelikli veya çok kişisel veri
-- 🔴 **Rıza gerektiren işleme rıza alınmadan başlıyor** — PostHog rıza kontrolü olmadan başlatılıyor; gönderilen veri: E-posta, Telefon
+- 🔴 **Aydınlatma metni gerçekte olanla örtüşmüyor** — İşleniyor ama aydınlatma metninde yok: Sağlık bilgisi
 
-**Doğrulanmayı bekleyen yüksek önemli maddeler (skora dahil değil):**
+# 📦 Envanter
 
-- 🔴 AUD-TRN-02 `src/app/privacy/page.tsx:1` Metin "yurt dışına aktarılmamaktadır" diyor, ama veri şu servislere gidiyor: OpenAI (US), Stripe (US/IE), Supabase (US (bölge seçilebilir)), Resend (US), PostHog (US/EU)
-- 🔴 AUD-DPIA-01 Sistematik izleme
+_Olgu, hüküm yok: kişisel veriler, işleme faaliyetleri, üçüncü taraflar ve yurt dışı aktarım. Aracın en güvenilir kısmı._
 
 ## Veri haritası
 
@@ -185,17 +179,33 @@ flowchart LR
 | Güvenlik ve sistem kayıtları | Hukuki yükümlülük (KVKK md.5/2-ç; GDPR Art.6(1)(c))<br>Meşru menfaat (KVKK md.5/2-f; GDPR Art.6(1)(f)) | email, phone | — | ✗ |
 | Profil fotoğrafı ve dosya depolama | Sözleşmenin kurulması/ifası (KVKK md.5/2-c; GDPR Art.6(1)(b)) |  | — | ✗ |
 
+## Yurt dışı aktarım kaydı
+
+| Servis | Ülke | Yurt dışı (KVKK) | Üçüncü ülke (GDPR) | Veriler |
+|---|---|---|---|---|
+| OpenAI | US | ✓ | ✓ | Serbest metin / kullanıcı içeriği, Sağlık bilgisi 🩺 |
+| Stripe | US/IE | ✓ | ✓ | E-posta, Ad soyad, Adres |
+| Supabase _(veritabanı barındırma)_ | US (bölge seçilebilir) | ✓ | ✓ | E-posta, Şifre, Ad soyad, Telefon, Doğum tarihi, TC Kimlik No / ulusal kimlik, Fotoğraf / avatar, Pazarlama tercihleri / izinleri, Sağlık bilgisi, Serbest metin / kullanıcı içeriği, Adres, Ödeme kaydı 🩺 |
+| Resend | US | ✓ | ✓ | E-posta, Ad soyad |
+| PostHog | US/EU | ✓ | ✓ | E-posta, Telefon |
+
+# ⚖️ Kontrol edilecekler
+
+_Hüküm içeren bulgular; her kuralın yanında ölçülen isabet var. Her birini kodda doğrulayın._
+
 ## Bulgular
 
 _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülmemiş projelerde bağımsız olarak etiketlenmiş sonuçlarından ölçülen ilk görüş isabeti yer alır (TP/FP, proje sayısı). Ölçülen isabeti güvenilir biçimde düşük olan sinyaller puana katılmaz, "Doğrulanmalı" listesine taşınır; "yetersiz veri" az sayıda etiket, "ölçülmedi" henüz ölçüm olmadığı anlamına gelir. Skor yalnızca puanlanan bulgulardan hesaplanır._
 
 ### 🔐 Güvenlik
 
-#### 🛑 Kişisel veri tutan tablolar herkese açık `AUD-SEC-01`
+#### 🟠 Kişisel veri tutan tablolar herkese açık `AUD-SEC-01` <sub>(özgün önem: KRİTİK)</sub>
 
-- 🛑 health_logs: "read all logs" politikası herkese select izni veriyor (Sağlık bilgisi, Serbest metin / kullanıcı içeriği) — `supabase/migrations/0001_init.sql:26`
+<sub>İsabet: 84 projelik ölçüm setinde %75 (12/16) · gerçek projelerde ölçülmedi · önem "orta" ile sınırlandı: bu kural için gerçek projelerde yeterli isabet ölçülmedi</sub>
+
+- 🟠 health_logs: "read all logs" politikası herkese select izni veriyor (Sağlık bilgisi, Serbest metin / kullanıcı içeriği) — `supabase/migrations/0001_init.sql:26`
   - Kalibrasyon: ölçülen isabet %40 (2/3, 5 proje) — güçlü kanıtla tutuldu: Satırlar şema düzeyinde bir kişiye bağlı (kullanıcı tablosu / yabancı anahtar / sahiplik sütunu)
-- 🔴 orders: RLS kapalı — anon anahtarı ile okunabilir/yazılabilir (Adres, Ödeme kaydı) — `supabase/migrations/0001_init.sql:29`
+- 🟠 orders: RLS kapalı — anon anahtarı ile okunabilir/yazılabilir (Adres, Ödeme kaydı) — `supabase/migrations/0001_init.sql:29`
   - Kalibrasyon: yetersiz veri (1/0)
 
 **Neden önemli:** Bu tablolarda RLS kapalı ya da politika sahiplik kontrolü yapmıyor. Supabase'de anon anahtarı istemci kodunda herkese açıktır; yani bu satırları herkes okuyabilir. Yetkisiz erişim gerçekleştiyse bu bir veri ihlalidir (KVKK md.12/5, GDPR Art.4(12)) ve 72 saat içinde bildirim gerekebilir; erişim kayıtlarını inceleyin.
@@ -204,11 +214,13 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 <sub>Dayanak: KVKK md.12/1 · KVKK md.12/5 · GDPR Art.25 · GDPR Art.32 · GDPR Art.33</sub>
 
-#### 🛑 Yetkisiz erişime açık uç noktalar `AUD-SEC-03`
+#### 🟠 Yetkisiz erişime açık uç noktalar `AUD-SEC-03` <sub>(özgün önem: KRİTİK)</sub>
 
-- 🛑 POST /api/health kimlik doğrulaması olmadan kişisel veri işliyor (Sağlık bilgisi, Serbest metin / kullanıcı içeriği) — `src/app/api/health/route.ts:5`
+<sub>İsabet: 3 gerçek projede (ayar seti) isabet %0 (0/16) · 84 projelik ölçüm setinde %57 (72/126) · önem "orta" ile sınırlandı: bu kural için gerçek projelerde yeterli isabet ölçülmedi</sub>
+
+- 🟠 POST /api/health kimlik doğrulaması olmadan kişisel veri işliyor (Sağlık bilgisi, Serbest metin / kullanıcı içeriği) — `src/app/api/health/route.ts:5`
   - Kalibrasyon: ölçülen isabet %61 (20/13, 12 proje) — güçlü kanıtla tutuldu: İşleyici incelendi, hiçbir erişim kontrolü yok ve kişiye bağlı tablo health_logs deposuna yazıyor / siliyor
-- 🛑 POST /api/health: "userId" istek gövdesinden alınıyor ve oturumdaki kullanıcıyla karşılaştırılmıyor; başka bir kullanıcının kaydı değiştirilebilir (IDOR) — `src/app/api/health/route.ts:6`
+- 🟠 POST /api/health: "userId" istek gövdesinden alınıyor ve oturumdaki kullanıcıyla karşılaştırılmıyor; başka bir kullanıcının kaydı değiştirilebilir (IDOR) — `src/app/api/health/route.ts:6`
   - Kalibrasyon: ölçülen isabet %76 (35/11, 6 proje)
 
 **Neden önemli:** Bu API uç noktaları oturum kontrolü yapmadan veya kaydın isteği yapan kullanıcıya ait olduğunu doğrulamadan kişisel veri okuyor/yazıyor. Saldırgan başkası adına veri yazabilir veya başkasının verisini okuyabilir.
@@ -220,6 +232,8 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 <sub>⚠️ doğrulanmamış dayanak: OWASP API1:2023 BOLA (docs/hukuki-dayanaklar.md)</sub>
 
 #### 🟠 Kişisel veri log kayıtlarına yazılıyor `AUD-SEC-04`
+
+<sub>İsabet: 3 gerçek projede (ayar seti) isabet %13 (1/8) · 84 projelik ölçüm setinde %67 (48/72)</sub>
 
 - 🟠 E-posta → log · console — `src/app/api/signup/route.ts:18`
   - Veri yolu: istek gövdesi: POST /api/signup → E-posta → log · console
@@ -238,6 +252,8 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 #### 🟠 Rıza arayüzünde "Reddet" seçeneği yok `AUD-LB-02`
 
+<sub>İsabet: isabet ölçülmedi</sub>
+
 - 🟠 Çerez banner'ı: "Kabul et" var, "Reddet" yok — `src/components/CookieBanner.tsx:5`
   - Kalibrasyon: ölçülmedi
 
@@ -250,6 +266,8 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 <sub>⚠️ doğrulanmamış dayanak: EDPB Cookie Banner Taskforce Report (2023) (docs/hukuki-dayanaklar.md)</sub>
 
 #### 🟠 Pazarlama rızası varsayılan olarak verilmiş `AUD-LB-03`
+
+<sub>İsabet: isabet ölçülmedi</sub>
 
 - 🟠 form: SignupPage: önceden işaretli onay kutusu (marketing) — `src/app/signup/page.tsx:10`
   - Kalibrasyon: ölçülmedi
@@ -266,7 +284,9 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 #### 🔴 Aydınlatma metni gerçekte olanla örtüşmüyor `AUD-TRN-02`
 
-- 🔴 İşleniyor ama aydınlatma metninde yok: Sağlık bilgisi — `src/app/privacy/page.tsx:1`
+<sub>İsabet: 3 gerçek projede (ayar seti) yetersiz veri: 2 konumda 0 doğru · 84 projelik ölçüm setinde %62 (31/50)</sub>
+
+- 🟠 İşleniyor ama aydınlatma metninde yok: Sağlık bilgisi — `src/app/privacy/page.tsx:1`
   - Kalibrasyon: ölçülen isabet %68 (19/9, 7 proje) — güçlü kanıtla tutuldu: Ayrı bir gizlilik politikası sayfası desteklenen bir dilde okundu; bu doğrudan tanımlayıcı / özel nitelikli veri bir depoya veya servise kadar izlendi ve metinde geçmiyor.
 - 🔴 Veri gönderiliyor ama alıcı olarak belirtilmemiş: OpenAI (Serbest metin / kullanıcı içeriği, Sağlık bilgisi) — `src/app/privacy/page.tsx:1`
   - Kalibrasyon: ölçülen isabet %92 (11/1, 7 proje)
@@ -291,6 +311,8 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 #### 🛑 Yurt dışına kişisel veri aktarımı `AUD-TRF-01`
 
+<sub>İsabet: 3 gerçek projede (ayar seti) isabet %80 (8/10) · 84 projelik ölçüm setinde %87 (97/111)</sub>
+
 - 🛑 OpenAI (US) ← Serbest metin / kullanıcı içeriği, Sağlık bilgisi — `src/app/api/chat/route.ts:10`
   - Kalibrasyon: ölçülen isabet %96 (49/2, 36 proje)
 - 🔴 Supabase (US (bölge seçilebilir)) ← E-posta, Şifre, Ad soyad, Telefon, Doğum tarihi, TC Kimlik No / ulusal kimlik, Fotoğraf / avatar, Pazarlama tercihleri / izinleri, Sağlık bilgisi, Serbest metin / kullanıcı içeriği, Adres, Ödeme kaydı — `src/app/api/signup/route.ts:8`
@@ -298,8 +320,6 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 - 🟠 Stripe (US/IE) ← E-posta, Ad soyad, Adres — `src/app/api/checkout/route.ts:8`
   - Kalibrasyon: ölçülen isabet %96 (49/2, 36 proje)
 - 🟠 Resend (US) ← E-posta, Ad soyad — `src/app/api/signup/route.ts:19`
-  - Kalibrasyon: ölçülen isabet %96 (49/2, 36 proje)
-- 🟠 PostHog (US/EU) ← E-posta, Telefon — `src/components/Analytics.tsx:8`
   - Kalibrasyon: ölçülen isabet %96 (49/2, 36 proje)
 
 **Neden önemli:** Aşağıdaki servisler kişisel veriyi Türkiye dışında işliyor. KVKK md.9 (2024) uyarınca yeterlilik kararı bulunmadığından her biri için uygun güvence gerekir: genellikle Kurul'un standart sözleşmesi imzalanmalı ve imzadan itibaren 5 iş günü içinde Kurum'a bildirilmelidir. AB kullanıcıları için GDPR Ch.V (SCC/DPF) geçerlidir. Özel nitelikli veri ve yapay zekâ sağlayıcıları en yüksek önceliktedir. Konumu bilinmeyen alıcıların nerede barındırıldığı doğrulanmalıdır.
@@ -314,6 +334,8 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 #### 🟠 Yapay zekâ ile kişi hakkında otomatik değerlendirme `AUD-ADM-01`
 
+<sub>İsabet: 84 projelik ölçüm setinde yetersiz veri: 1 konumda 1 doğru · gerçek projelerde ölçülmedi</sub>
+
 - 🟠 OpenAI Sağlık bilgisi verisiyle kişiye yönelik çıktı üretiyor (POST /api/chat, POST /api/health) — `src/app/api/chat/route.ts:10`
   - Kalibrasyon: ölçülmedi
 
@@ -324,6 +346,8 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 <sub>Dayanak: KVKK md.11/1-g · GDPR Art.22 · EU AI Act Art.50</sub>
 
 #### 🟡 İlgili kişi haklarının teknik karşılığı eksik `AUD-DSR-01`
+
+<sub>İsabet: 3 gerçek projede (ayar seti) yetersiz veri: 1 konumda 0 doğru · 84 projelik ölçüm setinde %89 (55/62)</sub>
 
 - 🟡 Veri erişim / dışa aktarma (verilerimi indir) akışı bulunamadı
   - Kalibrasyon: ölçülen isabet %98 (49/1, 51 proje)
@@ -337,6 +361,8 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 ### ⏳ Saklama & imha
 
 #### 🟠 Saklama süresi / otomatik imha tanımlı değil `AUD-RET-01`
+
+<sub>İsabet: 3 gerçek projede (ayar seti) isabet %74 (25/34) · 84 projelik ölçüm setinde %88 (324/367)</sub>
 
 - 🟠 tablo health_logs (Sağlık bilgisi, Serbest metin / kullanıcı içeriği) — `supabase/migrations/0001_init.sql:17`
   - Kalibrasyon: ölçülen isabet %91 (125/13, 51 proje)
@@ -361,12 +387,14 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 ### 🩺 Özel nitelikli veri
 
-#### 🛑 Özel nitelikli kişisel veri akışları `AUD-SPC-01`
+#### 🟠 Özel nitelikli kişisel veri akışları `AUD-SPC-01` <sub>(özgün önem: KRİTİK)</sub>
 
-- 🛑 Sağlık bilgisi → health_logs.symptoms (herkese açık erişim!) — `src/app/api/health/route.ts:7`
+<sub>İsabet: 84 projelik ölçüm setinde %73 (8/11) · gerçek projelerde ölçülmedi · önem "orta" ile sınırlandı: bu kural için gerçek projelerde yeterli isabet ölçülmedi</sub>
+
+- 🟠 Sağlık bilgisi → health_logs.symptoms (herkese açık erişim!) — `src/app/api/health/route.ts:7`
   - Veri yolu: istek gövdesi: POST /api/health → Sağlık bilgisi → health_logs.symptoms
   - Kalibrasyon: yetersiz veri (3/2)
-- 🛑 Sağlık bilgisi → OpenAI (US) — `src/app/api/health/route.ts:8`
+- 🟠 Sağlık bilgisi → OpenAI (US) — `src/app/api/health/route.ts:8`
   - Veri yolu: istek gövdesi: POST /api/health → Sağlık bilgisi → OpenAI
   - Kalibrasyon: yetersiz veri (1/0)
 
@@ -380,6 +408,8 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 #### 🟠 Toplanan ama kullanılmayan kişisel veri `AUD-MIN-01`
 
+<sub>İsabet: 84 projelik ölçüm setinde %12 (4/34) · gerçek projelerde ölçülmedi</sub>
+
 - 🟠 TC Kimlik No / ulusal kimlik: toplanıyor/saklanıyor (form: SignupPage, istek gövdesi: POST /api/signup, profiles.tckn) ama kodda hiç kullanılmıyor; sadece istemciye toplu olarak dönüyor — `supabase/migrations/0001_init.sql:8`
   - Kalibrasyon: ölçülen isabet %7 (1/14, 9 proje) — güçlü kanıtla tutuldu: Hassas kimlik/finans verisi bir istek gövdesi veya formla alınıp kişiye bağlı bir tablonun kolonunda saklanıyor; hiçbir yerde okunmuyor, sorguda kullanılmıyor, gösterilmiyor veya bir sağlayıcıya gönderilmiyor
 
@@ -392,6 +422,8 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 ### 🎯 Amaç sınırlaması
 
 #### 🟠 Amaç kayması: hesap verisi analitik/pazarlama aracına gidiyor `AUD-PUR-01`
+
+<sub>İsabet: isabet ölçülmedi</sub>
 
 - 🟠 E-posta: üyelik/ödeme için toplanıp PostHog (analytics) aracına gönderiliyor — `src/components/Analytics.tsx:8`
   - Veri yolu: (ada göre çıkarım) E-posta → PostHog
@@ -408,9 +440,11 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 ### ⚖️ Hukuki sebep
 
-#### 🔴 Rıza gerektiren işleme rıza alınmadan başlıyor `AUD-LB-01`
+#### 🟠 Rıza gerektiren işleme rıza alınmadan başlıyor `AUD-LB-01` <sub>(özgün önem: YÜKSEK)</sub>
 
-- 🔴 PostHog rıza kontrolü olmadan başlatılıyor; gönderilen veri: E-posta, Telefon — `src/components/Analytics.tsx:7`
+<sub>İsabet: 3 gerçek projede (ayar seti) yetersiz veri: 1 konumda 0 doğru · 84 projelik ölçüm setinde %86 (18/21) · önem "orta" ile sınırlandı: bu kural için gerçek projelerde yeterli isabet ölçülmedi</sub>
+
+- 🟠 PostHog rıza kontrolü olmadan başlatılıyor; gönderilen veri: E-posta, Telefon — `src/components/Analytics.tsx:7`
   - Kalibrasyon: yetersiz veri (4/0)
 
 **Neden önemli:** Bu araçlar çerez/cihaz tanımlayıcısı kullanır; reklam ve davranış izleme açık rıza gerektirir, kesinlikle gerekli olmayan diğerleri için de ePrivacy rıza arar. KVKK Çerez Rehberi (2025, 5.9), yalnızca kitle ölçümüyle sınırlı, siteler arası takip yapmayan birinci taraf analitiğin açık rıza dışında değerlendirilebileceğini söyler; aracın tespit ettiği sağlayıcının bu koşulları taşıyıp taşımadığını siz değerlendirmelisiniz. SDK, kullanıcı onay vermeden önce başlatılıyor (init rıza kontrolünün dışında). Banner olsa bile izleme onaydan önce başlamış olur.
@@ -421,9 +455,11 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 ### 🗑️ Silme kapsamı
 
-#### 🔴 Silme işlemi verinin her kopyasına ulaşmıyor `AUD-DEL-02`
+#### 🟠 Silme işlemi verinin her kopyasına ulaşmıyor `AUD-DEL-02` <sub>(özgün önem: YÜKSEK)</sub>
 
-- 🔴 OpenAI: OpenAI tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/app/api/chat/route.ts:10`
+<sub>İsabet: 3 gerçek projede (ayar seti) isabet %50 (5/10) · 84 projelik ölçüm setinde %42 (26/62) · önem "orta" ile sınırlandı: bu kural için gerçek projelerde yeterli isabet ölçülmedi</sub>
+
+- 🟠 OpenAI: OpenAI tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/app/api/chat/route.ts:10`
   - Kalibrasyon: ölçülen isabet %57 (4/3, 6 proje) — güçlü kanıtla tutuldu: OpenAI: tanımlayıcılar (health) yazma çağrısıyla gönderiliyor (src/app/api/health/route.ts:8)
 - 🟠 tablo orders: profiles tablosuna referans var ama ON DELETE tanımsız (NO ACTION) — kullanıcı silinince veri kalır veya silme hata verir — `supabase/migrations/0001_init.sql:29`
   - Kalibrasyon: ölçülen isabet %48 (10/11, 8 proje) — güçlü kanıtla tutuldu: orders → profiles: son FK durumu ON DELETE tanımsız (SQL migrations replayed); tablo doğrudan tanımlayıcı tutuyor (address, payment_info)
@@ -444,13 +480,15 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 #### 🔴 Veri koruma etki değerlendirmesi (DPIA) gerekli görünüyor `AUD-DPIA-01`
 
+<sub>İsabet: 84 projelik ölçüm setinde %88 (14/16) · gerçek projelerde ölçülmedi</sub>
+
 - 🔴 Özel nitelikli veya çok kişisel veri
   - Kalibrasyon: ölçülen isabet %100 (5/0, 5 proje)
 - 🔴 Yenilikçi teknoloji (ör. yapay zekâ)
   - Kalibrasyon: ölçülen isabet %100 (5/0, 5 proje)
-- 🔴 Veri setlerinin eşleştirilmesi/birleştirilmesi
+- 🟠 Veri setlerinin eşleştirilmesi/birleştirilmesi
   - Kalibrasyon: yetersiz veri (4/0)
-- 🔴 Değerlendirme/puanlama, profilleme
+- 🟠 Değerlendirme/puanlama, profilleme
   - Kalibrasyon: yetersiz veri (4/0)
 
 **Neden önemli:** EDPB (WP248) ölçütlerinden 5 tanesi karşılanıyor; iki veya daha fazla ölçüt genellikle DPIA gerektirir. KVKK'da açık bir DPIA zorunluluğu yoktur ancak Kurul risk analizini md.12 kapsamında beklemektedir; AB kullanıcıları için GDPR Art.35 zorunludur.
@@ -465,7 +503,18 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 _Bu maddeler puana katılmadı: ya aranan katman kapsanmadı, ya güven düşük, ya da bu sinyalin görülmemiş projelerdeki isabeti düşük veya henüz ölçülmedi. Önemli bir kısmı gerçek sorundur; elle doğrulayın._
 
-**9:** 8 ölçülen düşük isabet, 1 henüz ölçülmemiş sinyal
+**10:** 8 ölçülen düşük isabet, 1 kontrol doğrulama istedi, 1 henüz ölçülmemiş sinyal
+
+### Muhtemelen gerçek (1)
+
+#### ❔ Yurt dışına kişisel veri aktarımı `AUD-TRF-01`
+
+- PostHog (US/EU) ← E-posta, Telefon — `src/components/Analytics.tsx:8`
+  - ilk görüşte bu tür 51 konumdan 49 tanesi gerçekti
+  - Neden doğrulanmalı: Aktarım yalnızca hiçbir yerden import edilmeyen modülde görülüyor (src/components/Analytics.tsx); bu kod çalışmıyor olabilir. Modülün kullanılıp kullanılmadığını doğrulayın.
+  - Kalibrasyon: ölçülen isabet %96 (49/2, 36 proje)
+
+<sub>⚠️ doğrulanmamış dayanak: “Yeterlilik kararı bulunmuyor” (docs/hukuki-dayanaklar.md)</sub>
 
 ### Belirsiz (8)
 
@@ -543,16 +592,6 @@ _Bu maddeler puana katılmadı: ya aranan katman kapsanmadı, ya güven düşük
 | Supabase | email, password | ✓ | silme çağrısı var / sağlayıcı hesabı siliniyor |
 | Resend | email, full_name | ✗ | Resend tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) |
 | PostHog | email, phone | ✗ | PostHog tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) |
-
-## Yurt dışı aktarım kaydı
-
-| Servis | Ülke | Yurt dışı (KVKK) | Üçüncü ülke (GDPR) | Veriler |
-|---|---|---|---|---|
-| OpenAI | US | ✓ | ✓ | Serbest metin / kullanıcı içeriği, Sağlık bilgisi 🩺 |
-| Stripe | US/IE | ✓ | ✓ | E-posta, Ad soyad, Adres |
-| Supabase _(veritabanı barındırma)_ | US (bölge seçilebilir) | ✓ | ✓ | E-posta, Şifre, Ad soyad, Telefon, Doğum tarihi, TC Kimlik No / ulusal kimlik, Fotoğraf / avatar, Pazarlama tercihleri / izinleri, Sağlık bilgisi, Serbest metin / kullanıcı içeriği, Adres, Ödeme kaydı 🩺 |
-| Resend | US | ✓ | ✓ | E-posta, Ad soyad |
-| PostHog | US/EU | ✓ | ✓ | E-posta, Telefon |
 
 ## Etki değerlendirmesi (DPIA)
 

@@ -29,8 +29,8 @@ Tarama seçenekleri:
   -l, --lang <tr|en>                  Dil (varsayılan: tr)
       --fail-on <seviye>              Bu seviye veya üstünde bulgu varsa exit 1
                                       (critical|high|medium|low|none, varsayılan: high);
-                                      "Kontrol edilecekler" sayılmaz
-      --fail-on-review                --fail-on "Kontrol edilecekler"i de saysın
+                                      "Doğrulanmalı (puana katılmadı)" listesi sayılmaz
+      --fail-on-review                --fail-on "Doğrulanmalı" listesini de saysın
       --ignore <glob,...>             Yok sayılacak yollar
       --include <klasör,...>          Varsayılan olarak atlanan ajan/editör klasörlerini
                                       (.claude, .cursor, .codex …) yine de tara
@@ -275,7 +275,7 @@ async function main() {
 }
 
 /**
- * Exit 1 when a finding at or above --fail-on exists. "To check" (review) locations count only with --fail-on-review:
+ * Exit 1 when a finding at or above --fail-on exists. "Needs verification" (review) locations count only with --fail-on-review:
  * they are the findings that were mostly wrong on real projects.
  */
 function setExit(result, args) {

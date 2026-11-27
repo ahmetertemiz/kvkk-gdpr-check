@@ -2,14 +2,58 @@
 
 Bu belge aracın ne kadar doğru çalıştığını ölçüldüğü hâliyle anlatır. İddia değil, ölçümdür; ölçümün kendi zayıflıkları da aşağıda yazılıdır.
 
-## Nasıl ölçüldü
+## İki ölçüm seti
+
+Aracın isabeti iki ayrı sette ölçülür. Raporlardaki "İsabet:" satırı ikisini yan yana verir, hiçbir zaman birleştirmez:
+
+- **Gerçek projeler (ayar seti):** üç gerçek uygulama. Hızlı tarama, derin denetim ve canlı tarama ölçülür; her konum koddan tek tek değerlendirilir. Veri ve araç `bench/real.js` (etiketler yayımlanmaz).
+- **84 projelik ölçüm seti:** açık kaynak projeler, tur tur; yalnızca derin denetim. Aşağıdaki "Nasıl ölçüldü" ve sonraki bölümler bu seti anlatır.
+
+**İki setin oranları yan yana okunmamalı.** Projeler, değerlendirme süreci ve kapsam farklıdır. İki setin etiketleme ölçütü de henüz karşılaştırılmadı. Ölçütten kasıt, bir konumun "tespit olgu olarak doğru" olduğunda mı, yoksa "gerçek bir sorun" olduğunda mı doğru sayıldığıdır.
+
+### Gerçek projeler
+
+Oranlar doğru / (doğru + yanlış) olarak hesaplandı, belirsiz kararlar hariç. 0.2'deki düzeltmeler bu üç projeye bakılarak yazıldı; 0.2.0 sütunu bağımsız bir ölçüm değildir.
+
+| | 0.1.3 | 0.2.0 |
+|---|---|---|
+| Hızlı tarama, puanlanan konumlar | 24 / 53 (%45) | 24 / 33 (%73) |
+| Hızlı tarama, kritik + yüksek + orta | 21 / 47 (%45) | 18 / 24 (%75) |
+| Derin denetim, puanlanan konumlar | 32 / 71 (%45) | 32 / 55 (%58) |
+| Derin denetim, kritik + yüksek + orta | 7 / 38 (%18) | 7 / 20 (%35) |
+| Derin denetim, "Doğrulanmalı" listesi | 7 / 29 | 7 / 31 |
+
+- **Yanlışların düşmesi:** 0.2'de yanlış konumlar 68'den 32'ye düştü (hızlı tarama ile derin denetimin puanlanan konumları). Doğru konum kaybı yok.
+- **Düşüşün kaynakları:** sahte / yer tutucu gizli anahtarlar, açığa çıkarmayı engelleyen kontroller, tanınmayan hesap silme ve sütun adından yapılan yanlış sınıflandırmalar.
+- **Bu kaynaklar projeye özel değil:** Hepsi genel kurallarla düzeltildi; projeye özel ad ya da kelime listesi kullanılmadı.
+- **Önem sınırından sonra kalan:** Üç projede kritik ya da yüksek önemde tek konum kaldı. Bu, gerçek görünümlü bir değer içeren ve commit edilmiş bir `.env`; konum doğru.
+- **Etiketsiz konumlar:** Derin denetimin kritik, yüksek ve orta konumlarından 10'u etiketsiz; oranlara girmez.
+- **AUD-SEC-04 (log'a kişisel veri):** Gerçek sette 8 konumun 1'i doğru, 84 projelik sette 72 konumun 48'i. Kural düzeyinde ölçüldüğü konumlar "Doğrulanmalı"ya gider. Alt sinyali olan konumlar için kural düzeyine bakan bir yedek kural yazıldı ama kapalı. Açılırsa 84 projelik sette çoğu doğru olan konumları da listeden çıkarıyordu.
+
+### Görülmemiş dördüncü proje
+
+<!-- 0.2.0 yayımlanmadan önce doldurulacak. -->
+
+Henüz ölçülmedi. 0.2.0 yayımlanmadan önce araç, geliştirilirken hiç görülmemiş bir gerçek projede ölçülecek. Ölçümde şunlar birlikte raporlanacak:
+- Kontrol edilecekler bölümündeki konumların isabeti;
+- "Doğrulanmalı" listesinin isabeti;
+- envanterin isabeti ve eksiksizliği, yani kodda olup envanterde olmayan kişisel veriler ve üçüncü taraflar;
+- kodu okurken bulunan gerçek sorunlardan raporun herhangi bir bölümünde yer alanların sayısı.
+
+Yalnızca bulguları aşağı indirerek elde edilen isabet başarı sayılmaz.
+
+## 84 projelik ölçüm seti
+
+Derin denetimin açık kaynak projelerdeki tur tur ölçümü.
+
+### Nasıl ölçüldü
 
 - Her turda araç, daha önce hiç üzerinde çalışılmamış gerçek açık kaynak projelerde çalıştırıldı. Motor ölçüm sırasında değiştirilmedi.
 - Her bulgu, kodu okuyan bir yapay zekâ ajanı tarafından doğru / yanlış / belirsiz olarak değerlendirildi; kararların bir bölümü başka ajanlarca yeniden kontrol edildi. Kaçırılan sorunlar ayrıca arandı ve her biri doğrulandı.
 - 9. turdan itibaren yığın karışımı sabittir ([bench/unseen-mix.json](../bench/unseen-mix.json)); yöntemin tamamı [bench/EVALUATION.md](../bench/EVALUATION.md) dosyasındadır.
 - **Bir hukukçu hiçbir etiketi doğrulamadı. Bütün değerlendiriciler aynı model ailesindendir.**
 
-## Görülmemiş projelerdeki sonuçlar
+### Görülmemiş projelerdeki sonuçlar
 
 | Tur | Proje | Puanlanan bulgularda isabet | Proje başına kaçırma | Yüksek önemli kaçırma (toplam) |
 |---|---|---|---|---|
@@ -27,7 +71,7 @@ Bu belge aracın ne kadar doğru çalıştığını ölçüldüğü hâliyle anl
 - 9. turda yalnızca "yanlış" kararları itiraza açıktı, bu da isabeti yukarı çekti. Kör denetimle düzeltilmiş tahmin yaklaşık %75. 10. turda her iki karar türü de kontrol edildi.
 - 8, 9 ve 10. turların isabeti arasındaki fark gürültü düzeyindedir. **Dürüst özet: görülmemiş bir projede puanlanan bulguların dörtte üçü ile beşte dördü doğrudur ve proje başına 8 kadar gerçek sorun kaçırılır; bunların 2-3'ü yüksek önemlidir.**
 
-## Neyi iyi, neyi kötü yapıyor
+### Neyi iyi, neyi kötü yapıyor
 
 10. turda kural başına puanlanan bulgular (doğru / yanlış): saklama 118/30, hesap silme 44/4, yetkisiz erişim 26/12, yurt dışı aktarım 23/5, veri sahibi hakları 9/2, aydınlatma eksikliği 6/1, log'a kişisel veri 6/5, herkese açık tablo 4/4, gereksiz veri 4/3.
 

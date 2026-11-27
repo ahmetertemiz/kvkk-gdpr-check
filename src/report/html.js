@@ -190,7 +190,7 @@ function locationList(f, t, lang) {
   return body ? `<div class="block"><h4>${esc(t.where)}</h4><ul class="locs">${body}</ul></div>` : '';
 }
 
-const capRaw = (f) => f.severityRaw || f.locations.find((l) => l.severityRaw)?.severityRaw || null;
+const capRaw = (f) => f.severityRaw || f.locations.find((l) => l.severityRaw && (l.severity || f.severity) === f.severity)?.severityRaw || null;
 function precisionP(f, lang) {
   if (isInventory(f)) return '';
   const raw = capRaw(f);

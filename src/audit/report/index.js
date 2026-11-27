@@ -26,7 +26,7 @@ function jsonCalibration(c, lang) {
 
 function jsonFinding(f, lang) {
   const p = rulePrecision('audit', f.rule.id);
-  const raw = f.severityRaw || f.locations.find((l) => l.severityRaw)?.severityRaw || null;
+  const raw = f.severityRaw || f.locations.find((l) => l.severityRaw && (l.severity || f.severity) === f.severity)?.severityRaw || null;
   return {
     id: f.rule.id,
     // 0.2: deep-audit findings are verdicts; the inventory (elements, activities, transfers) is in `model`

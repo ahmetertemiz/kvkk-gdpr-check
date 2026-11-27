@@ -19,7 +19,7 @@ function namedVendorsCard(m, lang) {
 
 /** Measured precision of the finding's rule (real-project set and 84-project set), and the capped level if any. */
 function precisionP(f, lang) {
-  const raw = f.severityRaw || f.locations.find((l) => l.severityRaw)?.severityRaw;
+  const raw = f.severityRaw || f.locations.find((l) => l.severityRaw && (l.severity || f.severity) === f.severity)?.severityRaw;
   const cap = raw ? ` · ${esc(SEVERITY_BASIS_NOTE.capped[lang])} (${esc(lang === 'en' ? 'original level' : 'özgün önem')}: ${esc(raw)})` : '';
   return `<p class="refs">${esc(lang === 'en' ? 'Precision' : 'İsabet')}: ${esc(precisionText(rulePrecision('audit', f.rule.id), lang))}${cap}</p>`;
 }

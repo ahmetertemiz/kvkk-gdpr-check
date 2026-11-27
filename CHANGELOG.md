@@ -1,5 +1,81 @@
 # Değişiklikler
 
+## 0.2.0 — yayımlanmadı
+
+Raporlar artık olgu ile hükmü ayırıyor ve her hükmün yanında ölçülen isabetini yazıyor. Kritik ve yüksek önem yalnızca bir ölçüm destekliyorsa gösteriliyor. Üç gerçek projede görülen yanlış alarm sınıfları, kök nedenlerine göre ve projeye özel ad ya da kelime listesi kullanmadan düzeltildi.
+
+**Bu sürüm, araç geliştirilirken hiç görülmemiş dördüncü bir projede ölçülmeden yayımlanmayacak.** O ölçümün sonucu README'ye ve [docs/ACCURACY.md](docs/ACCURACY.md) dosyasına yazılacak.
+
+### Davranış değişiklikleri
+
+CI'da ya da JSON çıktısını okuyan bir araçta sonucu değiştirebilecek değişiklikler:
+
+- **Önem sınırı:**
+  - Bir konum ancak şu durumlarda kritik ya da yüksek gösteriliyor:
+    - kuralın gerçek projelerde en az 8 etiketi var ve isabetinin %90 alt sınırı en az %50;
+    - derin denetimde, konumun alt sinyali 84 projelik sette güvenilir ölçülmüş;
+    - konum gerçek görünümlü bir anahtar sızıntısı (commit edilmiş, böyle bir değer içeren `.env` dahil).
+  - Diğer konumlar en fazla "orta". Sayılar, skor ve `--fail-on` sınırlanmış düzeye bakıyor; `--fail-on high` artık çok daha az başarısız oluyor.
+  - Ölçüm setinin klasörlerinde kritik ve yüksek puanlı konumlar hızlı taramada 124'ten 8'e, derin denetimde 450'den 321'e indi. Canlı tarama kuralları sınırlanmıyor.
+- **Yeni JSON alanları:** Bulgulara `kind`, `precision` ve gerekirse `severityRaw` eklendi; konumlara `severityRaw` ve `severityBasis`. Ayrıntı:
+  - `kind`: `inventory` (olgu) ya da `finding` (hüküm).
+  - `severityRaw`: sınırdan önceki önem.
+  - `severityBasis: 'benchmark'`: önemi 84 projelik sete dayanan konum.
+  - Eski alanlar aynen duruyor.
+- **Hızlı taramada "Doğrulanmalı (puana katılmadı)" listesi:** Gerçek projelerde güvenilir biçimde düşük isabetli çıkan bir kuralın konumları bu listeye gidiyor. Şu an hızlı taramada bu ölçüte uyan bir kural yok; liste boş kalıyor. Puana, sayılara ve `--fail-on` sınırına girmiyorlar; JSON'da `review[]`, SARIF'te `note` düzeyinde ve `properties.review` ile çıkıyorlar. Bunları da saymak için `--fail-on-review` kullanın; bu bayrak derin denetimde de çalışıyor.
+- **Gerçek proje kalibrasyonu (yalnızca indirir):** Gerçek projelerde güvenilir biçimde düşük isabetli bir kuralın konumları "Doğrulanmalı"ya gidiyor. Şu an ölçütü yalnızca AUD-SEC-04 (log'a kişisel veri) karşılıyor; o da yalnızca alt sinyali olmayan konumlarına uygulanıyor. Alt sinyali olan konumlar için kural toplamına bakan yedek kural yazıldı ama kapalı. Ölçüt ve eşikler [docs/CALIBRATION.md](docs/CALIBRATION.md) dosyasında.
+- **TRK001 (izleyici tespiti) artık bir olgu:** "Bilgi" düzeyinde ve Envanter'de duruyor, puanı düşürmüyor. İzleyicinin rıza alınmadan çalışması hükmü CNS001'de kalıyor. Bu yüzden izleyicisi olan projelerin hızlı tarama skoru yükselebilir; örnek uygulamada 29'dan 34'e çıktı.
+- **Şema sütunları envanterde:** Hızlı taramanın kişisel veri envanteri (PII001) SQL ve Prisma şemasındaki her kişisel veri sütununu da listeliyor. Sütunlar derin denetimin ayrıştırıcısı ve sınıflandırıcısıyla okunuyor; özel nitelikli sütunlar PII002'de kalıyor. PII001'e bakan proje kuralları (veri silme, dışa aktarma, saklama…) bu yüzden daha fazla projede çalışabilir.
+- **Rapor bölümlerinin adları:** Raporlar iki bölüm: "Envanter" ve "Kontrol edilecekler". Önceden "Kontrol edilecekler" adıyla anılan puana katılmayan liste artık "Doğrulanmalı (puana katılmadı)".
+
+### Raporlar
+
+- **İki bölüm:** Her biçimde (metin, Markdown, HTML, web arayüzü, JSON) Envanter (olgu) ile Kontrol edilecekler (hüküm) ayrı.
+  - Hızlı taramada Envanter: kişisel veri alanları, izleyiciler, veri alan üçüncü taraflar, canlı sitenin üçüncü taraf alan adları ve özeti.
+  - Derin denetimde Envanter: veri unsurları, işleme faaliyetleri ve yurt dışı aktarım kaydı.
+- **Envanter kesilmiyor:** Her öğe listeleniyor; önceden metin raporu 8, Markdown 15 öğeden sonra kesiyordu.
+- **Kodda adı geçen servisler:** Derin denetim, kodda adı geçen ama veri akışı izlenemeyen servisleri "doğrulayın" notuyla Envanter'de ayrı bir listede gösteriyor. Örneğin SDK'sız, elle yazılmış bir istekle kullanılan bir analitik servisi. Bu liste hiçbir kontrole, bulguya ya da puana girmiyor; JSON'da `model.namedVendors`.
+- **İsabet satırı:** Her hükmün yanında bir "İsabet:" satırı var. Satır, gerçek projelerdeki ve 84 projelik setteki isabeti ayrı ayrı veriyor. Gerçek proje oranı "(ayar seti)" diye işaretli, çünkü araç o projelere bakılarak düzeltildi. 5'ten az etiket varsa oran yerine yalnızca sayı yazıyor.
+- **Özgün önem:** Sınırlanan bulgular "(özgün önem: …)" notunu taşıyor. Not yalnızca bulgunun kendi düzeyi değiştiyse çıkıyor.
+
+### Yanlış alarm düzeltmeleri
+
+- **Sahte gizli anahtarlar:** Yer tutucular, alfabe ya da tekrar dizileri, okunabilir metnin Base64'ü, belgelerdeki örnek anahtarlar ve Supabase demo anahtarları sızıntı sayılmıyor. 300 bin rastgele anahtarda hiçbiri sahte sanılmadı.
+- **Açığa çıkarmayı engelleyen kontroller:** Bir sırrın public ortam değişkeni olarak yayınlanmasını engelleyen kod (SEC002 ve derin denetimdeki karşılığı) sızıntı sayılmıyor.
+- **Hesap silme:**
+  - Bir RPC ile çağrılan SQL fonksiyonlarının içindeki `delete from` iki düzeye kadar izleniyor; `auth.users` yönetilen kimlik deposu sayılıyor.
+  - Genel yardımcılarla yapılan DELETE çağrıları silme sayılmıyor.
+  - Hiç hesap kaydı olmayan projelerde silme bulgusu puana değil "Doğrulanmalı"ya gidiyor.
+- **Sınıflandırma:**
+  - `<şey>_fingerprint`, cihaz ya da biyometri belirteci yoksa biyometrik veri sayılmıyor.
+  - Sayısal sütunlarda çok anlamlı adlar kişisel veri sayılmıyor.
+  - Hata bağlamındaki `name` kişi adı sayılmıyor.
+  - Ticaret dışındaki `*_order` sipariş geçmişi sayılmıyor.
+- **Intercom:** Kalıp, yalnızca servisin SDK'sını, alan adlarını ve global değişkenlerini tanıyor. Önceden metindeki sıradan "intercom" (kapı diafonu) kelimesine de takılıyordu.
+
+### Ölçüm
+
+- **Gerçek proje seti:** Gerçek projelerdeki isabet `bench/real.js` ile ölçülüyor; etiketler yayımlanmıyor. Üç projede sonuçlar:
+
+  | | 0.1.3 | 0.2.0 |
+  |---|---|---|
+  | Hızlı tarama, puanlanan | %45 | %73 |
+  | Derin denetim, puanlanan | %45 | %58 |
+  | Derin denetim, kritik + yüksek + orta | 7 / 38 | 7 / 20 |
+
+  - Doğru konum kaybı yok.
+  - Bu rakamlar bağımsız değil: düzeltmeler bu projelere bakılarak yazıldı.
+- **84 projelik set:** Doğru bulgu kaybı yok (1727 → 1727), yanlış bulgular 181'den 179'a indi ve hiçbir doğru bulgu "Doğrulanmalı"ya düşmedi.
+
+### Diğer
+
+- **Denetim becerisi** ([skill/kvkk-gdpr-audit](skill/kvkk-gdpr-audit/SKILL.md)) artık bir elle doğrulama akışı:
+  - Her öğeyi önce kodda okuyup sonra aracın etiketine bakıyor ve doğru / yanlış / belirsiz kararını tek cümlelik kanıtla yazıyor.
+  - Aydınlatma metnindeki vaatleri kodla karşılaştırıyor.
+  - Aracın kaçırdıklarını ayrı başlıkta listeliyor.
+  - Proje koduna dokunmuyor; raporu proje dışına yazıyor.
+- **CLI yardımı:** `--fail-on` yardım metni yeni liste adını kullanıyor.
+
 ## 0.1.3 — 2026-11-27
 
 Yalnızca belgeler; kodda ve kurallarda değişiklik yok.

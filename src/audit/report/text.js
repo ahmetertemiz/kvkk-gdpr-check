@@ -119,7 +119,7 @@ export function auditText(result, { lang = 'tr', color = false, verbose = false 
     for (const f0 of list) {
       const f = viewFinding(f0);
       const lowF = findingLowConfidence(f);
-      const raw = f.severityRaw || f.locations.find((l) => l.severityRaw)?.severityRaw;
+      const raw = f.severityRaw || f.locations.find((l) => l.severityRaw && (l.severity || f.severity) === f.severity)?.severityRaw;
       o.push(`  ${(sc[f.severity] || k.d)(` ${t.sev[f.severity] || f.severity} `)} ${k.b(L(f.rule.title, lang))} ${k.d(f.rule.id)}${lowF ? ' ' + k.mag(`[${t.lowConfFinding}]`) : ''}${raw ? k.d(`  (${PART[lang].raw}: ${t.sev[raw] || raw})`) : ''}`);
       o.push(k.d(`     ${PART[lang].prec}: ${precisionText(rulePrecision('audit', f.rule.id), lang)}${raw ? ` · ${SEVERITY_BASIS_NOTE.capped[lang]}` : ''}`));
       const max = verbose ? Infinity : 6;

@@ -97,7 +97,7 @@ export function auditMarkdown(result, { lang = 'tr' } = {}) {
     for (const f0 of list) {
       const f = viewFinding(f0);
       const lowF = findingLowConfidence(f);
-      const raw = f.severityRaw || f.locations.find((l) => l.severityRaw)?.severityRaw;
+      const raw = f.severityRaw || f.locations.find((l) => l.severityRaw && (l.severity || f.severity) === f.severity)?.severityRaw;
       o.push(`#### ${ICON[f.severity] || ''} ${L(f.rule.title, lang)} \`${f.rule.id}\`${raw ? ` <sub>(${PART[lang].raw}: ${t.sev?.[raw] || raw})</sub>` : ''}`, '');
       o.push(`<sub>${PART[lang].prec}: ${precisionText(rulePrecision('audit', f.rule.id), lang)}${raw ? ` · ${SEVERITY_BASIS_NOTE.capped[lang]}` : ''}</sub>`, '');
       if (lowF) o.push(`_⚠ ${t.lowConfFinding}_`, '');

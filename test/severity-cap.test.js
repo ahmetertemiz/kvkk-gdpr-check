@@ -91,3 +91,16 @@ test('quick scan: an unmeasured high rule shows medium with severityRaw; a real-
   assert.ok(inv.every((id) => ['PII001', 'TRF001', 'WEB018'].includes(id)));
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('a finding kept at its level by one location shows no "original level", although other locations were capped', async () => {
+  const { audit } = await import('../src/audit/index.js');
+  const { auditText } = await import('../src/audit/report/text.js');
+  const { fileURLToPath } = await import('node:url');
+  const a = await audit(path.join(path.dirname(fileURLToPath(import.meta.url)), '../examples/audit-app'), { lang: 'tr' });
+  const f = a.findings.find((x) => x.rule.id === 'AUD-DPIA-01');
+  assert.equal(f.severity, 'high');
+  assert.ok(f.locations.some((l) => l.severityRaw), 'some locations were capped');
+  assert.equal(f.severityRaw, undefined);
+  const line = auditText(a, { lang: 'tr' }).split('\n').find((x) => x.includes('AUD-DPIA-01'));
+  assert.doesNotMatch(line, /özgün önem/);
+});

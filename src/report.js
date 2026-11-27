@@ -148,7 +148,7 @@ export function liveSummary(live) {
   };
 }
 
-/** "To check" (review) texts: not counted, not scored, not seen by --fail-on unless --fail-on-review. */
+/** "Needs verification" (review) texts: not counted, not scored, not seen by --fail-on unless --fail-on-review. */
 const REVIEW_T = {
   tr: { title: 'Doğrulanmalı (puana katılmadı)', note: 'Puana, sayılara ve --fail-on sınırına katılmadı. Gerçek projelerde çoğu yanlış çıkan bulgular; her birini kodda doğrulayın.', why: 'Neden burada' },
   en: { title: 'Needs verification (not scored)', note: 'Not scored, not counted and not seen by --fail-on. Findings that were mostly wrong on real projects; verify each in the code.', why: 'Why here' },
@@ -161,7 +161,7 @@ const PART_T = {
 /** Measurement source of a rule id (live WEB…, deep audit AUD-…, quick scan otherwise). */
 export const sourceOfRule = (id) => (/^WEB\d/.test(id) ? 'live' : /^AUD-/.test(id) ? 'audit' : 'quick');
 const precisionLine = (f, lang) => precisionText(rulePrecision(sourceOfRule(f.rule.id), f.rule.id), lang);
-const rawOf = (f) => f.severityRaw || f.locations.find((l) => l.severityRaw)?.severityRaw || null;
+const rawOf = (f) => f.severityRaw || f.locations.find((l) => l.severityRaw && (l.severity || f.severity) === f.severity)?.severityRaw || null;
 const reviewOf = (result) => (Array.isArray(result.review) ? result.review.filter((f) => f?.locations?.length) : []);
 const reviewWhy = (f, lang) => L(f.locations.find((l) => l.reviewReason)?.reviewReason, lang);
 
@@ -438,7 +438,7 @@ export function toJSON(result, { lang = 'tr' } = {}) {
       signals: result.signals,
       live: result.live,
       findings: result.findings.map((f) => jsonFinding(f, lang)),
-      // "To check": not counted, not scored, not seen by --fail-on unless --fail-on-review.
+      // "Needs verification" (review): not counted, not scored, not seen by --fail-on unless --fail-on-review.
       review: reviewOf(result).map((f) => jsonFinding(f, lang)),
     },
     null,

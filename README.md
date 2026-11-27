@@ -2,7 +2,7 @@
 
 **Yazılım projenizi KVKK ve GDPR riskleri açısından tarayan, her bulguyu dosya ve satırıyla gösteren komut satırı aracı.**
 
-> ⚠️ **Şu anki sürümde bulguların çoğu yanlış alarm olabilir.** Üç gerçek projede kritik, yüksek ve orta önemli konumların yalnızca %8–26'sı doğru çıktı ([Ne kadar doğru?](#ne-kadar-doğru)). Her bulguyu kodda kendiniz doğrulayın. Aracın daha güvenilir kısmı, üçüncü taraf ve veri akışı envanteri (kişisel veri hangi servise gidiyor) ile canlı sitedeki çerez taramasıdır.
+> ⚠️ **Bulguların önemli bir kısmı yanlış alarm olabilir; her birini kodda kendiniz doğrulayın.** Araç geliştirilirken hiç görülmemiş bir gerçek projede 0.1.2, kritik, yüksek ve orta önemli konumların yalnızca %8'inde haklıydı. 0.2 üç gerçek projeye bakılarak düzeltildi; görülmemiş bir projedeki sonucu henüz ölçülmedi ([Ne kadar doğru?](#ne-kadar-doğru)). Raporun en güvenilir kısmı **Envanter** bölümüdür: kodun tuttuğu kişisel veriler, izleyiciler ve veri alan üçüncü taraflar; canlı taramada da çerezler.
 
 [English](README.en.md) · [Doğruluk](docs/ACCURACY.md) · [Hukuki dayanaklar](docs/hukuki-dayanaklar.md) · [Örnek rapor](examples/reports/audit-app.md)
 
@@ -26,21 +26,44 @@ Kodunuz bilgisayarınızdan çıkmaz: tarama ağa bağlanmaz, projenizin kodunu 
 Depodaki örnek uygulamanın ([examples/audit-app](examples/audit-app)) derin denetiminden:
 
 ```text
-  Uyum skoru: 0/100 (F)    4 KRİTİK   4 YÜKSEK   7 ORTA   1 DÜŞÜK   0 BİLGİ
-  ℹ 2 yüksek / kritik önemde madde doğrulanmayı bekliyor ve skora dahil değil; skor bir üst sınırdır
+  Uyum skoru: 0/100 (F)    1 KRİTİK   2 YÜKSEK   12 ORTA   1 DÜŞÜK   0 BİLGİ
   ℹ Next.js: destekleniyor; daha önce görülmemiş 8 projede 253 maddeden 214 tanesi doğruydu,
     proje başına ortalama 5 sorun kaçırıldı
 
   Yönetici özeti — En önemli riskler
-    KRİTİK  Kişisel veri tutan tablolar herkese açık — health_logs: "read all logs" politikası
-            herkese select izni veriyor (Sağlık bilgisi, …)
-    KRİTİK  Yetkisiz erişime açık uç noktalar — POST /api/health kimlik doğrulaması olmadan
-            kişisel veri işliyor
     KRİTİK  Yurt dışına kişisel veri aktarımı — OpenAI (US) ← Serbest metin, Sağlık bilgisi
-    YÜKSEK  Silme işlemi verinin her kopyasına ulaşmıyor — OpenAI tarafındaki kopya silinmiyor
+    YÜKSEK  Veri koruma etki değerlendirmesi (DPIA) gerekli görünüyor — Özel nitelikli veri
+    YÜKSEK  Aydınlatma metni gerçekte olanla örtüşmüyor — İşleniyor ama aydınlatma metninde
+            yok: Sağlık bilgisi
+
+  ━ Envanter  · Olgu, hüküm yok …
+  ━ Kontrol edilecekler  · Hüküm içeren bulgular …
+   ORTA  Kişisel veri tutan tablolar herkese açık AUD-SEC-01  (özgün önem: KRİTİK)
+     İsabet: 84 projelik ölçüm setinde %75 (12/16) · gerçek projelerde ölçülmedi ·
+             önem "orta" ile sınırlandı
+     → health_logs: "read all logs" politikası herkese select izni veriyor
+       supabase/migrations/0001_init.sql:26
 ```
 
 Tam rapor: [Markdown](examples/reports/audit-app.md) · [HTML](examples/reports/audit-app.html) (indirip tarayıcıda açın).
+
+## Rapor nasıl okunur
+
+Her rapor (metin, Markdown, HTML, JSON) iki bölümdür:
+
+- **Envanter: olgu, hüküm yok.**
+  - Hızlı taramada: kodun ve veritabanı şemasının tuttuğu kişisel veriler, izleyiciler, veri alan üçüncü taraflar; canlı taramada çerezler ve istek giden alan adları.
+  - Derin denetimde ayrıca: işleme faaliyetleri, yurt dışı aktarım kaydı ve kodda adı geçen ama veri akışı izlenemeyen servisler ("doğrulayın" notuyla).
+  - Aracın en güvenilir kısmıdır. Her öğe tek satırda, kesilmeden listelenir.
+- **Kontrol edilecekler: hüküm içeren bulgular.** Her kuralın yanında bir "İsabet:" satırı vardır. Bu satır iki ölçümü ayrı ayrı verir: gerçek projelerde ve 84 projelik ölçüm setinde ne kadar doğru çıktığı. 5'ten az etiket varsa oran değil, yalnızca sayı yazar ("yetersiz veri: 1 konumda 0 doğru").
+- **Doğrulanmalı (puana katılmadı):** ölçümde çoğu yanlış çıkan sinyaller. Puana, sayılara ve `--fail-on` sınırına girmez; `--fail-on-review` ile girer. Bu listeyi de okuyun, içinde gerçek sorunlar var.
+
+**Önem sınırı.** Bir konum ancak bir ölçüm destekliyorsa kritik ya da yüksek gösterilir. Destek şu durumlardan biridir:
+- kuralın gerçek projelerde en az 8 etiketi var ve isabetin %90 alt sınırı en az %50;
+- derin denetimde, konumun alt sinyali 84 projelik sette güvenilir ölçülmüş ("önem ölçüm setine dayanıyor" notuyla);
+- konum gerçek görünümlü bir anahtar sızıntısı.
+
+Diğer konumlar en fazla "orta" gösterilir. Özgün önem raporda "(özgün önem: …)" olarak, JSON'da `severityRaw` alanında durur.
 
 ## Özellikler
 
@@ -109,34 +132,60 @@ Düzeyler görülmemiş projelerdeki ölçüme göre sabit bir kuralla verilir. 
 - Yedi analiz katmanından (şema, uç noktalar, veritabanı yazma, formlar, arayüz, üçüncü taraflar, aydınlatma metinleri) dördü ya da daha fazlası görülmedi. Görülmeyen katmanda bulgu çıkmaması skoru yükseltir; bu yüzden küçük bir proje yanıltıcı biçimde A alabilirdi.
 - Kapsam kontrolleri okunamayan bir bölüm buldu.
 
-Ölçüm setindeki 84 projenin 28'i skor alıyor; hızlı tarama ve derin denetim aynı kararı verir. Skor verildiğinde de bir **üst sınırdır**: doğrulanmayı bekleyen yüksek önemli maddeler skora girmez. Yalnızca `url` taramasında kod olmadığı için bu kural uygulanmaz. JSON'da skor yoksa `score: null`, `scoreReliable: false` ve `scoreReasons` bulunur. CI'da `--fail-on` skora değil önem derecesine bakar.
+Ölçüm setindeki 84 projenin 28'i skor alıyor; hızlı tarama ve derin denetim aynı kararı verir. Skor verildiğinde de bir **üst sınırdır**: doğrulanmayı bekleyen yüksek önemli maddeler skora girmez. Yalnızca `url` taramasında kod olmadığı için bu kural uygulanmaz. JSON'da skor yoksa `score: null`, `scoreReliable: false` ve `scoreReasons` bulunur. Sayılar ve skor, önem sınırından sonraki düzeylerle hesaplanır. CI'da `--fail-on` skora değil önem derecesine bakar.
 
 ## Ne kadar doğru?
 
-**Üç gerçek projede, o projeye bakılarak yapılan düzeltmelerden önce, kritik, yüksek ve orta önemli konumların %8, %13 ve %26'sı doğruydu.**
+Üç ayrı ölçüm var ve birbirleriyle doğrudan karşılaştırılamaz: farklı projelerde, farklı süreçlerle yapıldılar. Bütün doğru / yanlış kararlarını kodu okuyan yapay zekâ verdi; bir hukukçu hiçbirini doğrulamadı.
 
-| Proje | Doğru konum | Oran | Not |
+### Gerçek projeler (ayar seti)
+
+Üç gerçek uygulamada her konum koddan tek tek kontrol edildi. **0.2'deki düzeltmeler bu üç projeye bakılarak yazıldı. Bu yüzden 0.2.0 sütunu bir ayar sonucudur, bağımsız ölçüm değildir.** Oranlar doğru / (doğru + yanlış) olarak hesaplandı, belirsiz kararlar hariç.
+
+| | 0.1.3 | 0.2.0 |
+|---|---|---|
+| Hızlı tarama, puanlanan konumlar | 24 / 53 (%45) | 24 / 33 (%73) |
+| Hızlı tarama, kritik + yüksek + orta | 21 / 47 (%45) | 18 / 24 (%75) |
+| Derin denetim, puanlanan konumlar | 32 / 71 (%45) | 32 / 55 (%58) |
+| Derin denetim, kritik + yüksek + orta | 7 / 38 (%18) | 7 / 20 (%35) |
+| Derin denetim, "Doğrulanmalı" listesi | 7 / 29 | 7 / 31 |
+
+- **Doğru konum kaybı yok.** Hızlı taramanın kritik, yüksek ve orta satırından çıkan 3 doğru konum, TRK001'in artık "bilgi" düzeyinde, Envanter'de bir olgu olarak durmasından geliyor.
+- **Önem sınırından sonra** üç projede kritik ya da yüksek önemde tek konum kaldı: gerçek görünümlü bir değer içeren, commit edilmiş bir `.env`. O konum doğru.
+- **Etiketsiz konumlar:** Derin denetimin kritik, yüksek ve orta konumlarından 10'u hiç etiketlenmedi; oranlara girmez.
+- **Bağımsız tek sonuç:** O projeye bakılarak yapılan düzeltmelerden önce, 0.1.x ile ölçülen oranlar %13, %26 ve %8'di. Bunlar kritik, yüksek ve orta konumlardı; hızlı tarama, derin denetim ve canlı tarama birlikte sayıldı. %8, araç geliştirilirken hiç görülmemiş üçüncü projenin sonucuydu.
+
+### Görülmemiş dördüncü proje
+
+<!-- 0.2.0 yayımlanmadan önce doldurulacak; rakamlar ölçümden sonra yazılacak. -->
+
+**Henüz ölçülmedi.** 0.2.0 yayımlanmadan önce araç, geliştirilirken hiç görülmemiş dördüncü bir gerçek projede ölçülecek. Sonuç bu tabloya yazılacak:
+
+| Ölçü | Hızlı tarama | Derin denetim |
+|---|---|---|
+| Kontrol edilecekler: kritik, yüksek ve orta konumların isabeti | — | — |
+| "Doğrulanmalı" listesinin isabeti | — | — |
+| Envanterin isabeti | — | — |
+| Envanterin eksiksizliği (kodda olup envanterde olmayan veri ve üçüncü taraflar) | — | — |
+| Kodu okurken bulunan gerçek sorunlardan raporun herhangi bir bölümünde yer alanlar | — | — |
+
+### 84 projelik ölçüm seti (yalnızca derin denetim)
+
+Derin denetim ayrıca 84 açık kaynak projede, tur tur ölçüldü. Son üç turun sonucu:
+
+| Tur | Proje | Puanlanan bulgularda isabet | Proje başına kaçırılan gerçek sorun |
 |---|---|---|---|
-| Birinci | 113 kararlı konumun 15'i | %13 | 0.1.0 ile ölçüldü. Yanlışların 73'ü bir kodlama ajanının proje içindeki worktree kopyalarından geliyordu; onlar hariç %38. |
-| İkinci | 23 konumun 6'sı | %26 | 0.1.1 ile ölçüldü. |
-| Üçüncü | 39 konumun 3'ü | %8 | Araç geliştirilirken hiç görülmemişti; 0.1.2 ile ölçüldü. |
+| 8 | 12 | %80 | 8,9 |
+| 9 | 12 | %84 (kör kontrolle düzeltilmiş tahmin ~%75) | 7,8 |
+| 10 | 12 | %79 | 7,8 |
 
-- Üç projede de hızlı tarama, derin denetim ve canlı tarama birlikte çalıştırıldı ve kritik, yüksek, orta önemli her konum koddan tek tek kontrol edildi. Bu kararları da yapay zekâ verdi; bir hukukçu doğrulamadı.
-- **Bağımsız tek ölçüm üçüncü proje.** O projede yanlışların çoğu şunlardan geldi:
-  - test ve yerel geliştirme dosyalarındaki sahte gizli anahtarlar;
-  - bir sırrı açığa çıkaran kod sanılan, aslında onu engelleyen kontroller;
-  - tanınmayan hesap silme;
-  - sütun adından tahmin edilen veri kategorileri ("fingerprint" → biyometrik).
-- **Düzeltmelerden sonraki oranlar bağımsız değil.** İlk iki projede 0.1.1 ve 0.1.2'den sonra oranlar %49 ve %86 oldu. Ama bu düzeltmeler tam da o iki projeye bakılarak yazıldı; görülmemiş bir projede ne olacağını göstermiyorlar.
-- **Görece güvenilir kısımlar:** Üç projede de doğru çıkan bulguların çoğu üçüncü taraf ve yurt dışı aktarım envanterindendi. Canlı sitedeki çerez taramasında yanlış alarm görülmedi.
+Bu rakamlar yukarıdakilerle doğrudan karşılaştırılamaz:
+- **Kapsam:** Yalnızca derin denetimin puana giren bulgularını kapsıyor. Hızlı tarama, canlı tarama ve "Doğrulanmalı" listesi bu ölçümde yok; o listenin %45-60'ı gerçek sorundu.
+- **Değerlendirme:** Kararları aynı model ailesinden yapay zekâ ajanları verdi.
+- **Ayar:** Araç o projelere bakılarak ayarlandı; her turdan sonra kurallar ve isabet eşikleri o projelerdeki kararlara göre düzeltildi.
+- **Kaçırmalar:** Kaçırılan sorunların 2-3'ü yüksek önemliydi, çoğu yetki kontrolüydü.
 
-**Ölçüm setindeki daha yüksek oran ve neden farklı olduğu.** Derin denetim (`audit`) ayrıca 84 açık kaynak projelik bir ölçüm setinde ölçüldü. Son üç turda (36 proje) skora giren bulguların **%79-84'ü** doğruydu (düzeltilmiş tahmin %75-79). Proje başına yaklaşık 8 gerçek sorun kaçırılıyordu, bunların 2-3'ü yüksek önemliydi. Bu rakam yukarıdakilerle doğrudan karşılaştırılamaz:
-
-- **Yalnızca derin denetimi kapsıyor**, o da yalnızca skora giren bulguları. Hızlı tarama ve canlı tarama bu ölçümde yok; "Doğrulanmalı" listesi de yok. Bu listenin %45-60'ı gerçek sorundu.
-- **Kararları yapay zekâ ajanları verdi**; hepsi aynı model ailesindendi. Hiçbir hukukçu doğrulamadı.
-- **Araç o projelere bakılarak ayarlandı.** Her turdan sonra kurallar ve isabet eşikleri o projelerdeki kararlara göre düzeltildi. Bu yüzden set artık "görülmemiş" değil; bugünkü sürüm orada olduğundan iyi görünür.
-
-Hızlı taramanın, canlı site taramasının, anketin ve belge taslaklarının isabeti bu ölçüm setinde yer almaz. Yöntem ve tur tur sonuçlar: [docs/ACCURACY.md](docs/ACCURACY.md). Ölçüm etiketleri gerçek projelerdeki açıkları içerdiği için yayımlanmaz; bu yüzden rakamları dışarıdan yeniden üretemezsiniz.
+Yöntem ve tur tur sonuçlar: [docs/ACCURACY.md](docs/ACCURACY.md). İsabetin rapora ve önem sınırına nasıl yansıdığı: [docs/CALIBRATION.md](docs/CALIBRATION.md). Ölçüm etiketleri gerçek projelerdeki açıkları içerdiği için yayımlanmaz; bu yüzden rakamları dışarıdan yeniden üretemezsiniz.
 
 ## Sınırları
 
@@ -150,7 +199,10 @@ Hızlı taramanın, canlı site taramasının, anketin ve belge taslaklarının 
 
 ## CI ve yapay zekâ ajanları
 
-Her CI sisteminde: `npx kvkk-gdpr-check -f sarif -o kvkk.sarif --fail-on high`. GitHub için hazır eylem: [action.yml](action.yml). Claude Code / Cursor için denetim becerisi: [skill/kvkk-gdpr-audit](skill/kvkk-gdpr-audit/SKILL.md).
+- **CI:** Her CI sisteminde `npx kvkk-gdpr-check -f sarif -o kvkk.sarif --fail-on high` çalıştırabilirsiniz.
+  - `--fail-on` yalnızca önem sınırından sonraki düzeye bakar, "Doğrulanmalı" listesini saymaz; listeyi de saymak için `--fail-on-review` ekleyin.
+  - GitHub için hazır eylem: [action.yml](action.yml).
+- **Yapay zekâ ajanları:** Claude Code / Cursor için [elle doğrulama becerisi](skill/kvkk-gdpr-audit/SKILL.md) var. Aracın listesini kodda tek tek doğrular, aracın kaçırdıklarını ayrıca yazar, proje koduna dokunmaz ve raporu proje dışına yazar.
 
 ## Katkı
 
