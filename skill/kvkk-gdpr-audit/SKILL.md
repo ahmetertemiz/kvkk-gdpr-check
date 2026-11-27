@@ -1,80 +1,103 @@
 ---
 name: kvkk-gdpr-audit
-description: Audit the current project for KVKK (Turkey) and GDPR (EU) privacy compliance risks — trackers without consent, exposed secrets, missing Supabase RLS / open Firebase rules, missing privacy notice, sensitive data, data subject rights, international transfers — then propose and apply fixes and draft the privacy notice. Use when the user asks about KVKK, GDPR, privacy, cookie consent, aydınlatma metni, gizlilik politikası, "is my app compliant", or before launching an app that collects user data.
+description: Manually verify a project's KVKK (Turkey) / GDPR (EU) privacy risks with kvkk-gdpr-check as the starting list, not the verdict — read every inventory item and every finding in the code, check privacy-notice promises against the code and configuration, mark each item correct / wrong / unclear with evidence, and list what the tool missed. Read-only: the report goes outside the project. Use when the user asks for a KVKK / GDPR / privacy audit, "is my app compliant", aydınlatma metni or çerez kontrolü, or before launching an app that handles personal data.
 ---
 
-# KVKK / GDPR audit
+# KVKK / GDPR manual verification
 
-You are helping a developer (often a vibe-coder) find and fix privacy-compliance risks in their app. Be concrete and practical. You are not a lawyer: say so once at the end, not in every paragraph.
+The tool gives you a list; you give the verdict. Its measured precision is in every finding (`precision.text`): many rules are right less than half the time on real projects. **Change nothing in the project.** You only read it and write a report outside it. Write the report in the user's language. You are not a lawyer: say so once, at the end.
 
-## 1. Run the deterministic scanners first
+## 1. Get the two lists (JSON, outside the project)
 
-Deep audit (data-flow graph + principle-based legal checks) — this is the primary input:
-
-```bash
-npx -y kvkk-gdpr-check audit . -f json -o kvkk-audit.json --fail-on none
-```
-
-`kvkk-audit.json` contains `findings` (AUD-* with evidence chains in `locations[].steps`), `model` (`inventory`, `activities` = ROPA, `transfers`, `deletionMatrix`, `dpia`, controller questions), `organization` (answers-based conclusions), the full `graph`, and `scoreReliable` / `coverage`. If `scoreReliable` is false, the stack is not fully supported: say so and fall back to reading the code yourself. Treat each finding as a lead backed by evidence, still verify critical/high ones in code.
-
-Pattern scan (secrets, trackers, mobile/backend config rules) as a complement:
+Pick an output folder next to the project, never inside it, e.g. `../<project>-kvkk-denetim/` (ask if the user prefers another place).
 
 ```bash
-npx -y kvkk-gdpr-check . --format json --fail-on none --lang tr
+npx -y kvkk-gdpr-check audit . -f json -o ../<project>-kvkk-denetim/audit.json --fail-on none
+npx -y kvkk-gdpr-check . -f json -o ../<project>-kvkk-denetim/scan.json --fail-on none
 ```
 
-If `npx` cannot reach the registry and this skill ships next to the CLI, run `node <path-to-repo>/bin/cli.js . --format json --fail-on none`.
-Use `--lang en` if the user writes in English.
+Add `--url https://THE-SITE` to the second command when the app is deployed (cookies and requests before consent, after "Reject"). Without the registry, use `node <repo>/bin/cli.js` instead of `npx -y kvkk-gdpr-check`.
 
-Parse the JSON: `score`, `counts`, `signals`, and `findings[]` (each with `id`, `severity`, `locations`, `fix`, `refs`).
+- **Inventory (facts):**
+  - `audit.json` → `model.inventory` (data elements, with sources / stores / recipients), `model.transfers` (transfer register), `model.namedVendors` (named in the code, no flow traced), `model.activities`.
+  - `scan.json` → `findings[]` with `kind: "inventory"`.
+- **To check (verdicts):**
+  - `findings[]` with `kind: "finding"` in both files.
+  - `review[]` in both files: not scored, mostly wrong on real projects. Verify them too.
+  - Each item carries `precision.text`, and `severityRaw` when its level was capped.
+- If `scoreReliable` is false, or `coverage` / `support` says a layer was not analysed, write that at the top. In that layer the lists are incomplete: read the code yourself.
 
-If the app is deployed (ask for the URL, or find it in README / package.json `homepage` / vercel config), also run the live scan — it opens the site in a real browser, records cookies and tracker requests before consent, clicks "Reject" and checks tracking stops:
+## 2. Read the code first, then the tool's label
 
-```bash
-npx -y kvkk-gdpr-check . --url https://THE-SITE --format json --fail-on none
+For each item, open the file at the location and work out on your own what the code does: where the value comes from, where it goes, what guards it. Only then compare with the tool's title and label. Do not let the label decide; a rule's precision tells you how much to doubt it, not the answer.
+
+- **Verdict, "doğru":** the code really has the problem the finding states, at that location.
+  - A detection that is factually right but not a problem is **yanlış**. Examples: the tracker loads only after consent; the log line masks the e-mail.
+  - State the reason in the report.
+- **Inventory item, "doğru":** the field really holds a person's data, or the vendor really receives personal data.
+- **"Belirsiz":** the code alone cannot settle it (configuration outside the repo, a dashboard setting, an unanswered question). Say what would settle it.
+
+## 3. Check the privacy notice's promises against the code
+
+Find the privacy notice, the cookie policy and the in-app texts. Note every concrete promise: a duration ("30 gün", "90 days"), and words such as "yalnızca / only", "asla / never", "gönderilmez / is not sent", "silinir / is deleted", "anonim", "şifreli".
+
+For each promise, find the code or configuration that keeps it, or breaks it:
+
+- **Retention and deletion:** is the job that deletes really scheduled and enabled? Check cron / `pg_cron` / scheduled functions / workflow files and their `enabled` flags; a function nobody calls deletes nothing.
+- **"Not sent" / "only":** check every request and SDK on that path, including logs and error monitoring.
+- **Vendors:** check the vendors and data elements the notice lists against the inventory. Note both directions: processed but not named, and named but not used.
+
+## 4. Report: one line per item
+
+Every item gets a verdict and **one sentence of evidence** (`file:line` plus what the code does). Group items under the two parts the tool uses, then add the misses.
+
+## 5. What the tool missed (separate heading)
+
+While reading, you will see real issues no list contains:
+
+- a personal-data column or form field missing from the inventory;
+- a third party receiving data that is in neither `transfers` nor `namedVendors`;
+- a broken promise, a missing access check, a secret in client code.
+
+List each with `file:line`, why it is a problem and, if you can tell, which kind of check should have caught it. These numbers matter as much as the correct ones: report how many misses you found.
+
+## Report skeleton
+
+```markdown
+# KVKK / GDPR doğrulama raporu: <proje> (<tarih>, kvkk-gdpr-check <sürüm>)
+
+Kapsam: <analiz edilmeyen katmanlar, skor güvenilir mi>. Proje kodu değiştirilmedi.
+
+## Özet
+- Envanter: <n> öğe; doğru <a>, yanlış <b>, belirsiz <c>
+- Kontrol edilecekler: <n> konum; doğru <a>, yanlış <b>, belirsiz <c>
+- Doğrulanmalı listesi: <n> konum; doğru <a>, yanlış <b>, belirsiz <c>
+- Aracın kaçırdığı: <n> sorun
+- En acil üç konu: …
+
+## 1. Envanter
+| Öğe | Kaynak (kural / model alanı) | Karar | Kanıt |
+|---|---|---|---|
+| full_name (profiles.full_name) | PII001 | doğru | supabase/migrations/001.sql:8 kullanıcı adı soyadı tutuluyor |
+
+## 2. Kontrol edilecekler
+| Kural | Konum | Karar | Kanıt (tek cümle) |
+|---|---|---|---|
+| AUD-SEC-04 | src/api/mail.ts:43 | yanlış | e-posta loglanmadan önce maskeleniyor (maskEmail, satır 40) |
+
+## 3. Aydınlatma metni vaatleri
+| Vaat (metin, yer) | Karar | Kanıt |
+|---|---|---|
+| "Loglar 30 gün sonra silinir" (gizlilik.tsx:120) | yanlış | silme işi tanımlı ama zamanlanmamış: cron.schedule yok |
+
+## 4. Aracın kaçırdıkları
+| Sorun | Yer | Neden sorun | Hangi kontrol yakalamalıydı |
+|---|---|---|---|
+
+## 5. Kullanıcının yapması gerekenler
+<anahtar döndürme, sözleşmeler, VERBİS, hukuki inceleme …>
+
+Bu bir hukuki danışmanlık değildir; yayına almadan önce bir KVKK/GDPR uzmanına kontrol ettirin.
 ```
 
-(Browser mode needs `playwright-core`; without it the scan falls back to HTTP mode. Add `--pages /signup,/login` for important pages.) The JSON then contains a `live` object with `cookiesBeforeConsent`, `cookiesAfterReject`, `thirdPartyHosts`, `banner`, `headers`, `privacyPageCheck` and `forms` — use those facts directly in your report.
-
-## 2. Verify and go deeper than regex
-
-The scanner is heuristic. For every critical/high finding, open the file and confirm it. Drop false positives and say why. Then look for what regex cannot see:
-
-- **Data flow map.** Trace where each personal data field (from PII001/PII002/PII003 and the DB schema) is collected, stored, logged, and sent (which third parties / LLM prompts). This becomes the data inventory.
-- **Consent flow.** Do trackers actually wait for consent? Is "Reject" as easy as "Accept"? Is marketing consent separate from the privacy notice acknowledgement and not a condition of sign-up?
-- **Access control.** For Supabase, read every RLS policy; for Firebase, read the rules; for custom APIs, check that endpoints returning user data check that the requester owns it (IDOR).
-- **Secrets.** Is any server secret imported into client components (`'use client'`, Vite/Expo client code)?
-- **Deletion.** If there is a delete-account flow, does it also delete storage files, rows in other tables, and data at third parties (Stripe customer, mailing list, analytics)?
-- **LLM usage.** What user data goes into prompts? Is it necessary? Is there an automated decision with legal/similar effect?
-- **Children.** Is the app likely used by minors?
-
-## 3. Report
-
-Write a short report in the user's language:
-
-1. **Headline** — the 3 most urgent things. Give the score only when `scoreReliable` is true; otherwise say there is none and why (`scoreReasons`). The findings are the result, not the number.
-2. **Findings table** — severity, what, where (`file:line`), fix. Group by: Security → Consent/Tracking → Transparency → Data subject rights → Transfers → Retention.
-3. **Data inventory** — table: data field | purpose | legal basis (KVKK md.5/6, GDPR Art.6/9) | storage location | recipients/third parties | retention. Mark guesses as guesses and ask the user to confirm.
-4. **Third parties & transfers** — vendor, what data, region, whether a DPA/standard contract is needed (KVKK md.9: standard contract must be notified to the KVKK Authority within 5 business days of signing).
-
-## 4. Offer fixes
-
-Ask before editing. Then fix in this order: critical security (rotate keys — tell the user they must rotate in the provider dashboard, you cannot), RLS/rules, consent gating, pre-ticked boxes, logging PII, Google Fonts self-hosting, account deletion endpoint, data export.
-
-When adding consent, prefer a small open-source solution (e.g. `vanilla-cookieconsent`) with Google Consent Mode v2 defaults set to `denied`, and load non-essential scripts only after consent.
-
-## 5. Draft the documents
-
-If `DOC001`/`DOC002`/`WEB006`/`WEB007`/`WEB008` fired, offer to generate the document set. Ask the user for company name, address, contact email and website first, write them to `kvkk-answers.json`, then:
-
-```bash
-npx -y kvkk-gdpr-check docs . --url https://THE-SITE --answers kvkk-answers.json -y --out privacy-docs
-```
-
-Answers the code cannot give (VERBİS, role, transfer mechanism per recipient, retention policy, minors, scale) go under `org` in `kvkk-answers.json`: run `npx -y kvkk-gdpr-check anket . -y` for the template, ask the user, fill in, re-run. Never invent an answer; leave `null`. `docs` also writes DPIA / LIA / TIA drafts: keep every `[DOLDURULMALI: …]` / `[DOĞRULANMALI: …]` that needs a human decision, and tell the user a lawyer must review them.
-
-This drafts aydınlatma metni, açık rıza metni, çerez politikası (with real cookies when `--url` is given), VERBİS-style data inventory (md + csv), international transfer register, breach response plan, data subject request form, compliance roadmap and an English GDPR privacy policy. Then review and improve the drafts with what you learned in step 2 (the generator only knows what the scanner saw), replace remaining `[DOLDURULMALI: …]` placeholders you can answer from the codebase, and add the pages to the app with a link next to the sign-up form and in the footer.
-
-## 6. Close
-
-End with: what was fixed, what the user must do manually (rotate keys, sign DPAs, VERBİS check, legal review), and one line: "Bu bir hukuki danışmanlık değildir; yayına almadan önce bir KVKK/GDPR uzmanına kontrol ettirin."
+Fixes, document drafts (`kvkk-gdpr-check docs`) and code changes are separate tasks: offer them after the report, and start only when the user asks.
