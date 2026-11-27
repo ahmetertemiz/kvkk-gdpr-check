@@ -1,5 +1,18 @@
 # Değişiklikler
 
+## 0.2.1 — yayımlanmadı
+
+### Belgeler
+
+**README (Türkçe ve İngilizce) ve `docs/ACCURACY.md`:** Araç geliştirilirken hiç görülmemiş dört projenin birleşik sonucu eklendi. Sonuçlar:
+- **Ana sonuç:** Kritik, yüksek ve orta 118 konumun 59'u gerçek sorun (%50, Wilson %90: %43–%57). Proje bazında oran %29 ile %57 arasında.
+- **İki ölçüt:** "Olgu doğru" ölçütüyle oran %70.
+- **Raporda geçen sorunlar:** Kodu okuyarak bulunan sorunların %53'ü raporda geçiyor; yüksek önemli 10 sorunun 2'si.
+- **Envanter:** İsabet %84; eksiksizlik kişisel veride %59 / %73, üçüncü taraflarda %24 / %56.
+- **"Doğrulanmalı" listesi:** %36'sı gerçek sorun.
+
+**Üst uyarı:** "Güvenlik incelemesinin yerini tutmaz" eklendi. "Envanter en güvenilir kısımdır" ifadesi "listelenenler büyük oranda doğru, liste tam değil" olarak değiştirildi.
+
 ## 0.2.0 — 2026-11-27
 
 Raporlar artık olgu ile hükmü ayırıyor ve her hükmün yanında ölçülen isabetini yazıyor. Kritik ve yüksek önem yalnızca bir ölçüm destekliyorsa gösteriliyor. Üç gerçek projede görülen yanlış alarm sınıfları, kök nedenlerine göre ve projeye özel ad ya da kelime listesi kullanmadan düzeltildi.

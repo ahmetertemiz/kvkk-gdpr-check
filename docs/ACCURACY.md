@@ -19,9 +19,10 @@ Aracın isabeti iki ayrı sette ölçülür. Raporlardaki "İsabet:" satırı ik
 | Değerlendirme | yapay zekâ; 10. turdan beri doğru ve yanlış kararlar ikinci bir değerlendiriciye itiraza gider | yapay zekâ; tek değerlendirici |
 
 Aynı kodda gerçek proje ölçütü daha düşük bir oran verir.
-- Görülmemiş dördüncü projede her konuma iki karar da verildi.
-- Derin denetimin puanlanan konumlarında "iddia olgu olarak doğru" oranı %65, "gerçek sorun" oranı %35 çıktı.
-- Farkın çoğu şu konumlardan geliyor: hesap ömrü kadar saklanan tablolar için "saklama süresi yok" bulguları, kişisel veri taşımayan çerez bayrakları, test ortamı dosyası ve kullanıcının kendi hesabına giden toplantı bilgisi.
+- **İki karar:** Görülmemiş dört projede her konuma iki karar da verildi.
+- **Kritik, yüksek ve orta konumlar:** "İddia olgu olarak doğru" oranı %70, "gerçek sorun" oranı %50.
+- **Derin denetimin bütün puanlanan konumları:** Oranlar %67 ve %31.
+- **Farkın kaynağı:** Farkın çoğu hesap ömrü kadar saklanan tablolara verilen "saklama süresi yok" bulgularından ve kişisel veri taşımayan tablolardan geliyor. Ardından meşru ya da tasarım gereği kullanımlar geliyor: kişisel veri taşımayan çerez bayrakları, URL'deki imzalı abonelik token'ı, hız sınırı için IP ve kullanıcının kendi hesabına giden toplantı bilgisi.
 
 ### Gerçek projeler
 
@@ -42,41 +43,58 @@ Oranlar doğru / (doğru + yanlış) olarak hesaplandı, belirsiz kararlar hari�
 - **Etiketsiz konumlar:** Derin denetimin kritik, yüksek ve orta konumlarından 10'u etiketsiz; oranlara girmez.
 - **AUD-SEC-04 (log'a kişisel veri):** Gerçek sette 8 konumun 1'i doğru, 84 projelik sette 72 konumun 48'i. Kural düzeyinde ölçüldüğü konumlar "Doğrulanmalı"ya gider. Alt sinyali olan konumlar için kural düzeyine bakan bir yedek kural yazıldı ama kapalı. Açılırsa 84 projelik sette çoğu doğru olan konumları da listeden çıkarıyordu.
 
-### Görülmemiş dördüncü proje
+### Görülmemiş dört proje
 
-Araç geliştirilirken hiç görülmemiş, açık kaynak bir Next.js / Prisma / tRPC uygulaması (2026-11-27). Ölçüm 0.2.0 ile yapıldı; projenin canlı sitesi taranmadı. Ölçümün adımları:
+**Projeler:** Araç geliştirilirken hiç görülmemiş dört açık kaynak uygulama (2026-11-27). Hepsi Next.js / Prisma / tRPC monorepo'ları; birinde veritabanı katmanı Drizzle / SQLite.
+- Projelerin hiçbiri 84 projelik sette, gerçek ayar setinde ya da geliştirme sırasında kullanılmadı.
+- Ölçüm 0.2.0 ile yapıldı; canlı siteler taranmadı.
+- Projelerden biri, yerel adresleri "gerçek görünümlü anahtar" sayan hata düzeltilmeden önce ölçüldü. Düzeltme yalnızca tek bir konumun önemini değiştiriyor.
+
+**Yöntem:**
 - **Kör okuma:** Konum listesi yalnızca dosya ve satırdan oluşuyordu. Okuyucular aracın etiketini görmeden kodu okuyup karar verdi; kararlar sonra etiketlerle karşılaştırıldı.
 - **Bağımsız inceleme:** Aracın raporunu görmeyen iki inceleme daha yapıldı. Biri gerçek sorunları, diğeri kişisel veri envanterini kodun tamamından çıkardı.
+- **İki karar:** Her konuma "gerçek sorun" ve "olgu doğru" kararı verildi. "Katı" ölçü ikisini birden ister.
+- **Kararı verenler:** Bütün kararları yapay zekâ verdi; bir hukukçu doğrulamadı.
 
-| Ölçü | Hızlı tarama | Derin denetim |
-|---|---|---|
-| Kontrol edilecekler, kritik + yüksek + orta: gerçek sorun | 5 / 10 (%50) | 6 / 12 (%50) |
-| … aynı konumlar: iddia olgu olarak doğru | 9 / 11 (%82) | 9 / 12 (%75) |
-| Kontrol edilecekler, bütün konumlar: gerçek sorun | 6 / 14 (%43) | 18 / 51 (%35) |
-| "Doğrulanmalı" listesi: gerçek sorun | liste boş | 9 / 50 (%18) |
-| Envanterin isabeti | 20 / 23 (%87) | 23 / 26 (%88) |
-| Envanterin eksiksizliği: kişisel veri öğeleri | 10 / 15 | 11 / 15 |
-| Envanterin eksiksizliği: veri alan üçüncü taraflar | 5 / 15 | 11 / 15 |
-| Kodu okurken bulunan 34 gerçek sorundan raporda geçen | 4 | 13 |
+| Ölçü (dört proje) | Hızlı tarama | Derin denetim | İkisi birlikte |
+|---|---|---|---|
+| Kontrol edilecekler, kritik + yüksek + orta: gerçek sorun | 18 / 42 (%43; Wilson %90: %31–%55) | 41 / 76 (%54; %45–%63) | **59 / 118 (%50; %43–%57)** |
+| … olgu doğru | 33 / 45 (%73) | 53 / 78 (%68) | 86 / 123 (%70) |
+| … katı | 17 / 41 (%41) | 41 / 76 (%54) | 58 / 117 (%50) |
+| Kontrol edilecekler, bütün konumlar: gerçek sorun | 24 / 55 (%44) | 79 / 254 (%31) | |
+| "Doğrulanmalı" listesinde gerçek sorun | liste boş | 57 / 160 (%36; %30–%42) | |
+| Envanterin isabeti | 63 / 75 (%84; %76–%90) | 86 / 102 (%84; %78–%89) | |
+| Envanterin eksiksizliği: kişisel veri öğeleri | 35 / 59 (%59) | 43 / 59 (%73) | |
+| Envanterin eksiksizliği: veri alan üçüncü taraflar | 17 / 71 (%24) | 40 / 71 (%56) | |
+| Kodu okurken bulunan gerçek sorunlardan raporda geçen | | | 73 / 139 (%53; %46–%59) |
+| … yüksek ve orta önemlilerde | | | 33 / 57 (%58) |
+| … yüksek önemlilerde | | | 2 / 10 |
 
-- **Kodda bulunan sorunlar:**
-  - İki tarama birlikte 34 sorunun 16'sını (%47) gösterdi; yüksek ve orta önemli 11 sorunun 8'ini.
-  - 4 gerçek sorun yalnızca puana katılmayan "Doğrulanmalı" listesindeydi.
-  - Kaçırılan 18 sorunun çoğu: aydınlatma metni ile kod arasındaki uyumsuzluklar, URL'deki token'ların analitiğe gitmesi, otomatik yasaklama, kimlik doğrulamasız uç noktalar.
-- **Envanter:**
-  - İsabetli, ama eksik. Oylar, etkinlik katılım yanıtları ve moderasyon kararı envanterde yok.
-  - Google (giriş, Takvim, Meet), Cloudflare Turnstile ve barındırma sağlayıcısı iki taramada da alıcı olarak görünmedi.
-- **Yanlış alarmlar:** 82 yanlış konumun %67'si 0.2'de düzeltilen sınıfların yeni biçimlerinden geldi:
-  - bir yardımcı fonksiyonla yapılan hesap silmenin tanınmaması;
-  - zamanlanmış temizliğin tanınmaması;
-  - çıplak `fingerprint` sütununun biyometrik sayılması;
-  - test ortamı dosyası.
-- **Önem sınırından sonra yüksek önemde kalanlar:**
-  - Hızlı taramada tek konum kaldı ve yanlıştı: gerçek görünümlü anahtar istisnası yerel bir adresi (`http://localhost:3000`) sır saydı. Bu ölçümden sonra düzeltildi; tablodaki rakamlar düzeltmeden önceki ölçümdür.
-  - Derin denetimde kalan iki konumdan biri doğruydu.
-- **AUD-SEC-04:**
-  - Projede tek konumu var ve yanlış; 84 projelik setin kalibrasyonuyla zaten "Doğrulanmalı"daydı.
-  - Kural düzeyindeki yedek kural bu projede bir şey değiştirmiyor ve kapalı kaldı.
+- **Proje bazında:** Kritik, yüksek ve orta konumlarda gerçek sorun oranı %29, %50, %55 ve %57. En düşüğü, aracın kendisinin "deneysel" saydığı yığında; orada yalnızca yöneticinin çağırabildiği prosedürler "kimlik doğrulaması yok" sanıldı. Tek bir projeye bakarak genelleme yapmayın.
+- **Güvenlik incelemesinin yerini tutmaz:** Yüksek önemli 10 sorunun 8'i kaçırıldı. Bunların 6'sı tek bir projedeki takımlar arası yetki açıklarıydı. Diğer ikisi, başka kullanıcıların arşivlerini de silen bir önek hatası ve hesap silinince kalan arama dizini.
+- **En çok kaçırılan beş tür:**
+
+  | Tür | Sorun |
+  |---|---|
+  | Yetki ve erişim kontrolü | 22 |
+  | Güvenlik yapılandırması (düz metin OTP / sıfırlama, süresiz token'lar, http, SSRF) | 11 |
+  | Aydınlatma metni ile kod uyumsuzluğu | 10 |
+  | Silme bütünlüğü ve veri sahibi hakları | 7 |
+  | Bildirilmeyen üçüncü taraf akışları | 5 |
+
+- **Envanter:** Listelenenler büyük oranda doğru, ama liste tam değil. Uygulamanın asıl verisi çoğu zaman yok: oylar, ziyaretçi izleme olayları, kayıtlı URL'ler ve arşivler. Kendi istemcisiyle çağrılan analitik servisleri, oturum açma sağlayıcıları ve mağaza ödemeleri de sık sık eksik.
+- **"Doğrulanmalı" listesi:** Maddelerinin %36'sı gerçek sorun. Bazı gerçek sorunlar yalnızca orada görünüyor; atlamayın.
+- **En çok tekrar eden beş yanlış alarm sınıfı:**
+
+  | Sınıf | Yaklaşık konum |
+  |---|---|
+  | Hesap ömrü kadar saklanan veriye "saklama süresi yok" | ~85 |
+  | Kişisel veri taşımayan tablolar ve ada göre sınıflandırma (`fingerprint` → biyometrik, `iconWeight` → vücut ölçüsü) | ~67 |
+  | Tanınmayan yetki kontrolü | ~55 |
+  | Meşru ya da tasarım gereği kullanım | ~36 |
+  | Var olan silme, temizlik ya da dışa aktarma işlevinin tanınmaması | ~27 |
+
+- **AUD-SEC-04:** Dört projede puanlanan konumlarda 3 doğru, 2 yanlış, 1 belirsiz var. Kural düzeyinde indiren yedek kural bu doğruları gizlerdi, bu yüzden kapalı kaldı.
 
 ## 84 projelik ölçüm seti
 
