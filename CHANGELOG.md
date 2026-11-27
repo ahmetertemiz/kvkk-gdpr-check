@@ -30,7 +30,16 @@ Bilinen servisler "Kodda adı geçen, veri akışı izlenmeyen servisler" listes
 
 Katalog genel servis bilgisiyle genişledi (alan adı, paket, ortam değişkeni öneki; proje adı yok). Yeni katalog girdileri veri akışı katmanına girmiyor; aktarım kaydı, hükümler ve canlı tarama değişmedi.
 
-Ölçüm (dört kör proje, artık ayar verisi): eksiksizlik %56 → %94 (bilinen servisler), "doğrulayın" listesiyle %100. Yedi projede 67 yeni satır kodda tek tek doğrulandı: 50 doğru, 7 yanlış, 10 işletmeci ayarına bağlı. Bilinen servis satırlarında 39 doğru, 1 yanlış; "doğrulayın" listesinde 11 doğru, 6 yanlış (yanlışların çoğu projenin kendi alan adı). Dört projede derin denetim envanter isabeti, belirsizler yanlış sayılarak, %84'ten %82'ye indi.
+Ölçüm (dört kör proje, artık ayar verisi): eksiksizlik %56 → %94 (bilinen servisler), "doğrulayın" listesiyle %100. Yedi projede 67 yeni satır kodda tek tek doğrulandı: 50 doğru, 7 yanlış, 10 işletmeci ayarına bağlı. Bilinen servis satırlarında 39 doğru, 1 yanlış; "doğrulayın" listesinde 11 doğru, 6 yanlış (yanlışların yarısı projenin kendi alan adı).
+
+**Projenin kendi alan adı "doğrulayın" listesine girmiyor.** Genel işaretlerden çıkarılıyor:
+- `package.json` homepage;
+- site / uygulama adresi ortam değişkenlerinin örnek değerleri (`SITE_URL`, `APP_URL`, `NEXT_PUBLIC_APP_URL` …);
+- Next.js `metadataBase`;
+- sitemap / robots içindeki adres;
+- `CNAME` dosyası.
+
+Yerel, örnek ya da katalogdaki (üçüncü taraf) bir adresten hiçbir şey çıkarılmıyor. Paylaşılan platform alt alan adları (`*.github.io` …) yalnızca kendileri sayılıyor. Yedi projede kendi alan adını gösteren 3 satırdan 1'i listeden çıktı. Kalan ikisinde genel bir işaret yok: biri ayrı bir varlık alan adı, diğerinin adresi yalnızca bir kod sabitinde. Dört projede derin denetim envanter isabeti, belirsizler yanlış sayılarak, %84'ten %82'ye indi.
 
 ### Belgeler
 

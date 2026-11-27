@@ -66,3 +66,23 @@ test('reports: known services carry their detection source; unknown domains are 
   assert.match(md, /### Bilinmeyen alan adları ve işletmecinin yapılandırdığı servisler — doğrulayın/);
   assert.match(md, /\*\*api\.rates-somewhere\.io\*\* _\(alan adı\)_/);
 });
+
+test('own domains from general signals stay out of the verify list; local, example and third-party hosts infer nothing', () => {
+  const page = f('src/Logo.tsx', '<img src="https://cdn.myshop-app.co.uk/logo.png" />\n<img src="https://status.other-host.io/badge.svg" />\n<img src="https://my-demo.surge.sh/x.png" />\n<img src="https://other.surge.sh/y.png" />');
+  const none = sideRecipients(graphOf([page])).verify.map((x) => x.name).sort();
+  assert.deepEqual(none, ['cdn.myshop-app.co.uk', 'my-demo.surge.sh', 'other.surge.sh', 'status.other-host.io']);
+  for (const signal of [
+    f('package.json', JSON.stringify({ homepage: 'https://www.myshop-app.co.uk' }), 'manifest'),
+    f('.env.example', 'NEXT_PUBLIC_APP_URL=https://app.myshop-app.co.uk\nOPENAI_BASE_URL=https://status.other-host.io/v1\n', 'env'),
+    f('public/robots.txt', 'User-agent: *\nSitemap: https://myshop-app.co.uk/sitemap.xml', 'doc'),
+    f('app/layout.tsx', 'export const metadata = { metadataBase: new URL("https://myshop-app.co.uk") };'),
+    f('CNAME', 'myshop-app.co.uk\n', 'doc'),
+  ]) {
+    const v = sideRecipients(graphOf([page, signal])).verify.map((x) => x.name).sort();
+    assert.deepEqual(v, ['my-demo.surge.sh', 'other.surge.sh', 'status.other-host.io'], signal.rel);
+  }
+  const platform = sideRecipients(graphOf([page, f('CNAME', 'my-demo.surge.sh', 'doc')])).verify.map((x) => x.name).sort();
+  assert.deepEqual(platform, ['cdn.myshop-app.co.uk', 'other.surge.sh', 'status.other-host.io'], 'a shared platform host counts only as itself');
+  const local = sideRecipients(graphOf([page, f('.env.example', 'NEXT_PUBLIC_BASE_URL=http://localhost:3000\nSITE_URL=https://example.com\n', 'env')])).verify.length;
+  assert.equal(local, 4, 'localhost and example hosts infer nothing');
+});

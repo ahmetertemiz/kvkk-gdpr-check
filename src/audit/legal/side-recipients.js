@@ -188,6 +188,43 @@ const HOSTING_FILES = [
   [/(?:^|\/)render\.ya?ml$/, 'render'], [/(?:^|\/)railway\.(?:json|toml)$/, 'railway'], [/(?:^|\/)wrangler\.(?:toml|jsonc?)$/, 'cloudflare'],
 ];
 
+// ------------------------------------------------------------------------------------------------ own domains
+
+// The project's own site, read from general signals (0.2.1): package.json homepage, example values of the site / app URL
+// variables, Next.js metadataBase, the hosts of sitemap / robots files, a CNAME file. Nothing is inferred from a local,
+// example or catalogue (third-party) host. A host on a shared platform domain (*.vercel.app, *.github.io …) counts only
+// as itself; any other own host stands for its registrable domain (www.shop.example → shop.example and its subdomains).
+const OWN_URL_ENV = /^(?:NEXT_PUBLIC_|PUBLIC_|VITE_|NUXT_PUBLIC_|REACT_APP_|EXPO_PUBLIC_)?(?:APP|SITE|WEB|WEBAPP|BASE|PUBLIC|MARKETING|LANDING|FRONTEND|ROOT|CANONICAL|HOMEPAGE)(?:_BASE)?_URL$/;
+const SHARED_PLATFORM = /\.(?:vercel\.app|netlify\.app|github\.io|pages\.dev|workers\.dev|herokuapp\.com|fly\.dev|onrender\.com|web\.app|firebaseapp\.com|azurewebsites\.net|appspot\.com|railway\.app|surge\.sh|glitch\.me|replit\.app|lovable\.app)$/i;
+const SECOND_LEVEL = new Set(['co', 'com', 'org', 'net', 'gov', 'ac', 'edu', 'gen', 'web', 'bel', 'k12', 'ltd', 'plc']);
+const registrable = (h) => {
+  const l = h.split('.');
+  return l.length > 2 && SECOND_LEVEL.has(l[l.length - 2]) && l[l.length - 1].length === 2 ? l.slice(-3).join('.') : l.slice(-2).join('.');
+};
+const hostOf = (s) => { const m = String(s || '').match(/^\s*['"]?https?:\/\/([A-Za-z0-9.-]+\.[A-Za-z]{2,})(?:[:/'"\s]|$)/); return m ? m[1].toLowerCase() : null; };
+
+function ownDomains(files) {
+  const hosts = new Set();
+  const take = (h) => { if (h && !LOCAL_HOST.test(h) && !NON_REQUEST_HOST.test(h) && !vendorForUrl(`https://${h}/`, INV)) hosts.add(h); };
+  for (const f of files) {
+    if (!f || typeof f.content !== 'string' || /node_modules/.test(f.rel || '')) continue;
+    const rel = f.rel || '';
+    if (/(?:^|\/)package\.json$/.test(rel)) { try { take(hostOf(JSON.parse(f.content).homepage)); } catch { /* not JSON */ } continue; }
+    if (ENV_EXAMPLE.test(rel)) {
+      for (const l of f.content.split('\n')) { const m = l.match(/^\s*(?:export\s+)?([A-Z][A-Z0-9_]*)\s*=\s*(.*)$/); if (m && OWN_URL_ENV.test(m[1])) take(hostOf(m[2])); }
+      continue;
+    }
+    if (/(?:^|\/)CNAME$/.test(rel)) { take((f.content.trim().split(/\s+/)[0] || '').toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '') || null); continue; }
+    if (/(?:^|\/)(?:sitemap|robots)\.(?:[cm]?[jt]s|xml|txt)$|(?:^|\/)next-sitemap\.config\.[cm]?js$/.test(rel) && !/(?:^|\/)(?:tests?|__tests__|fixtures?|examples?|docs?)\//i.test(rel)) {
+      for (const m of f.content.matchAll(/https?:\/\/([A-Za-z0-9.-]+\.[A-Za-z]{2,})/g)) take(m[1].toLowerCase());
+      continue;
+    }
+    if (CODE_EXT.test(rel) && /metadataBase/.test(f.content)) for (const m of f.content.matchAll(/metadataBase\s*:\s*new\s+URL\(\s*['"`](https?:\/\/[^'"`]+)['"`]\s*\)/g)) take(hostOf(m[1]));
+  }
+  const keys = new Set([...hosts].map((h) => (SHARED_PLATFORM.test(h) ? h : registrable(h))));
+  return { has: (h) => [...keys].some((k) => h === k || h.endsWith(`.${k}`)), list: [...keys] };
+}
+
 // ------------------------------------------------------------------------------------------------ main
 
 /**
@@ -208,7 +245,8 @@ export function sideRecipients(g, listed = []) {
   };
   // A register row named by its host ("api.zoom.us") already shows that domain.
   const listedHost = (h) => [...listedNames].some((n) => n === h || h.endsWith(`.${n}`) || n.endsWith(`.${h}`));
-  const addVerify = (key, row) => { if (!verify.has(key) && !(row.host && listedHost(row.host))) verify.set(key, row); };
+  const own = ownDomains(files);
+  const addVerify = (key, row) => { if (!verify.has(key) && !(row.host && (listedHost(row.host) || own.has(row.host)))) verify.set(key, row); };
 
   for (const f of files) {
     if (!prodFile(f)) continue;
