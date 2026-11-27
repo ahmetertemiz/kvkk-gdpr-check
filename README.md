@@ -2,7 +2,7 @@
 
 **Yazılım projenizi KVKK ve GDPR riskleri açısından tarayan, her bulguyu dosya ve satırıyla gösteren komut satırı aracı.**
 
-> ⚠️ **Bulguların önemli bir kısmı yanlış alarm olabilir; her birini kodda kendiniz doğrulayın.** Araç geliştirilirken hiç görülmemiş bir gerçek projede 0.1.2, kritik, yüksek ve orta önemli konumların yalnızca %8'inde haklıydı. 0.2 üç gerçek projeye bakılarak düzeltildi; görülmemiş bir projedeki sonucu henüz ölçülmedi ([Ne kadar doğru?](#ne-kadar-doğru)). Raporun en güvenilir kısmı **Envanter** bölümüdür: kodun tuttuğu kişisel veriler, izleyiciler ve veri alan üçüncü taraflar; canlı taramada da çerezler.
+> ⚠️ **Bulguların önemli bir kısmı yanlış alarm olabilir; her birini kodda kendiniz doğrulayın.** Araç geliştirilirken hiç görülmemiş gerçek projelerde kritik, yüksek ve orta önemli konumların 0.1.2 ile %8'i, 0.2.0 ile %50'si gerçek bir sorundu ([Ne kadar doğru?](#ne-kadar-doğru)). 0.2.0, kodu okurken bulunan sorunların yarısından azını gösterdi. Raporun en güvenilir kısmı **Envanter** bölümüdür: kodun tuttuğu kişisel veriler, izleyiciler ve veri alan üçüncü taraflar; canlı taramada da çerezler.
 
 [English](README.en.md) · [Doğruluk](docs/ACCURACY.md) · [Hukuki dayanaklar](docs/hukuki-dayanaklar.md) · [Örnek rapor](examples/reports/audit-app.md)
 
@@ -157,17 +157,29 @@ Düzeyler görülmemiş projelerdeki ölçüme göre sabit bir kuralla verilir. 
 
 ### Görülmemiş dördüncü proje
 
-<!-- 0.2.0 yayımlanmadan önce doldurulacak; rakamlar ölçümden sonra yazılacak. -->
-
-**Henüz ölçülmedi.** 0.2.0 yayımlanmadan önce araç, geliştirilirken hiç görülmemiş dördüncü bir gerçek projede ölçülecek. Sonuç bu tabloya yazılacak:
+Araç geliştirilirken hiç görülmemiş, açık kaynak bir Next.js / Prisma / tRPC uygulaması. 0.2.0 ile ve kör olarak ölçüldü:
+- Her konum önce kodda okundu; aracın etiketine ancak karar verildikten sonra bakıldı.
+- Aracın raporunu görmeyen ayrı bir inceleme de kodu baştan sona okuyup gerçek sorunları ve kişisel veri envanterini çıkardı.
 
 | Ölçü | Hızlı tarama | Derin denetim |
 |---|---|---|
-| Kontrol edilecekler: kritik, yüksek ve orta konumların isabeti | — | — |
-| "Doğrulanmalı" listesinin isabeti | — | — |
-| Envanterin isabeti | — | — |
-| Envanterin eksiksizliği (kodda olup envanterde olmayan veri ve üçüncü taraflar) | — | — |
-| Kodu okurken bulunan gerçek sorunlardan raporun herhangi bir bölümünde yer alanlar | — | — |
+| Kontrol edilecekler: kritik, yüksek ve orta konumlarda gerçek sorun | 5 / 10 (%50) | 6 / 12 (%50) |
+| … aynı konumlarda "iddia olgu olarak doğru" | 9 / 11 (%82) | 9 / 12 (%75) |
+| "Doğrulanmalı" listesinde gerçek sorun | liste boş | 9 / 50 (%18) |
+| Envanterin isabeti | 20 / 23 (%87) | 23 / 26 (%88) |
+| Envanterin eksiksizliği: kişisel veri öğeleri | 10 / 15 | 11 / 15 |
+| Envanterin eksiksizliği: veri alan üçüncü taraflar | 5 / 15 | 11 / 15 |
+| Kodu okurken bulunan 34 gerçek sorundan raporda geçen | 4 | 13 |
+
+- **Kodu okurken bulunan sorunlar:** İki tarama birlikte 34 sorunun 16'sını (%47) gösterdi. Yüksek ve orta önemli 11 sorunun 8'i raporda vardı.
+- **Kaçırılanlar:** Çoğu aydınlatma metni ile kod arasındaki uyumsuzluk, URL'deki token'ların analitiğe gitmesi, otomatik yasaklama ve kimlik doğrulamasız uç noktalardı.
+- **Envanter:** Oylar, etkinlik katılım yanıtları ve moderasyon kararı envanterde yok. Google (giriş, Takvim, Meet) iki taramada da alıcı olarak görünmedi.
+- **Yanlış alarmlar:** Kontrol edilecekler ve Doğrulanmalı birlikte 82 yanlış konum vardı; %67'si 0.2'de düzeltilen sınıfların yeni biçimlerinden geldi:
+  - bir yardımcı fonksiyonla yapılan hesap silmenin tanınmaması;
+  - çıplak `fingerprint` sütununun biyometrik sayılması;
+  - commit edilmiş bir test ortamı dosyası.
+- **Önem sınırından sonra yüksek önemde kalanlar:** Hızlı taramadaki tek konum yanlış çıktı; derin denetimdeki iki konumdan biri doğruydu.
+- **İki ölçütün farkı:** "Gerçek sorun" ile "iddia olgu olarak doğru" arasındaki fark derin denetimin bütün puanlanan konumlarında 30 puan (%35 ile %65). İki ölçüt: [docs/ACCURACY.md](docs/ACCURACY.md).
 
 ### 84 projelik ölçüm seti (yalnızca derin denetim)
 

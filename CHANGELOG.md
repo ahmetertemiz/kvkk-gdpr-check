@@ -4,7 +4,12 @@
 
 Raporlar artık olgu ile hükmü ayırıyor ve her hükmün yanında ölçülen isabetini yazıyor. Kritik ve yüksek önem yalnızca bir ölçüm destekliyorsa gösteriliyor. Üç gerçek projede görülen yanlış alarm sınıfları, kök nedenlerine göre ve projeye özel ad ya da kelime listesi kullanmadan düzeltildi.
 
-**Bu sürüm, araç geliştirilirken hiç görülmemiş dördüncü bir projede ölçülmeden yayımlanmayacak.** O ölçümün sonucu README'ye ve [docs/ACCURACY.md](docs/ACCURACY.md) dosyasına yazılacak.
+**Görülmemiş dördüncü projede kör ölçüm yapıldı.**
+- Kritik, yüksek ve orta konumların %50'si gerçek sorundu (hızlı tarama 5/10, derin denetim 6/12).
+- Envanter isabeti %87-88.
+- Kodu okurken bulunan gerçek sorunların %47'si raporda geçiyordu.
+
+Ayrıntı: README ve [docs/ACCURACY.md](docs/ACCURACY.md). Yayım bu sonuca göre kararlaştırılacak.
 
 ### Davranış değişiklikleri
 

@@ -9,7 +9,19 @@ Aracın isabeti iki ayrı sette ölçülür. Raporlardaki "İsabet:" satırı ik
 - **Gerçek projeler (ayar seti):** üç gerçek uygulama. Hızlı tarama, derin denetim ve canlı tarama ölçülür; her konum koddan tek tek değerlendirilir. Veri ve araç `bench/real.js` (etiketler yayımlanmaz).
 - **84 projelik ölçüm seti:** açık kaynak projeler, tur tur; yalnızca derin denetim. Aşağıdaki "Nasıl ölçüldü" ve sonraki bölümler bu seti anlatır.
 
-**İki setin oranları yan yana okunmamalı.** Projeler, değerlendirme süreci ve kapsam farklıdır. İki setin etiketleme ölçütü de henüz karşılaştırılmadı. Ölçütten kasıt, bir konumun "tespit olgu olarak doğru" olduğunda mı, yoksa "gerçek bir sorun" olduğunda mı doğru sayıldığıdır.
+**İki setin oranları yan yana okunmamalı: etiketleme ölçütleri farklı.** Projeler, değerlendirme süreci ve kapsam da farklıdır.
+
+| | 84 projelik set | Gerçek projeler |
+|---|---|---|
+| Yazılı ölçüt | Her konum "iddia edildiği gibi" değerlendirilir ([bench/EVALUATION.md](../bench/EVALUATION.md)). İddia olgu olarak doğruysa konum doğrudur. | "Doğru = gerçek sorun". Konumda giderilmesi ya da belgelenmesi gereken bir sorun varsa konum doğrudur. |
+| Olgu doğru ama düşük riskli | doğru sayıldı (47 etiketin gerekçesi "doğru ama önem fazla / düşük risk") | çoğunlukla doğru sayıldı |
+| Olgu doğru ama tasarım gereği / meşru | nadiren yanlış sayıldı: yanlışların %3'ü | daha sık yanlış sayıldı: yanlışların %14'ü (güvenlik için IP logu, yasal saklama, token ile korunan uç nokta) |
+| Değerlendirme | yapay zekâ; 10. turdan beri doğru ve yanlış kararlar ikinci bir değerlendiriciye itiraza gider | yapay zekâ; tek değerlendirici |
+
+Aynı kodda gerçek proje ölçütü daha düşük bir oran verir.
+- Görülmemiş dördüncü projede her konuma iki karar da verildi.
+- Derin denetimin puanlanan konumlarında "iddia olgu olarak doğru" oranı %65, "gerçek sorun" oranı %35 çıktı.
+- Farkın çoğu şu konumlardan geliyor: hesap ömrü kadar saklanan tablolar için "saklama süresi yok" bulguları, kişisel veri taşımayan çerez bayrakları, test ortamı dosyası ve kullanıcının kendi hesabına giden toplantı bilgisi.
 
 ### Gerçek projeler
 
@@ -32,15 +44,39 @@ Oranlar doğru / (doğru + yanlış) olarak hesaplandı, belirsiz kararlar hari�
 
 ### Görülmemiş dördüncü proje
 
-<!-- 0.2.0 yayımlanmadan önce doldurulacak. -->
+Araç geliştirilirken hiç görülmemiş, açık kaynak bir Next.js / Prisma / tRPC uygulaması (2026-11-27). Ölçüm 0.2.0 ile yapıldı; projenin canlı sitesi taranmadı. Ölçümün adımları:
+- **Kör okuma:** Konum listesi yalnızca dosya ve satırdan oluşuyordu. Okuyucular aracın etiketini görmeden kodu okuyup karar verdi; kararlar sonra etiketlerle karşılaştırıldı.
+- **Bağımsız inceleme:** Aracın raporunu görmeyen iki inceleme daha yapıldı. Biri gerçek sorunları, diğeri kişisel veri envanterini kodun tamamından çıkardı.
 
-Henüz ölçülmedi. 0.2.0 yayımlanmadan önce araç, geliştirilirken hiç görülmemiş bir gerçek projede ölçülecek. Ölçümde şunlar birlikte raporlanacak:
-- Kontrol edilecekler bölümündeki konumların isabeti;
-- "Doğrulanmalı" listesinin isabeti;
-- envanterin isabeti ve eksiksizliği, yani kodda olup envanterde olmayan kişisel veriler ve üçüncü taraflar;
-- kodu okurken bulunan gerçek sorunlardan raporun herhangi bir bölümünde yer alanların sayısı.
+| Ölçü | Hızlı tarama | Derin denetim |
+|---|---|---|
+| Kontrol edilecekler, kritik + yüksek + orta: gerçek sorun | 5 / 10 (%50) | 6 / 12 (%50) |
+| … aynı konumlar: iddia olgu olarak doğru | 9 / 11 (%82) | 9 / 12 (%75) |
+| Kontrol edilecekler, bütün konumlar: gerçek sorun | 6 / 14 (%43) | 18 / 51 (%35) |
+| "Doğrulanmalı" listesi: gerçek sorun | liste boş | 9 / 50 (%18) |
+| Envanterin isabeti | 20 / 23 (%87) | 23 / 26 (%88) |
+| Envanterin eksiksizliği: kişisel veri öğeleri | 10 / 15 | 11 / 15 |
+| Envanterin eksiksizliği: veri alan üçüncü taraflar | 5 / 15 | 11 / 15 |
+| Kodu okurken bulunan 34 gerçek sorundan raporda geçen | 4 | 13 |
 
-Yalnızca bulguları aşağı indirerek elde edilen isabet başarı sayılmaz.
+- **Kodda bulunan sorunlar:**
+  - İki tarama birlikte 34 sorunun 16'sını (%47) gösterdi; yüksek ve orta önemli 11 sorunun 8'ini.
+  - 4 gerçek sorun yalnızca puana katılmayan "Doğrulanmalı" listesindeydi.
+  - Kaçırılan 18 sorunun çoğu: aydınlatma metni ile kod arasındaki uyumsuzluklar, URL'deki token'ların analitiğe gitmesi, otomatik yasaklama, kimlik doğrulamasız uç noktalar.
+- **Envanter:**
+  - İsabetli, ama eksik. Oylar, etkinlik katılım yanıtları ve moderasyon kararı envanterde yok.
+  - Google (giriş, Takvim, Meet), Cloudflare Turnstile ve barındırma sağlayıcısı iki taramada da alıcı olarak görünmedi.
+- **Yanlış alarmlar:** 82 yanlış konumun %67'si 0.2'de düzeltilen sınıfların yeni biçimlerinden geldi:
+  - bir yardımcı fonksiyonla yapılan hesap silmenin tanınmaması;
+  - zamanlanmış temizliğin tanınmaması;
+  - çıplak `fingerprint` sütununun biyometrik sayılması;
+  - test ortamı dosyası.
+- **Önem sınırından sonra yüksek önemde kalanlar:**
+  - Hızlı taramada tek konum kaldı ve yanlıştı: gerçek görünümlü anahtar istisnası, parolasız bir URL'yi sır saydı.
+  - Derin denetimde kalan iki konumdan biri doğruydu.
+- **AUD-SEC-04:**
+  - Projede tek konumu var ve yanlış; 84 projelik setin kalibrasyonuyla zaten "Doğrulanmalı"daydı.
+  - Kural düzeyindeki yedek kural bu projede bir şey değiştirmiyor ve kapalı kaldı.
 
 ## 84 projelik ölçüm seti
 
