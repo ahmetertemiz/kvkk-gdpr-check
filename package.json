@@ -26,7 +26,8 @@
     "check:publishable": "node scripts/check-publishable.js",
     "prepublishOnly": "npm test && npm run check:publishable",
     "legal-basis": "node scripts/legal-basis.js",
-    "example-report": "node scripts/example-report.js"
+    "example-report": "node scripts/example-report.js",
+    "bench:real": "node bench/real.js"
   },
   "engines": {
     "node": ">=20"

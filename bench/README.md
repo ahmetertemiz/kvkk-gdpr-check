@@ -219,3 +219,22 @@ prints `n/a` and never crashes. Against such a baseline every demotion counts as
 label, reason, expectation or result. Write `<prefix>_[REDACTED]` instead. `lib.js` redacts
 credential-looking values in labels and snippets before writing results, and `test/bench.test.js` fails if
 a label file contains one.
+
+## Real-project set (`bench/real.js`)
+
+A second, separate set: the author's live projects, every critical / high / medium location (and some lower ones) judged by
+reading the code, for the quick scan, the deep audit and the live scan, not only the audit. Not published: it is read
+from `private/bench/real` or `KVKK_REAL_DATA` (`repos.json` with a local `dir` per project, `labels/<stack>.json` in the
+format above plus `source` quick|audit|live, `list` scored|review, `tool` (version judged), `basis` location|class).
+
+```sh
+npm run bench:real                 # quick scan + deep audit of every project, per-source totals, per-rule table
+node bench/real.js --live          # also the live scans (network)
+node bench/real.js --no-class      # leave out labels decided for a class of locations instead of one by one
+node bench/real.js --out r.json    # the full report (per rule and per sub-signal) as JSON
+```
+
+Per source it counts the labels the tool still shows (scored, review), the ones it no longer produces (gone) and the
+critical / high / medium locations nobody judged (unlabeled). Live locations (a URL, no line) are matched by text as well.
+Once the tool is tuned on these projects their numbers describe the tuning, not unseen code: the success measure is a
+project outside both sets.
