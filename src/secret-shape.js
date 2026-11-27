@@ -272,17 +272,33 @@ export function standInSecret(match, lines, i) {
 }
 
 const DEFAULT_PASSWORD_RE = /^(?:guest|postgres|root|admin|password|pass|secret|changeme|mysql|mariadb|redis|mongo|mongodb|minio|minioadmin|test|dev|local|user|default|sa|toor|letmein|\d{1,6})$/i;
-const LOCAL_HOST_RE = /^(?:localhost|127\.|0\.0\.0\.0|10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.|host\.docker\.internal$)|\.(?:local|internal|lan|localhost|test|example)$/i;
+// Loopback, private (RFC 1918), link-local and unique-local addresses, and names that only resolve locally.
+const LOCAL_HOST_RE = /^(?:localhost|127\.|0\.0\.0\.0|10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.|169\.254\.|host\.docker\.internal$|\[?(?:::1|f[cd][0-9a-f]{2}:|fe80:)[0-9a-f:]*\]?$)|\.(?:local|internal|lan|localhost|test|example)$/i;
+
+/** Host of a URL (`http://localhost:3000`, `postgres://u:p@10.0.0.5/db`) or of a bare `host:port`, else null. */
+function addressHost(value) {
+  const v = String(value ?? '').trim();
+  const m = v.match(/^[a-z][a-z0-9+.-]*:\/\/(?:[^@\s'"/]*@)?(\[[0-9a-f:.]+\]|[^\s'"/?:#]+)/i) || v.match(/^(\[[0-9a-f:.]+\]|[a-z0-9.-]+):\d{1,5}(?:[/?#]|$)/i);
+  return m ? m[1].toLowerCase() : null;
+}
+
+/** A local address (loopback, private network, *.localhost …) is never a real-looking secret, whatever its shape. */
+export const isLocalAddress = (value) => {
+  const host = addressHost(value);
+  return !!host && LOCAL_HOST_RE.test(host);
+};
 
 /**
  * A real-looking credential (keeps its level under the severity cap, src/severity-cap.js): a provider key whose value has
  * the form of a generated secret; a connection string with a non-default password on a fully-qualified, non-local host;
- * a PEM header followed by key material.
+ * a PEM header followed by key material. A value that is a local address (http://localhost:3000, 127.0.0.1:5432,
+ * app.localhost, 192.168.x.x …) never is.
  */
 export function realLookingCredential(match, lines = null, i = 0) {
   const s = String(match?.[0] ?? match ?? '');
   if (/-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(s)) return !!lines && privateKeyBody(lines, i);
   const v = credentialValue(match) ?? s;
+  if (isLocalAddress(v)) return false;
   const url = String(v).match(/^[a-z][a-z0-9+.-]*:\/\/([^:\s'"/@]*):([^@\s'"]*)@([^\s'"/?:]+)/i);
   if (url) {
     const [, user, pw, host] = url;

@@ -157,13 +157,14 @@ Düzeyler görülmemiş projelerdeki ölçüme göre sabit bir kuralla verilir. 
 
 ### Görülmemiş dördüncü proje
 
-Araç geliştirilirken hiç görülmemiş, açık kaynak bir Next.js / Prisma / tRPC uygulaması. 0.2.0 ile ve kör olarak ölçüldü:
+Araç geliştirilirken hiç görülmemiş, açık kaynak bir Next.js / Prisma / tRPC uygulaması. 0.2.0 ile ve kör olarak ölçüldü. **Bu sonuç tek bir projeden geliyor;** başka bir projede oranlar farklı çıkabilir.
+
 - Her konum önce kodda okundu; aracın etiketine ancak karar verildikten sonra bakıldı.
 - Aracın raporunu görmeyen ayrı bir inceleme de kodu baştan sona okuyup gerçek sorunları ve kişisel veri envanterini çıkardı.
 
 | Ölçü | Hızlı tarama | Derin denetim |
 |---|---|---|
-| Kontrol edilecekler: kritik, yüksek ve orta konumlarda gerçek sorun | 5 / 10 (%50) | 6 / 12 (%50) |
+| Kontrol edilecekler: kritik, yüksek ve orta konumlarda gerçek sorun (iki tarama birlikte: **22 konumun 11'i, %50**) | 5 / 10 (%50) | 6 / 12 (%50) |
 | … aynı konumlarda "iddia olgu olarak doğru" | 9 / 11 (%82) | 9 / 12 (%75) |
 | "Doğrulanmalı" listesinde gerçek sorun | liste boş | 9 / 50 (%18) |
 | Envanterin isabeti | 20 / 23 (%87) | 23 / 26 (%88) |
@@ -179,6 +180,7 @@ Araç geliştirilirken hiç görülmemiş, açık kaynak bir Next.js / Prisma / 
   - çıplak `fingerprint` sütununun biyometrik sayılması;
   - commit edilmiş bir test ortamı dosyası.
 - **Önem sınırından sonra yüksek önemde kalanlar:** Hızlı taramadaki tek konum yanlış çıktı; derin denetimdeki iki konumdan biri doğruydu.
+- **Ölçümden sonraki düzeltme:** Hızlı taramadaki yanlış "yüksek" konumun nedeni bir istisnaydı: gerçek görünümlü anahtar istisnası yerel bir adresi (`http://localhost:3000`) sır sayıyordu. Bu ölçümden sonra düzeltildi; konum artık "orta" görünüyor. **Tablodaki rakamlar bu düzeltmeden önce ölçüldü.** Düzeltme bu konumun yalnızca önemini değiştiriyor; "kritik, yüksek ve orta" satırındaki sayılar aynı kalıyor.
 - **İki ölçütün farkı:** "Gerçek sorun" ile "iddia olgu olarak doğru" arasındaki fark derin denetimin bütün puanlanan konumlarında 30 puan (%35 ile %65). İki ölçüt: [docs/ACCURACY.md](docs/ACCURACY.md).
 
 ### 84 projelik ölçüm seti (yalnızca derin denetim)

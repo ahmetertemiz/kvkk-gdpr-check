@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { capLocation, capAuditFindings, realSupports } from '../src/severity-cap.js';
-import { realLookingCredential } from '../src/secret-shape.js';
+import { realLookingCredential, isLocalAddress } from '../src/secret-shape.js';
 import { scan } from '../src/scan.js';
 import { toText, toJSON } from '../src/report.js';
 
@@ -103,4 +103,26 @@ test('a finding kept at its level by one location shows no "original level", alt
   assert.equal(f.severityRaw, undefined);
   const line = auditText(a, { lang: 'tr' }).split('\n').find((x) => x.includes('AUD-DPIA-01'));
   assert.doesNotMatch(line, /özgün önem/);
+});
+
+test('a local address is never a real-looking credential (0.2.0, after the fourth-project measurement)', () => {
+  for (const v of ['http://localhost:3000', 'https://app.localhost/callback', '127.0.0.1:5432', 'http://192.168.1.20:8080', 'http://10.1.2.3:4000', 'http://172.20.0.4:9000', 'http://[::1]:3000', 'http://169.254.169.254/latest', 'postgres://app:Xq7rT2vLm9@10.0.0.5/app', 'redis://:Xq7rT2vLm9Lp@redis.internal:6379']) {
+    assert.ok(isLocalAddress(v), v);
+    assert.equal(realLookingCredential([v]), false, v);
+  }
+  // Public hosts are unchanged: a non-default password on a fully-qualified host still counts.
+  assert.ok(!isLocalAddress('postgres://app:Xq7rT2vLm9@db.prod-company.com/app'));
+  assert.ok(realLookingCredential(['postgres://app:Xq7rT2vLm9@db.prod-company.com/app']));
+  assert.ok(!isLocalAddress('http://172.32.0.1:3000'), '172.32/16 is not private');
+});
+
+test('a committed .env whose only long value is a localhost URL stays capped at medium', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cap-local-'));
+  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'x', dependencies: { next: '14.2.0' } }));
+  fs.writeFileSync(path.join(dir, '.env'), 'NEXT_PUBLIC_BASE_URL=http://localhost:3000\nAPP_NAME=demo\n');
+  const f = scan(dir, { realCounts: {} }).findings.find((x) => x.rule.id === 'SEC011');
+  fs.rmSync(dir, { recursive: true, force: true });
+  assert.equal(f.severity, 'medium');
+  assert.equal(f.locations[0].severityRaw, 'high');
+  assert.ok(!f.locations[0].realKey);
 });

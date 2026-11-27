@@ -58,12 +58,12 @@ Critical / high is shown only when a measurement supports it; every other locati
 - No right location was lost. The 3 that left the quick scan's critical/high/medium row are TRK001, now an inventory fact at level info.
 - The independent figures are those before any fix written from a project: 13%, 26% and 8% with 0.1.x. The 8% is the third project, never seen while the tool was built.
 
-*An unseen fourth project* (open-source Next.js / Prisma / tRPC app).
+*An unseen fourth project* (open-source Next.js / Prisma / tRPC app). **This result comes from a single project.**
 - **How:** Measured blind with 0.2.0. Every location was read in the code before looking at the tool's label. A separate review that never saw the report listed the real issues and the personal data.
 
 | | Quick scan | Deep audit |
 |---|---|---|
-| To check, critical + high + medium: real issue | 5 / 10 (50%) | 6 / 12 (50%) |
+| To check, critical + high + medium: real issue (both scans: **11 of 22 locations, 50%**) | 5 / 10 (50%) | 6 / 12 (50%) |
 | … same, claim factually right | 9 / 11 (82%) | 9 / 12 (75%) |
 | Review list: real issue | empty | 9 / 50 (18%) |
 | Inventory precision | 20 / 23 (87%) | 23 / 26 (88%) |
@@ -71,6 +71,7 @@ Critical / high is shown only when a measurement supports it; every other locati
 | Of 34 real issues found by reading the code, shown in the report | 4 | 13 |
 
 - **Recall:** Together the two scans showed 16 of the 34 issues (47%) and 8 of the 11 high/medium ones. Most misses were mismatches between the privacy notice and the code, tokens in URLs reaching analytics, automated bans and unauthenticated endpoints.
+- **Fixed after the measurement:** The quick scan's only remaining "high" location was wrong. The real-looking-key exception counted a local address (`http://localhost:3000`) as a secret; that location now shows medium. The figures above were measured before this fix. It changes that location's level only, so the critical/high/medium counts stay the same.
 - **False alarms:** 67% came from new forms of classes fixed in 0.2: an account deletion done through a helper, a bare `fingerprint` column read as biometric, a committed test env file.
 
 *The 84-project measurement set (deep audit only).* In rounds 8–10 (12 projects each), 80%, 84% and 79% of the scored findings were right (round 9 is about 75% after blind correction). About 8 real issues were missed per project, 2–3 of them high severity, mostly access control. That set:

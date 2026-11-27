@@ -72,7 +72,7 @@ Araç geliştirilirken hiç görülmemiş, açık kaynak bir Next.js / Prisma / 
   - çıplak `fingerprint` sütununun biyometrik sayılması;
   - test ortamı dosyası.
 - **Önem sınırından sonra yüksek önemde kalanlar:**
-  - Hızlı taramada tek konum kaldı ve yanlıştı: gerçek görünümlü anahtar istisnası, parolasız bir URL'yi sır saydı.
+  - Hızlı taramada tek konum kaldı ve yanlıştı: gerçek görünümlü anahtar istisnası yerel bir adresi (`http://localhost:3000`) sır saydı. Bu ölçümden sonra düzeltildi; tablodaki rakamlar düzeltmeden önceki ölçümdür.
   - Derin denetimde kalan iki konumdan biri doğruydu.
 - **AUD-SEC-04:**
   - Projede tek konumu var ve yanlış; 84 projelik setin kalibrasyonuyla zaten "Doğrulanmalı"daydı.

@@ -1,6 +1,6 @@
 # Değişiklikler
 
-## 0.2.0 — yayımlanmadı
+## 0.2.0 — 2026-11-27
 
 Raporlar artık olgu ile hükmü ayırıyor ve her hükmün yanında ölçülen isabetini yazıyor. Kritik ve yüksek önem yalnızca bir ölçüm destekliyorsa gösteriliyor. Üç gerçek projede görülen yanlış alarm sınıfları, kök nedenlerine göre ve projeye özel ad ya da kelime listesi kullanmadan düzeltildi.
 
@@ -9,7 +9,17 @@ Raporlar artık olgu ile hükmü ayırıyor ve her hükmün yanında ölçülen 
 - Envanter isabeti %87-88.
 - Kodu okurken bulunan gerçek sorunların %47'si raporda geçiyordu.
 
-Ayrıntı: README ve [docs/ACCURACY.md](docs/ACCURACY.md). Yayım bu sonuca göre kararlaştırılacak.
+Ayrıntı: README ve [docs/ACCURACY.md](docs/ACCURACY.md).
+
+### Ölçümden sonra düzeltildi
+
+- **Yerel adresler gerçek görünümlü anahtar sayılmıyor.** Şu değerler önem sınırının "gerçek görünümlü anahtar" istisnasına girmiyor:
+  - `localhost`, `*.localhost`, `127.0.0.0/8`, `0.0.0.0`;
+  - özel IP aralıkları (`10/8`, `172.16/12`, `192.168/16`);
+  - link-local (`169.254/16`, `fe80::`), IPv6 loopback ve unique-local (`::1`, `fc00::/7`);
+  - yalnızca yerelde çözülen adlar (`.local`, `.internal`, `.lan`, `.test`, `.example`).
+- **Neden:** Dördüncü projede, hızlı taramanın yüksek önemde kalan tek konumu yanlış çıktı. Bu konum commit edilmiş bir `.env.test` dosyasıydı ve içindeki `NEXT_PUBLIC_BASE_URL=http://localhost:3000` gerçek bir sır sayılmıştı. Konum artık "orta" görünüyor.
+- **Ölçüm etkisi:** README'deki dördüncü proje sonuçları bu düzeltmeden önce ölçüldü. Düzeltme yalnızca bu konumun önemini değiştiriyor; "kritik, yüksek ve orta" sayıları aynı.
 
 ### Davranış değişiklikleri
 
