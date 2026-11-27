@@ -4,6 +4,8 @@ import { scoreShown, reasonTexts } from './score-gate.js';
 import { displayRoot } from './display-root.js';
 import { skippedDirsText, testsSkippedText } from './skipped-dirs.js';
 import { basisNote, unverifiedBasis } from './data/legal-basis.js';
+import { rulePrecision, precisionText, isInventory } from './precision-note.js';
+import { SEVERITY_BASIS_NOTE } from './severity-cap.js';
 
 export const SEV_LABEL = {
   tr: { critical: 'KRİTİK', high: 'YÜKSEK', medium: 'ORTA', low: 'DÜŞÜK', info: 'BİLGİ' },
@@ -148,9 +150,18 @@ export function liveSummary(live) {
 
 /** "To check" (review) texts: not counted, not scored, not seen by --fail-on unless --fail-on-review. */
 const REVIEW_T = {
-  tr: { title: 'Kontrol edilecekler', note: 'Puana, sayılara ve --fail-on sınırına katılmadı. Gerçek projelerde çoğu yanlış çıkan bulgular; her birini kodda doğrulayın.', why: 'Neden burada' },
-  en: { title: 'To check', note: 'Not scored, not counted and not seen by --fail-on. Findings that were mostly wrong on real projects; verify each in the code.', why: 'Why here' },
+  tr: { title: 'Doğrulanmalı (puana katılmadı)', note: 'Puana, sayılara ve --fail-on sınırına katılmadı. Gerçek projelerde çoğu yanlış çıkan bulgular; her birini kodda doğrulayın.', why: 'Neden burada' },
+  en: { title: 'Needs verification (not scored)', note: 'Not scored, not counted and not seen by --fail-on. Findings that were mostly wrong on real projects; verify each in the code.', why: 'Why here' },
 };
+/** The two parts of every report: facts (inventory) and verdicts (to check, with their measured precision). */
+const PART_T = {
+  tr: { inventory: 'Envanter', inventoryNote: 'Olgu, hüküm yok: kodun tuttuğu kişisel veriler, veri alan üçüncü taraflar ve canlı sitenin çerezleri. Aracın en güvenilir kısmı.', check: 'Kontrol edilecekler', checkNote: 'Hüküm içeren bulgular. Her kuralın yanında ölçülen isabeti var; her birini kodda doğrulayın.', precision: 'İsabet', capped: (raw) => `özgün önem: ${raw}` },
+  en: { inventory: 'Inventory', inventoryNote: 'Facts, no verdicts: the personal data the code holds, the third parties that receive data and the cookies of the live site. The most reliable part of the tool.', check: 'To check', checkNote: 'Findings with a verdict. Each rule shows its measured precision; verify each in the code.', precision: 'Precision', capped: (raw) => `original level: ${raw}` },
+};
+/** Measurement source of a rule id (live WEB…, deep audit AUD-…, quick scan otherwise). */
+export const sourceOfRule = (id) => (/^WEB\d/.test(id) ? 'live' : /^AUD-/.test(id) ? 'audit' : 'quick');
+const precisionLine = (f, lang) => precisionText(rulePrecision(sourceOfRule(f.rule.id), f.rule.id), lang);
+const rawOf = (f) => f.severityRaw || f.locations.find((l) => l.severityRaw)?.severityRaw || null;
 const reviewOf = (result) => (Array.isArray(result.review) ? result.review.filter((f) => f?.locations?.length) : []);
 const reviewWhy = (f, lang) => L(f.locations.find((l) => l.reviewReason)?.reviewReason, lang);
 
@@ -176,7 +187,11 @@ export function toText(result, { lang = 'tr', color = true, verbose = false } = 
   if (testsSkippedText(result, lang)) out.push(k.dim(`  ℹ ${testsSkippedText(result, lang)}`));
   out.push('');
 
+  const P = PART_T[lang];
+  const inventory = result.findings.filter(isInventory);
+  const verdicts = result.findings.filter((f) => !isInventory(f));
   const ls = liveSummary(result.live);
+  if (ls || inventory.length) out.push(k.bold(`  ━ ${P.inventory}`) + k.dim(`  · ${P.inventoryNote}`), '');
   if (ls) {
     const yn = (v) => (v ? k.green(t.yes) : k.red(t.no));
     out.push(k.bold(`  ${t.live}`) + (ls.mode ? k.dim(`  (${t.mode}: ${ls.mode})`) : ''));
@@ -193,13 +208,29 @@ export function toText(result, { lang = 'tr', color = true, verbose = false } = 
     out.push('');
   }
 
-  if (!result.findings.length) {
-    out.push(k.green(`  ✔ ${t.none}`));
+  // Inventory: what is there (facts), one compact block per rule.
+  for (const f of inventory) {
+    out.push(`  ${k.bold(f.rule.title[lang])} ${k.dim(f.rule.id)}`);
+    const max = verbose ? Infinity : 8;
+    for (const l of f.locations.slice(0, max)) {
+      const where = loc(l);
+      const label = l.label && l.label !== l.snippet ? L(l.label, lang) : '';
+      if (label || where) out.push(`   ${k.dim('•')} ${[label, where && k.dim(where)].filter(Boolean).join('  ')}${l.count > 1 ? k.dim(' ' + t.times(l.count)) : ''}`);
+    }
+    if (f.locations.length > max) out.push(`   ${k.dim(t.more(f.locations.length - max))}`);
+    out.push(`   ${k.dim(t.fix + ': ' + f.rule.fix[lang])}`, '');
   }
 
-  for (const f of result.findings) {
+  out.push(k.bold(`  ━ ${P.check}`) + k.dim(`  · ${P.checkNote}`), '');
+  if (!verdicts.length) {
+    out.push(k.green(`  ✔ ${t.none}`), '');
+  }
+
+  for (const f of verdicts) {
     const { rule, severity, locations } = f;
-    out.push(`${sevColor[severity](` ${SEV_LABEL[lang][severity]} `)} ${k.bold(rule.title[lang])} ${k.dim(rule.id)}`);
+    const raw = rawOf(f);
+    out.push(`${sevColor[severity](` ${SEV_LABEL[lang][severity]} `)} ${k.bold(rule.title[lang])} ${k.dim(rule.id)}${raw ? k.dim(`  (${P.capped(SEV_LABEL[lang][raw])})`) : ''}`);
+    out.push(k.dim(`   ${P.precision}: ${precisionLine(f, lang)}${raw ? ` · ${SEVERITY_BASIS_NOTE.capped[lang]}` : ''}`));
     const max = verbose ? Infinity : 5;
     for (const l of locations.slice(0, max)) {
       const where = loc(l);
@@ -283,10 +314,14 @@ export function toMarkdown(result, { lang = 'tr' } = {}) {
   out.push(`| ${c.critical} | ${c.high} | ${c.medium} | ${c.low} | ${c.info} |`);
   out.push('');
 
+  const P = PART_T[lang];
+  const inventory = result.findings.filter(isInventory);
+  const verdicts = result.findings.filter((f) => !isInventory(f));
   const ls = liveSummary(result.live);
+  if (ls || inventory.length) out.push(`## 📦 ${P.inventory}`, '', `_${P.inventoryNote}_`, '');
   if (ls) {
     const yn = (v) => (v ? `✅ ${t.yes}` : `❌ ${t.no}`);
-    out.push(`## 🌐 ${t.live}`);
+    out.push(`### 🌐 ${t.live}`);
     out.push('');
     out.push(`| | |`);
     out.push('|---|---|');
@@ -304,11 +339,28 @@ export function toMarkdown(result, { lang = 'tr' } = {}) {
     out.push('');
   }
 
-  if (!result.findings.length) out.push(`✅ ${t.none}`);
+  if (inventory.length) {
+    for (const f of inventory) {
+      out.push(`### ${f.rule.title[lang]} \`${f.rule.id}\``, '');
+      for (const l of f.locations.slice(0, 15)) {
+        const where = loc(l);
+        const parts = [];
+        if (l.label) parts.push(`**${mdEsc(L(l.label, lang))}**`);
+        if (where) parts.push(`\`${mdEsc(where)}\``);
+        if (l.count > 1) parts.push(t.times(l.count));
+        if (parts.length) out.push(`- ${parts.join(' — ')}`);
+      }
+      if (f.locations.length > 15) out.push(`- ${t.more(f.locations.length - 15)}`);
+      out.push('', `**${t.fix}:** ${f.rule.fix[lang]}`, '');
+    }
+  }
+
+  out.push(`## ⚖️ ${P.check}`, '', `_${P.checkNote}_`, '');
+  if (!verdicts.length) out.push(`✅ ${t.none}`, '');
 
   // group by category
   const groups = new Map();
-  for (const f of result.findings) {
+  for (const f of verdicts) {
     const cat = CATEGORIES[f.rule.category] ? f.rule.category : 'other';
     if (!groups.has(cat)) groups.set(cat, []);
     groups.get(cat).push(f);
@@ -316,11 +368,14 @@ export function toMarkdown(result, { lang = 'tr' } = {}) {
   const order = [...CATEGORY_ORDER, 'other'].filter((c) => groups.has(c));
   for (const cat of order) {
     const meta = CATEGORIES[cat] || { tr: 'Diğer', en: 'Other', icon: '•' };
-    out.push(`## ${meta.icon} ${meta[lang]}`);
+    out.push(`### ${meta.icon} ${meta[lang]}`);
     out.push('');
     for (const f of groups.get(cat)) {
       const { rule, severity, locations } = f;
-      out.push(`### ${SEV_ICON[severity]} ${rule.title[lang]} \`${rule.id}\``);
+      const raw = rawOf(f);
+      out.push(`#### ${SEV_ICON[severity]} ${rule.title[lang]} \`${rule.id}\`${raw ? ` <sub>(${P.capped(SEV_LABEL[lang][raw])})</sub>` : ''}`);
+      out.push('');
+      out.push(`<sub>${P.precision}: ${mdEsc(precisionLine(f, lang))}${raw ? ` · ${SEVERITY_BASIS_NOTE.capped[lang]}` : ''}</sub>`);
       out.push('');
       for (const l of locations.slice(0, 10)) {
         const where = loc(l);
@@ -394,16 +449,23 @@ export function toJSON(result, { lang = 'tr' } = {}) {
 }
 
 function jsonFinding(f, lang) {
+  const p = rulePrecision(sourceOfRule(f.rule.id), f.rule.id);
+  const raw = rawOf(f);
   return {
     id: f.rule.id,
+    // 0.2: 'inventory' (a fact: which data, which third parties) or 'finding' (a verdict to check in the code)
+    kind: isInventory(f) ? 'inventory' : 'finding',
     category: f.rule.category,
     severity: f.severity,
+    // The level before the 0.2 severity cap (critical / high only where a measurement supports them).
+    ...(raw ? { severityRaw: raw } : {}),
+    precision: { real: p.real, benchmark: p.benchmark, text: precisionText(p, lang) },
     title: f.rule.title[lang],
     description: f.rule.desc[lang],
     fix: f.rule.fix[lang],
     refs: f.rule.refs,
     unverifiedBasis: unverifiedBasis(f.rule, lang),
-    locations: f.locations.map((l) => ({ file: l.file ?? null, url: l.url ?? null, line: l.line ?? null, label: L(l.label, lang) || null, snippet: l.snippet ?? null, count: l.count ?? 1, ...(l.reviewReason ? { reviewReason: L(l.reviewReason, lang) } : {}) })),
+    locations: f.locations.map((l) => ({ file: l.file ?? null, url: l.url ?? null, line: l.line ?? null, label: L(l.label, lang) || null, snippet: l.snippet ?? null, count: l.count ?? 1, ...(l.severity ? { severity: l.severity } : {}), ...(l.severityRaw ? { severityRaw: l.severityRaw } : {}), ...(l.reviewReason ? { reviewReason: L(l.reviewReason, lang) } : {}) })),
   };
 }
 

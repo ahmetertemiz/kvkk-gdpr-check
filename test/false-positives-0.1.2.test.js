@@ -1,5 +1,7 @@
 // 0.1.2: false positives grouped by root cause, each with a case that must still be caught.
 // Synthetic code only: no names, tables or code from the projects that showed them.
+// These tests check the level each rule sets; the 0.2 severity cap (src/severity-cap.js) has its own tests.
+process.env.KVKK_NO_SEVERITY_CAP = '1';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';

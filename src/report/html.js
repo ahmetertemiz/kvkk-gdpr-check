@@ -4,7 +4,9 @@ import { displayRoot } from '../display-root.js';
 import { skippedDirsText, testsSkippedText } from '../skipped-dirs.js';
 import { basisNote } from '../data/legal-basis.js';
 import { CATEGORIES, CATEGORY_ORDER } from '../data/categories.js';
-import { REPORT_STRINGS, SEV_LABEL, L, loc, scoreGrade, HEADER_NAMES, isNonEssentialCookie, liveSummary, blockedWhy } from '../report.js';
+import { REPORT_STRINGS, SEV_LABEL, L, loc, scoreGrade, HEADER_NAMES, isNonEssentialCookie, liveSummary, blockedWhy, sourceOfRule } from '../report.js';
+import { rulePrecision, precisionText, isInventory } from '../precision-note.js';
+import { SEVERITY_BASIS_NOTE } from '../severity-cap.js';
 
 const SEVS = ['critical', 'high', 'medium', 'low', 'info'];
 
@@ -114,8 +116,8 @@ function reviewBlock(result, lang) {
   const rv = Array.isArray(result.review) ? result.review.filter((f) => f?.locations?.length) : [];
   if (!rv.length) return '';
   const R = lang === 'en'
-    ? { title: 'To check', note: 'Not scored, not counted and not seen by --fail-on. Findings that were mostly wrong on real projects; verify each in the code.', why: 'Why here' }
-    : { title: 'Kontrol edilecekler', note: 'Puana, sayılara ve --fail-on sınırına katılmadı. Gerçek projelerde çoğu yanlış çıkan bulgular; her birini kodda doğrulayın.', why: 'Neden burada' };
+    ? { title: 'Needs verification (not scored)', note: 'Not scored, not counted and not seen by --fail-on. Findings that were mostly wrong on real projects; verify each in the code.', why: 'Why here' }
+    : { title: 'Doğrulanmalı (puana katılmadı)', note: 'Puana, sayılara ve --fail-on sınırına katılmadı. Gerçek projelerde çoğu yanlış çıkan bulgular; her birini kodda doğrulayın.', why: 'Neden burada' };
   const n = rv.reduce((s, f) => s + f.locations.length, 0);
   const items = rv.map((f) => {
     const why = L(f.locations.find((l) => l.reviewReason)?.reviewReason, lang);
@@ -186,6 +188,14 @@ function locationList(f, t, lang) {
   return body ? `<div class="block"><h4>${esc(t.where)}</h4><ul class="locs">${body}</ul></div>` : '';
 }
 
+const capRaw = (f) => f.severityRaw || f.locations.find((l) => l.severityRaw)?.severityRaw || null;
+function precisionP(f, lang) {
+  if (isInventory(f)) return '';
+  const raw = capRaw(f);
+  const cap = raw ? ` · ${esc(SEVERITY_BASIS_NOTE.capped[lang])} (${esc(lang === 'en' ? 'original level' : 'özgün önem')}: ${esc(SEV_LABEL[lang][raw])})` : '';
+  return `<p class="refs">${esc(lang === 'en' ? 'Precision' : 'İsabet')}: ${esc(precisionText(rulePrecision(sourceOfRule(f.rule.id), f.rule.id), lang))}${cap}</p>`;
+}
+
 function findingCard(f, t, lang, idx) {
   const { rule, severity } = f;
   const cat = CATEGORIES[rule.category] ? rule.category : 'other';
@@ -198,6 +208,7 @@ function findingCard(f, t, lang, idx) {
     <span class="f-meta"><span class="f-cat">${catMeta.icon} ${esc(catMeta[lang])}</span><span class="f-id">${esc(rule.id)}</span><span class="f-n">${f.locations.length}</span></span>
   </summary>
   <div class="f-body">
+    ${precisionP(f, lang)}
     ${locationList(f, t, lang)}
     <div class="block"><h4>${esc(t.why)}</h4><p>${esc(rule.desc[lang])}</p></div>
     <div class="block fix"><h4>${esc(t.fix)}</h4><p>${esc(rule.fix[lang])}</p></div>
@@ -479,7 +490,17 @@ export function toHtml(result, { lang = 'tr' } = {}) {
       return `<button type="button" class="chip" data-cat-filter="${esc(c)}" aria-pressed="false">${m.icon} ${esc(m[lang])}</button>`;
     }).join('');
 
-  const cards = result.findings.map((f, i) => findingCard(f, t, lang, i)).join('\n');
+  // Two parts: inventory (facts) first, then the findings to check (verdicts, with their measured precision).
+  const inv = result.findings.filter(isInventory);
+  const ver = result.findings.filter((f) => !isInventory(f));
+  const PT = lang === 'en'
+    ? { inv: 'Inventory', invNote: 'Facts, no verdicts: personal data the code holds and the third parties that receive data.', chk: 'To check', chkNote: 'Findings with a verdict, each with its measured precision; verify each in the code.' }
+    : { inv: 'Envanter', invNote: 'Olgu, hüküm yok: kodun tuttuğu kişisel veriler ve veri alan üçüncü taraflar.', chk: 'Kontrol edilecekler', chkNote: 'Hüküm içeren bulgular; her birinin yanında ölçülen isabet var. Her birini kodda doğrulayın.' };
+  const partHead = (title, note) => `<h2 class="part">${esc(title)}</h2><p class="muted small">${esc(note)}</p>`;
+  const cards = [
+    inv.length ? partHead(PT.inv, PT.invNote) + inv.map((f) => findingCard(f, t, lang, 99)).join('\n') : '',
+    ver.length ? partHead(PT.chk, PT.chkNote) + ver.map((f, i) => findingCard(f, t, lang, i)).join('\n') : '',
+  ].join('\n');
   const checklist = result.findings
     .filter((f) => f.severity !== 'info')
     .map(

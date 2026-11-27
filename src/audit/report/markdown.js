@@ -6,6 +6,14 @@ import { basisNote } from '../../data/legal-basis.js';
 import { CONTROLLER_QUESTIONS } from '../legal/knowledge.js';
 import { ORG_STATUS, ORG_TEXT } from '../legal/org.js';
 import { buildDataMap, toMermaid } from './datamap.js';
+import { rulePrecision, precisionText } from '../../precision-note.js';
+import { SEVERITY_BASIS_NOTE } from '../../severity-cap.js';
+
+/** The two parts of the report: facts (inventory) and verdicts (to check, with their measured precision). */
+const PART = {
+  tr: { inv: 'Envanter', invNote: 'Olgu, hüküm yok: kişisel veriler, işleme faaliyetleri, üçüncü taraflar ve yurt dışı aktarım. Aracın en güvenilir kısmı.', chk: 'Kontrol edilecekler', chkNote: 'Hüküm içeren bulgular; her kuralın yanında ölçülen isabet var. Her birini kodda doğrulayın.', prec: 'İsabet', raw: 'özgün önem' },
+  en: { inv: 'Inventory', invNote: 'Facts, no verdicts: personal data, processing activities, third parties and transfers abroad. The most reliable part of the tool.', chk: 'To check', chkNote: 'Findings with a verdict, each rule with its measured precision. Verify each in the code.', prec: 'Precision', raw: 'original level' },
+};
 
 const ICON = { critical: '🛑', high: '🔴', medium: '🟠', low: '🟡', info: '🔵' };
 const trCell = (r, t) => {
@@ -55,6 +63,7 @@ export function auditMarkdown(result, { lang = 'tr' } = {}) {
   }
   o.push('');
 
+  o.push(`# 📦 ${PART[lang].inv}`, '', `_${PART[lang].invNote}_`, '');
   o.push(`## ${t.datamap}`, '', toMermaid(buildDataMap(result.graph, lang), t), '');
 
   o.push(`## ${t.inventory}`, '');
@@ -69,6 +78,12 @@ export function auditMarkdown(result, { lang = 'tr' } = {}) {
     o.push('');
   }
 
+  o.push(`## ${t.transfers}`, '');
+  o.push(`| ${t.vendor} | ${t.country} | ${t.abroad} | ${t.third} | ${t.data} |`, '|---|---|---|---|---|');
+  for (const r of m.transfers) o.push(`| ${cell(r.vendor)}${transferKindLabel(r, t) ? ` _(${cell(transferKindLabel(r, t))})_` : ''} | ${cell(r.country)} | ${trCell(r, t)} | ${r.thirdCountryGdpr === true ? '✓' : r.thirdCountryGdpr === false ? '–' : '?'} | ${cell(r.elements.map((e) => L(e.label, lang) || e.name).join(', '))}${r.special ? ' 🩺' : ''} |`);
+  o.push('');
+
+  o.push(`# ⚖️ ${PART[lang].chk}`, '', `_${PART[lang].chkNote}_`, '');
   o.push(`## ${t.findings}`, '');
   if (hasCalibration(result)) o.push(`_${t.calNote}_`, '');
   for (const [cat, list] of groupFindings(result.findings)) {
@@ -76,7 +91,9 @@ export function auditMarkdown(result, { lang = 'tr' } = {}) {
     for (const f0 of list) {
       const f = viewFinding(f0);
       const lowF = findingLowConfidence(f);
-      o.push(`#### ${ICON[f.severity] || ''} ${L(f.rule.title, lang)} \`${f.rule.id}\``, '');
+      const raw = f.severityRaw || f.locations.find((l) => l.severityRaw)?.severityRaw;
+      o.push(`#### ${ICON[f.severity] || ''} ${L(f.rule.title, lang)} \`${f.rule.id}\`${raw ? ` <sub>(${PART[lang].raw}: ${t.sev?.[raw] || raw})</sub>` : ''}`, '');
+      o.push(`<sub>${PART[lang].prec}: ${precisionText(rulePrecision('audit', f.rule.id), lang)}${raw ? ` · ${SEVERITY_BASIS_NOTE.capped[lang]}` : ''}</sub>`, '');
       if (lowF) o.push(`_⚠ ${t.lowConfFinding}_`, '');
       for (const l of f.locations.slice(0, 15)) {
         const w = locWhere(l);
@@ -120,11 +137,6 @@ export function auditMarkdown(result, { lang = 'tr' } = {}) {
   if (dh.state !== 'ok') o.push(`> ${dh.state === 'unanalysed' ? '?' : '✗'} ${dh.text}`, '');
   o.push(`| ${t.target} | ${t.data} | ${t.covered} | ${t.reason} |`, '|---|---|---|---|');
   for (const r of m.deletionMatrix.rows) o.push(`| ${cell(r.label)}${deletionRowTag(r, t) ? ` _(${cell(deletionRowTag(r, t))})_` : ''} | ${cell((r.elements || []).join(', '))} | ${((st) => `${DEL_MARK[st]}${deletionStateLabel(st, t) ? ' ' + deletionStateLabel(st, t) : ''}`)(deletionState(r))} | ${cell(deletionReason(r, t, lang))} |`);
-  o.push('');
-
-  o.push(`## ${t.transfers}`, '');
-  o.push(`| ${t.vendor} | ${t.country} | ${t.abroad} | ${t.third} | ${t.data} |`, '|---|---|---|---|---|');
-  for (const r of m.transfers) o.push(`| ${cell(r.vendor)}${transferKindLabel(r, t) ? ` _(${cell(transferKindLabel(r, t))})_` : ''} | ${cell(r.country)} | ${trCell(r, t)} | ${r.thirdCountryGdpr === true ? '✓' : r.thirdCountryGdpr === false ? '–' : '?'} | ${cell(r.elements.map((e) => L(e.label, lang) || e.name).join(', '))}${r.special ? ' 🩺' : ''} |`);
   o.push('');
 
   const dv = dpiaView(m.dpia, t, lang);

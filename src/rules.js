@@ -17,6 +17,7 @@ import { MOBILE_RULES } from './rules/mobile.js';
 import { sqlEngines } from './db-engine.js';
 import { BACKEND_RULES } from './rules/backend.js';
 import { WEB_EXTRA_RULES } from './rules/web-extra.js';
+import { realLookingCredential } from './secret-shape.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -299,6 +300,7 @@ export const RULES = [
     id: 'PII001',
     category: 'personal-data',
     severity: 'info',
+    kind: 'inventory', // a fact (which personal data the code holds), not a verdict: reports list it under "Envanter"
     scope: 'file',
     kinds: CODE,
     aggregate: true,
@@ -386,6 +388,7 @@ export const RULES = [
     id: 'TRF001',
     category: 'transfer',
     severity: 'info',
+    kind: 'inventory', // which third parties receive data: a fact, listed under "Envanter"
     scope: 'file',
     kinds: CODE_MANIFEST,
     aggregate: true,
@@ -875,7 +878,13 @@ export const RULES = [
         .filter((p) => p && !p.startsWith('#') && !p.startsWith('!'))
         .map((p) => new RegExp('^' + p.replace(/^\//, '').replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$'));
       const ignored = (rel) => patterns.some((re) => re.test(rel) || re.test(path.basename(rel)));
-      return envFiles.filter((f) => !ignored(f.rel)).map((f) => ({ label: f.rel, file: f.rel, line: 1 }));
+      // A value with the form of a real credential (src/secret-shape.js) makes it a key leak: it keeps its level under
+      // the 0.2 severity cap.
+      const realValue = (f) => String(f.content || '').split(/\r?\n/).some((l) => {
+        const m = l.match(/^\s*(?:export\s+)?[A-Za-z_][\w.]*\s*=\s*["']?([^"'\s#]+)/);
+        return !!m && m[1].length >= 16 && realLookingCredential([m[1]]);
+      });
+      return envFiles.filter((f) => !ignored(f.rel)).map((f) => ({ label: f.rel, file: f.rel, line: 1, ...(realValue(f) ? { realKey: true } : {}) }));
     },
     title: {
       tr: '.env dosyası .gitignore\'da değil',

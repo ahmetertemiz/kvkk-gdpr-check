@@ -6,7 +6,7 @@
  * or of its whole rule when the sub-signal has too few labels, is low:
  *   n = TP + FP >= REAL_MIN_N, FP labels from >= REAL_MIN_FP_PROJECTS projects, and
  *   either the Wilson 90% upper bound < REAL_UPPER90_MAX, or point precision < REAL_POINT_MAX with lower bound < REAL_LOWER90_MAX.
- * Fallback: a sub-signal with fewer than REAL_MIN_N labels is judged by the rule total, unless its own labels say it is
+ * Fallback (off by default, REAL_RULE_FALLBACK): a sub-signal with fewer than REAL_MIN_N labels is judged by the rule total, unless its own labels say it is
  * clearly better (at least REAL_OWN_MIN_N labels and its lower bound above the rule's upper bound).
  * Nothing is ever promoted: a location the benchmark already routes to review stays there. The rule-total fallback never
  * overrides a sub-signal the benchmark measured (at least 5 labels): calibrate.js keeps it and records calibration.realConflict.
@@ -20,6 +20,12 @@ export const REAL_UPPER90_MAX = 0.5;
 export const REAL_POINT_MAX = 0.4;
 export const REAL_LOWER90_MAX = 0.3;
 export const REAL_OWN_MIN_N = 3;
+/**
+ * The rule-total fallback for sub-signals is OFF (0.2 decision): on the real set it moved AUD-SEC-04 sub-signals to
+ * review that the benchmark's current labels show as mostly right (12 TP / 3 FP demoted there, to remove 2 real-set FPs).
+ * The code stays to re-evaluate with the fourth, unseen project. Turn on per call with { fallback: true }.
+ */
+export const REAL_RULE_FALLBACK = false;
 const Z = 1.645;
 
 /** Wilson two-sided 90% interval of tp out of tp + fp: {lower, upper} (nulls without labels). */
@@ -54,10 +60,12 @@ export function realLow(s) {
  * @returns {null | {basis:'sub'|'rule'|'rule-only', stats:object, own:object|null}} null: not demoted
  *   sub: the sub-signal's own labels; rule: the rule total stands in for a sub-signal with too few; rule-only: no sub-signal
  */
-export function realDemotion({ source, ruleId, sub = null }, counts = REAL_COUNTS) {
+export function realDemotion({ source, ruleId, sub = null }, counts = REAL_COUNTS, { fallback = REAL_RULE_FALLBACK } = {}) {
   const rule = statsOf(`${source}:${ruleId}`, counts);
   const own = sub ? statsOf(`${source}:${sub}`, counts) : null;
   if (own && own.n >= REAL_MIN_N) return realLow(own) ? { basis: 'sub', stats: own, own } : null;
+  // A rule without sub-signals (the quick scan) is judged by its own total; the fallback for a sub-signal is off by default.
+  if (sub && !fallback) return null;
   if (!realLow(rule)) return null;
   // The sub-signal's own few labels may still show it is clearly better than its rule.
   if (own && own.n >= REAL_OWN_MIN_N && own.lower90 > rule.upper90) return null;

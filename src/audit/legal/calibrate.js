@@ -357,7 +357,7 @@ function worst(locs, rule, fallback) {
  * @param {{layers?:object, threshold?:number, precision?:boolean, real?:boolean}} opts
  * @returns {{findings:object[], review:object[]}}
  */
-export function calibrate(findings, { layers = null, threshold = ABSENCE_MIN_CONFIDENCE, precision = true, real = true, realCounts = undefined } = {}) {
+export function calibrate(findings, { layers = null, threshold = ABSENCE_MIN_CONFIDENCE, precision = true, real = true, realCounts = undefined, realFallback = undefined } = {}) {
   const kept = [];
   const review = [];
   for (const f of findings || []) {
@@ -396,7 +396,7 @@ export function calibrate(findings, { layers = null, threshold = ABSENCE_MIN_CON
       // Real-project precision (demote-only): a location still scored whose sub-signal (or rule) was mostly wrong on the
       // hand-verified real projects goes to review with that rate.
       if (real && !reason) {
-        const d = realDemotion({ source: 'audit', ruleId: f.rule.id, sub: l.sub || null }, realCounts);
+        const d = realDemotion({ source: 'audit', ruleId: f.rule.id, sub: l.sub || null }, realCounts, realFallback === undefined ? {} : { fallback: realFallback });
         // The rule total stands in only for a sub-signal that neither set measured: a sub-signal with at least
         // CONFIDENCE_MIN_N benchmark labels keeps its own measured status (kept scored; the conflict is recorded).
         if (d && d.basis === 'rule' && (l.calibration?.n ?? 0) >= CONFIDENCE_MIN_N) {

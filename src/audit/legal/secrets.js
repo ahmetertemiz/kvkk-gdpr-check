@@ -24,7 +24,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { RULES } from '../../rules.js';
 import { finding, loc, T } from './checks/_util.js';
-import { exposureGuard, fakeSecret, standInSecret } from '../../secret-shape.js';
+import { exposureGuard, fakeSecret, realLookingCredential, standInSecret } from '../../secret-shape.js';
 
 const LEGACY_IDS = ['SEC001', 'SEC002', 'CFG007'];
 
@@ -183,6 +183,8 @@ export function secretFindings(files = []) {
           ...(defaults ? { reviewReason: DEFAULT_CREDS_REASON } : {}),
         }));
         tagLoc(locs[locs.length - 1], sub);
+        // Real-looking credential: keeps its level under the severity cap (src/severity-cap.js).
+        if (!p.exposed && !defaults && realLookingCredential(m, lines, i)) locs[locs.length - 1].realKey = true;
         const strong = strongSecret(sub, m[0], f.content);
         if (strong && !defaults) locs[locs.length - 1].strongEvidence = strong;
         if (locs.length >= 40) break;
@@ -305,6 +307,7 @@ function envFileLocs(files, seen) {
       }), sub));
       const strong = !defaults && strongSecret(sub, value, f.content);
       if (strong) out[out.length - 1].strongEvidence = strong;
+      if (!defaults && realLookingCredential(value)) out[out.length - 1].realKey = true;
     }
   }
   return out;

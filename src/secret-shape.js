@@ -271,6 +271,26 @@ export function standInSecret(match, lines, i) {
   return v ? fakeSecret(v) : null;
 }
 
+const DEFAULT_PASSWORD_RE = /^(?:guest|postgres|root|admin|password|pass|secret|changeme|mysql|mariadb|redis|mongo|mongodb|minio|minioadmin|test|dev|local|user|default|sa|toor|letmein|\d{1,6})$/i;
+const LOCAL_HOST_RE = /^(?:localhost|127\.|0\.0\.0\.0|10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.|host\.docker\.internal$)|\.(?:local|internal|lan|localhost|test|example)$/i;
+
+/**
+ * A real-looking credential (keeps its level under the severity cap, src/severity-cap.js): a provider key whose value has
+ * the form of a generated secret; a connection string with a non-default password on a fully-qualified, non-local host;
+ * a PEM header followed by key material.
+ */
+export function realLookingCredential(match, lines = null, i = 0) {
+  const s = String(match?.[0] ?? match ?? '');
+  if (/-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(s)) return !!lines && privateKeyBody(lines, i);
+  const v = credentialValue(match) ?? s;
+  const url = String(v).match(/^[a-z][a-z0-9+.-]*:\/\/([^:\s'"/@]*):([^@\s'"]*)@([^\s'"/?:]+)/i);
+  if (url) {
+    const [, user, pw, host] = url;
+    return !fakeSecret(v) && !!pw && !DEFAULT_PASSWORD_RE.test(pw) && pw.toLowerCase() !== user.toLowerCase() && host.includes('.') && !LOCAL_HOST_RE.test(host);
+  }
+  return looksRandom(v);
+}
+
 /**
  * Does the value have the form of a generated secret? Long enough, mixed characters and no stand-in reason.
  * Used to keep the level of a real-looking key leak on a quick-scan rule no real project has measured.

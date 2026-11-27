@@ -16,6 +16,7 @@ import { STORE_DECLARATION_CHECKS } from './checks/store-declarations.js';
 import { elements, sourcesOf, flowsOf, isUsed, nodeLabel, confidenceOf } from './model.js';
 import { secretFindings } from './secrets.js';
 import { calibrate, CALIBRATION_PROVENANCE } from './calibrate.js';
+import { capAuditFindings, capEnabled } from '../../severity-cap.js';
 import { worse } from './risk.js';
 
 /**
@@ -179,7 +180,10 @@ export function runAudit(graph, ctx = {}) {
   // Measured sub-signal precision routing (contract C-R7, calibrate.js / rule-precision.js). Switched off only for
   // A/B measurement: ctx.precisionCalibration === false or KVKK_NO_PRECISION_CALIBRATION=1.
   const precision = ctx.precisionCalibration !== false && !process.env.KVKK_NO_PRECISION_CALIBRATION;
-  const out = calibrate(runChecks(graph, ctx), { layers: ctx.layers || null, precision });
+  const cal = calibrate(runChecks(graph, ctx), { layers: ctx.layers || null, precision });
+  // Severity cap (src/severity-cap.js): critical / high only where a measurement supports them; severityRaw kept.
+  const cap = capEnabled(ctx.severityCap);
+  const out = cap ? { findings: capAuditFindings(cal.findings), review: capAuditFindings(cal.review) } : cal;
   return { ...out, calibration: calibrationSummary(out, precision) };
 }
 

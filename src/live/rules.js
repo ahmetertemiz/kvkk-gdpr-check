@@ -194,7 +194,7 @@ export const LIVE_RULES = [
     refs: ['KVKK md.4/2-d', 'GDPR Art.5(1)(e)', 'CNIL Délibération 2020-091'],
   },
   {
-    id: 'WEB018', category: 'transfer', severity: 'info',
+    id: 'WEB018', category: 'transfer', severity: 'info', kind: 'inventory',
     title: { tr: 'Veri gönderilen üçüncü taraf alan adları (yurt dışı aktarım envanteri)', en: 'Third-party hosts receiving data (international transfer inventory)' },
     desc: {
       tr: 'Ziyaretçinin tarayıcısı bu üçüncü taraf alan adlarına bağlanıyor. Her biri IP adresi ve cihaz bilgisi alır; çoğu Türkiye/AB dışındadır ve KVKK md.9 kapsamında aktarım güvencesi gerektirir.',

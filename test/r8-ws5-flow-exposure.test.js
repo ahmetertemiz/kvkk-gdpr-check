@@ -3,6 +3,8 @@
  * Round 8 / WS5: relation expansion and row exposure, credentials in mails and redirects, records in logs, framework
  * Supabase clients, cache payloads, finding merge. All names and values are synthetic.
  */
+// These tests check the level each rule sets; the 0.2 severity cap (src/severity-cap.js) has its own tests.
+process.env.KVKK_NO_SEVERITY_CAP = '1';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';

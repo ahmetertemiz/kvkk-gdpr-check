@@ -2,6 +2,8 @@
 // from the client, IDOR through an outbound API, guard-helper ownership, function-level authorisation, shared
 // server client, SSRF, AI upload forwarding, email relay), SEC-08 precision / recall, SEC-14 generic credential
 // updates and cookie-only sign-out, SEC-04 non-production paths, SEC-07 / SEC-09 additions and hardening gaps.
+// These tests check the level each rule sets; the 0.2 severity cap (src/severity-cap.js) has its own tests.
+process.env.KVKK_NO_SEVERITY_CAP = '1';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';

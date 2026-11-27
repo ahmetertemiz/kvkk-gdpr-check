@@ -5,11 +5,18 @@ import { supportNotice } from '../../support-notice.js';
 import { basisNote } from '../../data/legal-basis.js';
 import { CONTROLLER_QUESTIONS } from '../legal/knowledge.js';
 import { ORG_STATUS, ORG_TEXT } from '../legal/org.js';
+import { rulePrecision, precisionText } from '../../precision-note.js';
+import { SEVERITY_BASIS_NOTE } from '../../severity-cap.js';
 
 function colors(on) {
   const c = (code) => (s) => (on ? `\x1b[${code}m${s}\x1b[0m` : String(s));
   return { b: c(1), d: c(2), red: c(31), green: c(32), yellow: c(33), cyan: c(36), blue: c(34), mag: c(35), bgRed: c('41;97') };
 }
+
+const PART = {
+  tr: { inv: 'Envanter', invNote: 'Olgu, hüküm yok: kişisel veriler, işleme faaliyetleri, üçüncü taraflar ve yurt dışı aktarım. Aracın en güvenilir kısmı.', chk: 'Kontrol edilecekler', chkNote: 'Hüküm içeren bulgular; her kuralın yanında ölçülen isabet var. Her birini kodda doğrulayın.', prec: 'İsabet', raw: 'özgün önem' },
+  en: { inv: 'Inventory', invNote: 'Facts, no verdicts: personal data, processing activities, third parties and transfers abroad. The most reliable part of the tool.', chk: 'To check', chkNote: 'Findings with a verdict, each rule with its measured precision. Verify each in the code.', prec: 'Precision', raw: 'original level' },
+};
 
 export function auditText(result, { lang = 'tr', color = false, verbose = false } = {}) {
   result = viewResult(result);
@@ -60,8 +67,9 @@ export function auditText(result, { lang = 'tr', color = false, verbose = false 
   }
   o.push('');
 
-  // Inventory
+  // Part 1: inventory (facts, no verdicts): data elements, processing activities, transfers.
   hr();
+  o.push(k.b(`  ━ ${PART[lang].inv}`) + k.d(`  · ${PART[lang].invNote}`));
   o.push(k.b(`  ${t.inventory}`) + k.d(` (${m.inventory.length})`));
   for (const e of m.inventory) {
     const sens = e.sensitivity === 'special' ? k.red(t.sens.special) : e.sensitivity === 'high' ? k.yellow(t.sens.high) : k.d(t.sens.normal);
@@ -82,8 +90,21 @@ export function auditText(result, { lang = 'tr', color = false, verbose = false 
     o.push('');
   }
 
-  // Findings grouped
+  // Transfers
   hr();
+  o.push(k.b(`  ${t.transfers}`));
+  for (const tr of m.transfers) {
+    const f = transferFlag(tr);
+    const flag = f === 'abroad' ? k.yellow(t.abroad) : f === 'unknown' ? k.mag(t.locUnknown) : k.d(transferFlagLabel(f, t));
+    const kl = transferKindLabel(tr, t);
+    o.push(`   • ${k.b(tr.vendor)} (${tr.country}) ${flag}${tr.special ? ' ' + k.red(t.sens.special) : ''}${kl ? ' ' + k.d('[' + kl + ']') : ''}`);
+    o.push(k.d(`       ${tr.elements.map((e) => L(e.label, lang) || e.name).join(', ')}`));
+  }
+  o.push('');
+
+  // Part 2: findings to check (verdicts), each with its measured precision.
+  hr();
+  o.push(k.b(`  ━ ${PART[lang].chk}`) + k.d(`  · ${PART[lang].chkNote}`));
   o.push(k.b(`  ${t.findings}`) + k.d(` (${result.findings.length})`));
   if (hasCalibration(result)) o.push(k.d(`  ${t.calNote}`));
   for (const [cat, list] of groupFindings(result.findings)) {
@@ -92,7 +113,9 @@ export function auditText(result, { lang = 'tr', color = false, verbose = false 
     for (const f0 of list) {
       const f = viewFinding(f0);
       const lowF = findingLowConfidence(f);
-      o.push(`  ${(sc[f.severity] || k.d)(` ${t.sev[f.severity] || f.severity} `)} ${k.b(L(f.rule.title, lang))} ${k.d(f.rule.id)}${lowF ? ' ' + k.mag(`[${t.lowConfFinding}]`) : ''}`);
+      const raw = f.severityRaw || f.locations.find((l) => l.severityRaw)?.severityRaw;
+      o.push(`  ${(sc[f.severity] || k.d)(` ${t.sev[f.severity] || f.severity} `)} ${k.b(L(f.rule.title, lang))} ${k.d(f.rule.id)}${lowF ? ' ' + k.mag(`[${t.lowConfFinding}]`) : ''}${raw ? k.d(`  (${PART[lang].raw}: ${t.sev[raw] || raw})`) : ''}`);
+      o.push(k.d(`     ${PART[lang].prec}: ${precisionText(rulePrecision('audit', f.rule.id), lang)}${raw ? ` · ${SEVERITY_BASIS_NOTE.capped[lang]}` : ''}`));
       const max = verbose ? Infinity : 6;
       for (const l of f.locations.slice(0, max)) {
         const w = locWhere(l);
@@ -152,18 +175,6 @@ export function auditText(result, { lang = 'tr', color = false, verbose = false 
     const stl = deletionStateLabel(st, t);
     const tag = deletionRowTag(r, t);
     o.push(`   ${mark} ${String(r.label ?? '?').padEnd(28)} ${stl ? k.yellow('[' + stl + '] ') : ''}${tag ? k.d('(' + tag + ') ') : ''}${k.d(deletionReason(r, t, lang))}`);
-  }
-  o.push('');
-
-  // Transfers
-  hr();
-  o.push(k.b(`  ${t.transfers}`));
-  for (const tr of m.transfers) {
-    const f = transferFlag(tr);
-    const flag = f === 'abroad' ? k.yellow(t.abroad) : f === 'unknown' ? k.mag(t.locUnknown) : k.d(transferFlagLabel(f, t));
-    const kl = transferKindLabel(tr, t);
-    o.push(`   • ${k.b(tr.vendor)} (${tr.country}) ${flag}${tr.special ? ' ' + k.red(t.sens.special) : ''}${kl ? ' ' + k.d('[' + kl + ']') : ''}`);
-    o.push(k.d(`       ${tr.elements.map((e) => L(e.label, lang) || e.name).join(', ')}`));
   }
   o.push('');
 

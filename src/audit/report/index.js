@@ -9,6 +9,7 @@ import { auditMarkdown } from './markdown.js';
 import { auditHtml } from './html.js';
 import { scrubCredentials } from '../legal/secrets.js';
 import { getModel, viewFinding, isLowConfidence, findingLowConfidence, summaryFindings, coverageNotes, S, viewResult, calibrationText, viewLayers, reviewRateText } from './common.js';
+import { rulePrecision, precisionText } from '../../precision-note.js';
 
 const txt = (x, lang) => (x == null ? null : typeof x === 'string' ? x : x[lang] || x.en || x.tr || null);
 
@@ -24,10 +25,17 @@ function jsonCalibration(c, lang) {
 }
 
 function jsonFinding(f, lang) {
+  const p = rulePrecision('audit', f.rule.id);
+  const raw = f.severityRaw || f.locations.find((l) => l.severityRaw)?.severityRaw || null;
   return {
     id: f.rule.id,
+    // 0.2: deep-audit findings are verdicts; the inventory (elements, activities, transfers) is in `model`
+    kind: 'finding',
     category: f.rule.category,
     severity: f.severity,
+    // The level before the 0.2 severity cap (critical / high only where a measurement supports them).
+    ...(raw ? { severityRaw: raw } : {}),
+    precision: { real: p.real, benchmark: p.benchmark, text: precisionText(p, lang) },
     title: f.rule.title?.[lang],
     description: f.rule.desc?.[lang],
     fix: f.rule.fix?.[lang],
@@ -36,7 +44,7 @@ function jsonFinding(f, lang) {
     lowConfidence: findingLowConfidence(f),
     locations: f.locations.map((l) => ({
       file: l.file || null, line: l.line || null, label: txt(l.label, lang),
-      snippet: l.snippet || null, chain: l.chain || null, severity: l.severity || null, confidence: l.confidence ?? null, lowConfidence: isLowConfidence(l),
+      snippet: l.snippet || null, chain: l.chain || null, severity: l.severity || null, ...(l.severityRaw ? { severityRaw: l.severityRaw } : {}), ...(l.severityBasis ? { severityBasis: l.severityBasis } : {}), confidence: l.confidence ?? null, lowConfidence: isLowConfidence(l),
       basis: l.basis || null,
       ...(l.reviewReason ? { reviewReason: txt(l.reviewReason, lang) } : {}),
       ...(l.reviewType ? { reviewType: l.reviewType } : {}),

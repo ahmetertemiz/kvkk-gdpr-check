@@ -6,7 +6,8 @@ import { RULES, SIGNALS } from './rules.js';
 import { sortFindings, summarize } from './summary.js';
 import { attachSupport } from './support-notice.js';
 import { scoreReasons } from './score-gate.js';
-import { standInSecret, exposureGuard } from './secret-shape.js';
+import { standInSecret, exposureGuard, realLookingCredential } from './secret-shape.js';
+import { capLocation, capEnabled } from './severity-cap.js';
 import { realDemotion, realReason } from './real-calibration.js';
 
 const TEST_NOTE = { tr: 'test dosyasında', en: 'in a test file' };
@@ -130,7 +131,7 @@ export function scan(root, opts = {}) {
         }
         let snippet = (lines[i] ?? '').trim().slice(0, 160);
         if (rule.mask) snippet = maskSecret(snippet);
-        const finding = { ruleId: rule.id, file: file.rel, line: i + 1, snippet, label, count: 1, ...(severity ? { severity } : {}) };
+        const finding = { ruleId: rule.id, file: file.rel, line: i + 1, snippet, label, count: 1, ...(severity ? { severity } : {}), ...(rule.secret && realLookingCredential(m, matchLines, i) ? { realKey: true } : {}) };
         if (rule.aggregate) seenLabels[`${rule.id}:${labelKey}`] = finding;
         add(rule, finding);
         perFile++;
@@ -186,7 +187,7 @@ export function scan(root, opts = {}) {
   for (const rule of rules) {
     if (rule.scope !== 'project') continue;
     const results = rule.check({ files: signalFiles, signals, hits, root, fs, path }) || [];
-    for (const r of results) add(rule, { ruleId: rule.id, file: r.file || null, line: r.line || null, snippet: r.snippet || null, label: r.label, ...(r.severity ? { severity: r.severity } : {}), count: 1 });
+    for (const r of results) add(rule, { ruleId: rule.id, file: r.file || null, line: r.line || null, snippet: r.snippet || null, label: r.label, ...(r.severity ? { severity: r.severity } : {}), ...(r.realKey ? { realKey: true } : {}), count: 1 });
   }
 
   // --- assemble ---
@@ -201,8 +202,13 @@ export function scan(root, opts = {}) {
     // projects goes to "to check" (review), with that rate; a location may also carry its own reviewReason.
     const real = opts.real === false ? null : realDemotion({ source: 'quick', ruleId: id }, opts.realCounts);
     const realWhy = real ? realReason(real, { ruleId: id }) : null;
-    for (const loc of list) {
-      const sev = loc.severity || rule.severity;
+    for (let loc of list) {
+      // Severity cap (src/severity-cap.js): a quick-scan rule no real project measured shows at most "medium", except a
+      // real-looking key; the level before the cap stays as severityRaw.
+      const raw = loc.severity || rule.severity;
+      const cap = !capEnabled(opts.severityCap) ? { severity: raw, raw: null } : capLocation(raw, { source: 'quick', ruleId: id, realKey: !!loc.realKey, counts: opts.realCounts });
+      const sev = cap.severity;
+      if (cap.raw) loc = { ...loc, severity: sev, severityRaw: cap.raw };
       const key = `${id}|${sev}`;
       const why = loc.reviewReason || realWhy;
       const into = why ? reviewGroups : groups;

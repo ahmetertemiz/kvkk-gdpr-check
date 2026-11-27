@@ -6,6 +6,15 @@ import { basisNote } from '../../data/legal-basis.js';
 import { CONTROLLER_QUESTIONS } from '../legal/knowledge.js';
 import { ORG_STATUS, ORG_TEXT } from '../legal/org.js';
 import { buildDataMap } from './datamap.js';
+import { rulePrecision, precisionText } from '../../precision-note.js';
+import { SEVERITY_BASIS_NOTE } from '../../severity-cap.js';
+
+/** Measured precision of the finding's rule (real-project set and 84-project set), and the capped level if any. */
+function precisionP(f, lang) {
+  const raw = f.severityRaw || f.locations.find((l) => l.severityRaw)?.severityRaw;
+  const cap = raw ? ` · ${esc(SEVERITY_BASIS_NOTE.capped[lang])} (${esc(lang === 'en' ? 'original level' : 'özgün önem')}: ${esc(raw)})` : '';
+  return `<p class="refs">${esc(lang === 'en' ? 'Precision' : 'İsabet')}: ${esc(precisionText(rulePrecision('audit', f.rule.id), lang))}${cap}</p>`;
+}
 
 export function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -159,7 +168,7 @@ export function auditHtml(result, { lang = 'tr' } = {}) {
 
   const findingsHtml = groupFindings(result.findings).map(([cat, list]) => `<h3 class="catttl">${esc(catLabel(cat, lang))}</h3>${list.map(viewFinding).map((f, i) => `
 <details class="f"${['critical', 'high'].includes(f.severity) && i < 3 ? ' open' : ''}><summary><span class="badge b-${esc(f.severity)}">${esc(t.sev[f.severity])}</span><b>${esc(L(f.rule.title, lang))}</b>${findingLowConfidence(f) ? `<span class="lowc">${esc(t.lowConfFinding)}</span>` : ''}<span class="id">${esc(f.rule.id)} · ${f.locations.length}</span></summary>
-<div class="body">${f.locations.slice(0, 30).map((l) => locHtml(l, t, lang, findingLowConfidence(f))).join('')}
+<div class="body">${precisionP(f, lang)}${f.locations.slice(0, 30).map((l) => locHtml(l, t, lang, findingLowConfidence(f))).join('')}
 <p><b>${esc(t.why)}:</b> ${esc(L(f.rule.desc, lang))}</p><p><b>${esc(t.fix)}:</b> ${esc(L(f.rule.fix, lang))}</p><p class="refs">${esc(t.refs)}: ${esc((f.rule.refs || []).join(' · '))}</p>${basisNote(f.rule, lang) ? `<p class="refs">⚠ ${esc(basisNote(f.rule, lang))}</p>` : ''}</div></details>`).join('')}`).join('') || `<div class="card">✅ ${esc(t.noFindings)}</div>`;
 
   const inv = `<div class="tablewrap"><table><thead><tr><th>${esc(t.element)}</th><th>${esc(t.category)}</th><th>${esc(t.sensitivity)}</th><th>${esc(t.sources)}</th><th>${esc(t.stores)}</th><th>${esc(t.sinks)}</th><th>${esc(t.used)}</th></tr></thead><tbody>${m.inventory.map((e) => `<tr><td><b${e.sensitivity === 'special' ? ' class="special"' : ''}>${esc(L(e.label, lang))}</b></td><td>${esc(dataCatLabel(e.category, lang))}</td><td>${esc(t.sens[e.sensitivity] || e.sensitivity)}</td><td>${esc(e.sources.join(', ') || '—')}</td><td>${esc(e.stores.join(', ') || '—')}</td><td>${esc(e.sinks.join(', ') || '—')}</td><td>${usedState(e) === 'yes' ? '<span class="ok">✓</span>' : usedState(e) === 'no' ? `<span class="sev-medium" title="${esc(t.unusedNotDetected)}">⚠</span> <span class="small muted">${esc(t.unusedNotDetected)}</span>` : '?'}</td></tr>`).join('')}</tbody></table></div>`;

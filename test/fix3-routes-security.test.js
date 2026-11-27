@@ -2,6 +2,8 @@
 // unused identity lookups, body-sourced subject ids), file-routed frameworks (Nuxt / SvelteKit / Remix / Astro),
 // token hygiene, account enumeration on every public auth route, session cookies and revocation, committed
 // databases, storage policies, payment customer lookups, Firestore OR rules and stack-aware remediation.
+// These tests check the level each rule sets; the 0.2 severity cap (src/severity-cap.js) has its own tests.
+process.env.KVKK_NO_SEVERITY_CAP = '1';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
