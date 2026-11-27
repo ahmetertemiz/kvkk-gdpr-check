@@ -1,6 +1,6 @@
 {
   "name": "kvkk-gdpr-check",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "KVKK ve GDPR risk tarayıcısı: kaynak kod, canlı site ve mobil; kanıtlı bulgular ve belge taslakları (beta). / KVKK & GDPR privacy risk scanner for code, live sites and mobile apps, with document drafts (beta).",
   "type": "module",
   "bin": {

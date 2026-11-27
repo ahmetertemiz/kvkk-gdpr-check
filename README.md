@@ -2,6 +2,8 @@
 
 **Yazılım projenizi KVKK ve GDPR riskleri açısından tarayan, her bulguyu dosya ve satırıyla gösteren komut satırı aracı.**
 
+> ⚠️ **Şu anki sürümde bulguların çoğu yanlış alarm olabilir.** Üç gerçek projede kritik, yüksek ve orta önemli konumların yalnızca %8–26'sı doğru çıktı ([Ne kadar doğru?](#ne-kadar-doğru)). Her bulguyu kodda kendiniz doğrulayın. Aracın daha güvenilir kısmı, üçüncü taraf ve veri akışı envanteri (kişisel veri hangi servise gidiyor) ile canlı sitedeki çerez taramasıdır.
+
 [English](README.en.md) · [Doğruluk](docs/ACCURACY.md) · [Hukuki dayanaklar](docs/hukuki-dayanaklar.md) · [Örnek rapor](examples/reports/audit-app.md)
 
 > **Aracın asıl çıktısı skor değil, kanıtlı bulgu listesidir.** Skor çoğu projede verilmez: ölçüm setindeki 84 projenin 28'inde verildi. [Neden?](#skor)
@@ -111,21 +113,30 @@ Düzeyler görülmemiş projelerdeki ölçüme göre sabit bir kuralla verilir. 
 
 ## Ne kadar doğru?
 
-Derin denetim (`audit`), daha önce üzerinde çalışılmamış gerçek açık kaynak projelerde ölçüldü. Son üç tur (36 proje):
+**Üç gerçek projede, o projeye bakılarak yapılan düzeltmelerden önce, kritik, yüksek ve orta önemli konumların %8, %13 ve %26'sı doğruydu.**
 
-- Skora giren bulguların **%79-84'ü** doğru. 9. turda yalnızca "yanlış" kararları itiraza açıktı; düzeltilmiş tahmin %75-79.
-- Proje başına **yaklaşık 8 gerçek sorun kaçırılıyor**, bunların 2-3'ü yüksek önemli. En büyük boşluk yetki kontrolü: başkasının verisine erişim, eksik rol kontrolü.
-- "Doğrulanmalı" listesinin **%45-60'ı** gerçek sorun. Bu liste skora girmez, atlamayın.
+| Proje | Doğru konum | Oran | Not |
+|---|---|---|---|
+| Birinci | 113 kararlı konumun 15'i | %13 | 0.1.0 ile ölçüldü. Yanlışların 73'ü bir kodlama ajanının proje içindeki worktree kopyalarından geliyordu; onlar hariç %38. |
+| İkinci | 23 konumun 6'sı | %26 | 0.1.1 ile ölçüldü. |
+| Üçüncü | 39 konumun 3'ü | %8 | Araç geliştirilirken hiç görülmemişti; 0.1.2 ile ölçüldü. |
 
-**Ölçümdeki doğru/yanlış kararlarını yapay zekâ ajanları verdi; hepsi aynı model ailesindendir. Hiçbir hukukçu hiçbirini doğrulamadı.** Hızlı taramanın, canlı site taramasının, anketin ve belge taslaklarının isabeti bu ölçümde yer almaz.
+- Üç projede de hızlı tarama, derin denetim ve canlı tarama birlikte çalıştırıldı ve kritik, yüksek, orta önemli her konum koddan tek tek kontrol edildi. Bu kararları da yapay zekâ verdi; bir hukukçu doğrulamadı.
+- **Bağımsız tek ölçüm üçüncü proje.** O projede yanlışların çoğu şunlardan geldi:
+  - test ve yerel geliştirme dosyalarındaki sahte gizli anahtarlar;
+  - bir sırrı açığa çıkaran kod sanılan, aslında onu engelleyen kontroller;
+  - tanınmayan hesap silme;
+  - sütun adından tahmin edilen veri kategorileri ("fingerprint" → biyometrik).
+- **Düzeltmelerden sonraki oranlar bağımsız değil.** İlk iki projede 0.1.1 ve 0.1.2'den sonra oranlar %49 ve %86 oldu. Ama bu düzeltmeler tam da o iki projeye bakılarak yazıldı; görülmemiş bir projede ne olacağını göstermiyorlar.
+- **Görece güvenilir kısımlar:** Üç projede de doğru çıkan bulguların çoğu üçüncü taraf ve yurt dışı aktarım envanterindendi. Canlı sitedeki çerez taramasında yanlış alarm görülmedi.
 
-**Ölçüm setinin dışında, iki gerçek projede:** Aracın yazarının iki canlı projesinde (bir Next.js + MySQL sitesi, bir Cloudflare + Supabase uygulaması) hızlı tarama, derin denetim ve canlı tarama birlikte çalıştırıldı. Kritik, yüksek ve orta önemli konumların her biri koddan elle kontrol edildi; bu kararları da yapay zekâ verdi.
+**Ölçüm setindeki daha yüksek oran ve neden farklı olduğu.** Derin denetim (`audit`) ayrıca 84 açık kaynak projelik bir ölçüm setinde ölçüldü. Son üç turda (36 proje) skora giren bulguların **%79-84'ü** doğruydu (düzeltilmiş tahmin %75-79). Proje başına yaklaşık 8 gerçek sorun kaçırılıyordu, bunların 2-3'ü yüksek önemliydi. Bu rakam yukarıdakilerle doğrudan karşılaştırılamaz:
 
-- **Gerçek isabet** (bu projelere bakılarak yapılan düzeltmelerden önce): birinde 113 kararlı konumun 15'i (%13), diğerinde 23 konumun 6'sı (%26) doğruydu. İlkindeki yanlışların 73'ü bir kodlama ajanının proje içindeki worktree kopyalarından geliyordu; onlar hariç oran %38.
-- **Düzeltmelerden sonra** (0.1.1 ve 0.1.2): %49 (39 kararlı konumun 19'u) ve %86 (7 konumun 6'sı). **Bu düzeltmeler tam da bu iki projeye bakılarak yazıldığı için bu ikinci oranlar bağımsız bir ölçüm değildir;** görülmemiş projelerdeki isabet için yukarıdaki ölçüme bakın.
-- Ölçüm setinde derin denetimin skora giren bulgularının %79-84'ü doğruydu; gerçek projelerde, hızlı tarama da işin içine girince, oran bunun çok altında kaldı.
+- **Yalnızca derin denetimi kapsıyor**, o da yalnızca skora giren bulguları. Hızlı tarama ve canlı tarama bu ölçümde yok; "Doğrulanmalı" listesi de yok. Bu listenin %45-60'ı gerçek sorundu.
+- **Kararları yapay zekâ ajanları verdi**; hepsi aynı model ailesindendi. Hiçbir hukukçu doğrulamadı.
+- **Araç o projelere bakılarak ayarlandı.** Her turdan sonra kurallar ve isabet eşikleri o projelerdeki kararlara göre düzeltildi. Bu yüzden set artık "görülmemiş" değil; bugünkü sürüm orada olduğundan iyi görünür.
 
-Yöntem ve tur tur sonuçlar: [docs/ACCURACY.md](docs/ACCURACY.md). Ölçüm etiketleri gerçek projelerdeki açıkları içerdiği için yayımlanmaz; bu yüzden rakamları dışarıdan yeniden üretemezsiniz.
+Hızlı taramanın, canlı site taramasının, anketin ve belge taslaklarının isabeti bu ölçüm setinde yer almaz. Yöntem ve tur tur sonuçlar: [docs/ACCURACY.md](docs/ACCURACY.md). Ölçüm etiketleri gerçek projelerdeki açıkları içerdiği için yayımlanmaz; bu yüzden rakamları dışarıdan yeniden üretemezsiniz.
 
 ## Sınırları
 

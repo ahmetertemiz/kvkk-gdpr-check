@@ -1,5 +1,13 @@
 # Değişiklikler
 
+## 0.1.3 — 2026-11-27
+
+Yalnızca belgeler; kodda ve kurallarda değişiklik yok.
+
+- **README ve README.en.md, "Ne kadar doğru?":** Bölüm artık gerçek projelerdeki sonuçla başlıyor. Üç gerçek projede, o projeye bakılarak yapılan düzeltmelerden önce, kritik, yüksek ve orta önemli konumların %8, %13 ve %26'sı doğruydu. %8'lik üçüncü proje araç geliştirilirken hiç görülmemişti ve 0.1.2 ile ölçüldü (39 konumun 3'ü doğru).
+- **Ölçüm setindeki %79-84 aşağıya alındı.** Neden farklı olduğu yazılı: yalnızca derin denetimi (skora giren bulguları) kapsıyor, kararları yapay zekâ verdi ve araç o projelere bakılarak ayarlandı.
+- **En üste açık bir uyarı eklendi:** Şu anki sürümde bulguların çoğu yanlış alarm olabilir. Aracın daha güvenilir kısmı üçüncü taraf ve veri akışı envanteri ile canlı sitedeki çerez taramasıdır.
+
 ## 0.1.2 — 2026-11-26
 
 Gerçek bir Cloudflare + Supabase uygulamasında görülen yanlış alarmlar, kök nedenlerine göre düzeltildi. O projede kritik, yüksek ve orta önemli konumlar 23'ten 7'ye indi; doğru olan 6 konumun hepsi kaldı, yanlışlar 17'den 1'e düştü.
