@@ -2,6 +2,14 @@
 
 ## 0.2: real-project calibration, severity cap, precision in reports
 
+> **0.2.1.** `src/real-precision.js` is regenerated from seven projects: the three of 0.2.0 and the four measured blind
+> after it, which are now part of the tuning set. The rules below are unchanged. A sub-signal with ≥ 8 real-project labels
+> is judged on its own counts, whatever its 84-project rate; the conflict guard only concerns the rule-total fallback,
+> which stays off. Effect on the 84 benchmark checkouts: 55 deep-audit locations move to review
+> (SEC-03:no-auth 49, DEL-02:vendor-copy 6; of the labelled ones 33 TP and 11 FP), none leaves the report, 2 locations
+> (SEC-09:password-in-email) keep high instead of medium. On the seven projects, scored critical / high / medium
+> deep-audit precision goes from 47 / 94 to 44 / 76.
+
 0.2 adds a second measurement, the real-project set (`bench/real.js`, private labels).
 - **Projects:** three hand-verified applications, with the quick scan, the deep audit and the live scan all measured.
 - **Data:** the counts are generated into `src/real-precision.js` (`scripts/gen-real-precision.js --in <results.json>`). Only counts are kept: TP / FP / uncertain and FP projects per `source:rule` and `source:rule:sub`.

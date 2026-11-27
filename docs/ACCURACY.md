@@ -6,7 +6,7 @@ Bu belge aracın ne kadar doğru çalıştığını ölçüldüğü hâliyle anl
 
 Aracın isabeti iki ayrı sette ölçülür. Raporlardaki "İsabet:" satırı ikisini yan yana verir, hiçbir zaman birleştirmez:
 
-- **Gerçek projeler (ayar seti):** üç gerçek uygulama. Hızlı tarama, derin denetim ve canlı tarama ölçülür; her konum koddan tek tek değerlendirilir. Veri ve araç `bench/real.js` (etiketler yayımlanmaz).
+- **Gerçek projeler (ayar seti):** 0.2.0'da üç, 0.2.1'den itibaren yedi gerçek uygulama (dördü araç geliştirilirken görülmeden ölçüldü, sonra ayar setine katıldı). Hızlı tarama, derin denetim ve canlı tarama ölçülür; her konum koddan tek tek değerlendirilir. Veri ve araç `bench/real.js` (etiketler yayımlanmaz).
 - **84 projelik ölçüm seti:** açık kaynak projeler, tur tur; yalnızca derin denetim. Aşağıdaki "Nasıl ölçüldü" ve sonraki bölümler bu seti anlatır.
 
 **İki setin oranları yan yana okunmamalı: etiketleme ölçütleri farklı.** Projeler, değerlendirme süreci ve kapsam da farklıdır.

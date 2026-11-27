@@ -22,13 +22,12 @@ _Veri akışı analizi ve ilke bazlı hukuki değerlendirme_
 
 | 🛑 KRİTİK | 🔴 YÜKSEK | 🟠 ORTA | 🟡 DÜŞÜK | 🔵 BİLGİ |
 |---|---|---|---|---|
-| 1 | 2 | 11 | 1 | 0 |
+| 1 | 1 | 12 | 1 | 0 |
 
 ## Yönetici özeti
 
 - 🛑 **Yurt dışına kişisel veri aktarımı** — OpenAI (US) ← Serbest metin / kullanıcı içeriği, Sağlık bilgisi
 - 🔴 **Veri koruma etki değerlendirmesi (DPIA) gerekli görünüyor** — Özel nitelikli veya çok kişisel veri
-- 🔴 **Aydınlatma metni gerçekte olanla örtüşmüyor** — İşleniyor ama aydınlatma metninde yok: Sağlık bilgisi
 
 # 📦 Envanter
 
@@ -228,10 +227,8 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 #### 🟠 Yetkisiz erişime açık uç noktalar `AUD-SEC-03` <sub>(özgün önem: KRİTİK)</sub>
 
-<sub>İsabet: 3 gerçek projede (ayar seti) isabet %0 (0/16) · 84 projelik ölçüm setinde %57 (72/126) · önem "orta" ile sınırlandı: bu kural için gerçek projelerde yeterli isabet ölçülmedi</sub>
+<sub>İsabet: 7 gerçek projede (ayar seti) isabet %23 (21/90) · 84 projelik ölçüm setinde %57 (72/126) · önem "orta" ile sınırlandı: bu kural için gerçek projelerde yeterli isabet ölçülmedi</sub>
 
-- 🟠 POST /api/health kimlik doğrulaması olmadan kişisel veri işliyor (Sağlık bilgisi, Serbest metin / kullanıcı içeriği) — `src/app/api/health/route.ts:5`
-  - Kalibrasyon: ölçülen isabet %61 (20/13, 12 proje) — güçlü kanıtla tutuldu: İşleyici incelendi, hiçbir erişim kontrolü yok ve kişiye bağlı tablo health_logs deposuna yazıyor / siliyor
 - 🟠 POST /api/health: "userId" istek gövdesinden alınıyor ve oturumdaki kullanıcıyla karşılaştırılmıyor; başka bir kullanıcının kaydı değiştirilebilir (IDOR) — `src/app/api/health/route.ts:6`
   - Kalibrasyon: ölçülen isabet %76 (35/11, 6 proje)
 
@@ -245,7 +242,7 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 #### 🟠 Kişisel veri log kayıtlarına yazılıyor `AUD-SEC-04`
 
-<sub>İsabet: 3 gerçek projede (ayar seti) isabet %13 (1/8) · 84 projelik ölçüm setinde %67 (48/72)</sub>
+<sub>İsabet: 7 gerçek projede (ayar seti) isabet %32 (6/19) · 84 projelik ölçüm setinde %67 (48/72)</sub>
 
 - 🟠 E-posta → log · console — `src/app/api/signup/route.ts:18`
   - Veri yolu: istek gövdesi: POST /api/signup → E-posta → log · console
@@ -294,13 +291,13 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 ### 📄 Şeffaflık
 
-#### 🔴 Aydınlatma metni gerçekte olanla örtüşmüyor `AUD-TRN-02`
+#### 🟠 Aydınlatma metni gerçekte olanla örtüşmüyor `AUD-TRN-02` <sub>(özgün önem: YÜKSEK)</sub>
 
-<sub>İsabet: 3 gerçek projede (ayar seti) yetersiz veri: 2 konumda 0 doğru · 84 projelik ölçüm setinde %62 (31/50)</sub>
+<sub>İsabet: 7 gerçek projede (ayar seti) isabet %15 (2/13) · 84 projelik ölçüm setinde %62 (31/50) · önem "orta" ile sınırlandı: bu kural için gerçek projelerde yeterli isabet ölçülmedi</sub>
 
 - 🟠 İşleniyor ama aydınlatma metninde yok: Sağlık bilgisi — `src/app/privacy/page.tsx:1`
   - Kalibrasyon: ölçülen isabet %68 (19/9, 7 proje) — güçlü kanıtla tutuldu: Ayrı bir gizlilik politikası sayfası desteklenen bir dilde okundu; bu doğrudan tanımlayıcı / özel nitelikli veri bir depoya veya servise kadar izlendi ve metinde geçmiyor.
-- 🔴 Veri gönderiliyor ama alıcı olarak belirtilmemiş: OpenAI (Serbest metin / kullanıcı içeriği, Sağlık bilgisi) — `src/app/privacy/page.tsx:1`
+- 🟠 Veri gönderiliyor ama alıcı olarak belirtilmemiş: OpenAI (Serbest metin / kullanıcı içeriği, Sağlık bilgisi) — `src/app/privacy/page.tsx:1`
   - Kalibrasyon: ölçülen isabet %92 (11/1, 7 proje)
 - 🟠 İşleniyor ama aydınlatma metninde yok: TC Kimlik No / ulusal kimlik — `src/app/privacy/page.tsx:1`
   - Kalibrasyon: ölçülen isabet %68 (19/9, 7 proje) — güçlü kanıtla tutuldu: Ayrı bir gizlilik politikası sayfası desteklenen bir dilde okundu; bu doğrudan tanımlayıcı / özel nitelikli veri bir depoya veya servise kadar izlendi ve metinde geçmiyor.
@@ -323,7 +320,7 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 #### 🛑 Yurt dışına kişisel veri aktarımı `AUD-TRF-01`
 
-<sub>İsabet: 3 gerçek projede (ayar seti) isabet %80 (8/10) · 84 projelik ölçüm setinde %87 (97/111)</sub>
+<sub>İsabet: 7 gerçek projede (ayar seti) isabet %86 (43/50) · 84 projelik ölçüm setinde %87 (97/111)</sub>
 
 - 🛑 OpenAI (US) ← Serbest metin / kullanıcı içeriği, Sağlık bilgisi — `src/app/api/chat/route.ts:10`
   - Kalibrasyon: ölçülen isabet %96 (49/2, 36 proje)
@@ -359,7 +356,7 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 #### 🟡 İlgili kişi haklarının teknik karşılığı eksik `AUD-DSR-01`
 
-<sub>İsabet: 3 gerçek projede (ayar seti) yetersiz veri: 1 konumda 0 doğru · 84 projelik ölçüm setinde %89 (55/62)</sub>
+<sub>İsabet: 7 gerçek projede (ayar seti) yetersiz veri: 3 konumda 1 doğru · 84 projelik ölçüm setinde %89 (55/62)</sub>
 
 - 🟡 Veri erişim / dışa aktarma (verilerimi indir) akışı bulunamadı
   - Kalibrasyon: ölçülen isabet %98 (49/1, 51 proje)
@@ -393,7 +390,7 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 #### 🟠 Toplanan ama kullanılmayan kişisel veri `AUD-MIN-01`
 
-<sub>İsabet: 84 projelik ölçüm setinde %12 (4/34) · gerçek projelerde ölçülmedi</sub>
+<sub>İsabet: 7 gerçek projede (ayar seti) isabet %0 (0/8) · 84 projelik ölçüm setinde %12 (4/34)</sub>
 
 - 🟠 TC Kimlik No / ulusal kimlik: toplanıyor/saklanıyor (form: SignupPage, istek gövdesi: POST /api/signup, profiles.tckn) ama kodda hiç kullanılmıyor; sadece istemciye toplu olarak dönüyor — `supabase/migrations/0001_init.sql:8`
   - Kalibrasyon: ölçülen isabet %7 (1/14, 9 proje) — güçlü kanıtla tutuldu: Hassas kimlik/finans verisi bir istek gövdesi veya formla alınıp kişiye bağlı bir tablonun kolonunda saklanıyor; hiçbir yerde okunmuyor, sorguda kullanılmıyor, gösterilmiyor veya bir sağlayıcıya gönderilmiyor
@@ -408,7 +405,7 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 #### 🟠 Amaç kayması: hesap verisi analitik/pazarlama aracına gidiyor `AUD-PUR-01`
 
-<sub>İsabet: isabet ölçülmedi</sub>
+<sub>İsabet: 7 gerçek projede (ayar seti) yetersiz veri: 1 konumda 1 doğru</sub>
 
 - 🟠 E-posta: üyelik/ödeme için toplanıp PostHog (analytics) aracına gönderiliyor — `src/components/Analytics.tsx:8`
   - Veri yolu: (ada göre çıkarım) E-posta → PostHog
@@ -427,7 +424,7 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 #### 🟠 Rıza gerektiren işleme rıza alınmadan başlıyor `AUD-LB-01` <sub>(özgün önem: YÜKSEK)</sub>
 
-<sub>İsabet: 3 gerçek projede (ayar seti) yetersiz veri: 1 konumda 0 doğru · 84 projelik ölçüm setinde %86 (18/21) · önem "orta" ile sınırlandı: bu kural için gerçek projelerde yeterli isabet ölçülmedi</sub>
+<sub>İsabet: 7 gerçek projede (ayar seti) isabet %83 (5/6) · 84 projelik ölçüm setinde %86 (18/21) · önem "orta" ile sınırlandı: bu kural için gerçek projelerde yeterli isabet ölçülmedi</sub>
 
 - 🟠 PostHog rıza kontrolü olmadan başlatılıyor; gönderilen veri: E-posta, Telefon — `src/components/Analytics.tsx:7`
   - Kalibrasyon: yetersiz veri (4/0)
@@ -440,20 +437,12 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 ### 🗑️ Silme kapsamı
 
-#### 🟠 Silme işlemi verinin her kopyasına ulaşmıyor `AUD-DEL-02` <sub>(özgün önem: YÜKSEK)</sub>
+#### 🟠 Silme işlemi verinin her kopyasına ulaşmıyor `AUD-DEL-02`
 
-<sub>İsabet: 3 gerçek projede (ayar seti) isabet %50 (5/10) · 84 projelik ölçüm setinde %42 (26/62) · önem "orta" ile sınırlandı: bu kural için gerçek projelerde yeterli isabet ölçülmedi</sub>
+<sub>İsabet: 7 gerçek projede (ayar seti) isabet %38 (23/61) · 84 projelik ölçüm setinde %42 (26/62)</sub>
 
-- 🟠 OpenAI: OpenAI tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/app/api/chat/route.ts:10`
-  - Kalibrasyon: ölçülen isabet %57 (4/3, 6 proje) — güçlü kanıtla tutuldu: OpenAI: tanımlayıcılar (health) yazma çağrısıyla gönderiliyor (src/app/api/health/route.ts:8)
 - 🟠 tablo orders: profiles tablosuna referans var ama ON DELETE tanımsız (NO ACTION) — kullanıcı silinince veri kalır veya silme hata verir — `supabase/migrations/0001_init.sql:29`
   - Kalibrasyon: ölçülen isabet %48 (10/11, 8 proje) — güçlü kanıtla tutuldu: orders → profiles: son FK durumu ON DELETE tanımsız (SQL migrations replayed); tablo doğrudan tanımlayıcı tutuyor (address, payment_info)
-- 🟠 Stripe: Stripe tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/app/api/checkout/route.ts:8`
-  - Kalibrasyon: ölçülen isabet %57 (4/3, 6 proje) — güçlü kanıtla tutuldu: Stripe: tanımlayıcılar (email, full_name, address) yazma çağrısıyla gönderiliyor (src/app/api/checkout/route.ts:8)
-- 🟠 Resend: Resend tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/app/api/signup/route.ts:19`
-  - Kalibrasyon: ölçülen isabet %57 (4/3, 6 proje) — güçlü kanıtla tutuldu: Resend: tanımlayıcılar (email, full_name) yazma çağrısıyla gönderiliyor (src/app/api/signup/route.ts:19)
-- 🟠 PostHog: PostHog tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/components/Analytics.tsx:7`
-  - Kalibrasyon: ölçülen isabet %57 (4/3, 6 proje) — güçlü kanıtla tutuldu: PostHog: tanımlayıcılar (email, phone) yazma çağrısıyla gönderiliyor (src/components/Analytics.tsx:8)
 
 **Neden önemli:** Silme akışı (POST /api/account/delete) aşağıdaki depolara ve üçüncü taraflara ulaşmıyor. Kullanıcı "hesabımı sil" dediğinde bu veriler kalmaya devam eder; bu, silme talebinin eksik yerine getirilmesi demektir. Türetilmiş veriler (embedding'ler) ve yedekler de kapsama alınmalıdır.
 
@@ -465,7 +454,7 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 #### 🔴 Veri koruma etki değerlendirmesi (DPIA) gerekli görünüyor `AUD-DPIA-01`
 
-<sub>İsabet: 84 projelik ölçüm setinde %88 (14/16) · gerçek projelerde ölçülmedi</sub>
+<sub>İsabet: 7 gerçek projede (ayar seti) isabet %14 (1/7) · 84 projelik ölçüm setinde %88 (14/16)</sub>
 
 - 🔴 Özel nitelikli veya çok kişisel veri
   - Kalibrasyon: ölçülen isabet %100 (5/0, 5 proje)
@@ -488,7 +477,7 @@ _Kalibrasyon: her konumun yanında, aynı alt sinyalin daha önce hiç görülme
 
 _Bu maddeler puana katılmadı: ya aranan katman kapsanmadı, ya güven düşük, ya da bu sinyalin görülmemiş projelerdeki isabeti düşük veya henüz ölçülmedi. Önemli bir kısmı gerçek sorundur; elle doğrulayın._
 
-**10:** 8 ölçülen düşük isabet, 1 kontrol doğrulama istedi, 1 henüz ölçülmemiş sinyal
+**15:** 13 ölçülen düşük isabet, 1 kontrol doğrulama istedi, 1 henüz ölçülmemiş sinyal
 
 ### Muhtemelen gerçek (1)
 
@@ -501,7 +490,7 @@ _Bu maddeler puana katılmadı: ya aranan katman kapsanmadı, ya güven düşük
 
 <sub>⚠️ doğrulanmamış dayanak: “Yeterlilik kararı bulunmuyor” (docs/hukuki-dayanaklar.md)</sub>
 
-### Belirsiz (8)
+### Belirsiz (13)
 
 #### ❔ Aydınlatma metni gerçekte olanla örtüşmüyor `AUD-TRN-02`
 
@@ -536,19 +525,44 @@ _Bu maddeler puana katılmadı: ya aranan katman kapsanmadı, ya güven düşük
   - Neden doğrulanmalı: Doğrulanmalı: bu sinyal (SEC-02:public-bucket) için ilk görüşte ölçülen isabet %67 (4 TP / 2 FP, 6 proje), %90 aralık %35–%88; isabet %70'in altında ve alt sınır %60'ın altında. Puana katılmadı; elle doğrulayın.
   - Kalibrasyon: ölçülen isabet %67 (4/2, 6 proje) — ölçülen isabet düşük — puana katılmadı
 
+#### ❔ Yetkisiz erişime açık uç noktalar `AUD-SEC-03`
+
+- POST /api/health kimlik doğrulaması olmadan kişisel veri işliyor (Sağlık bilgisi, Serbest metin / kullanıcı içeriği) — `src/app/api/health/route.ts:5`
+  - ilk görüşte bu tür 33 konumdan 20 tanesi gerçekti
+  - Neden doğrulanmalı: Kontrol edilecek: elle doğrulanmış 7 gerçek projede bu sinyal (SEC-03:no-auth) konumlarının 14/48 kadarı doğru çıktı (isabet %29, %90 aralık %20–%41; yanlışlar 5 projeden). Puana ve --fail-on sınırına katılmadı; kodda doğrulayın. Bu sinyal (SEC-03:no-auth) için ölçülen isabet %61 (20/13, 12 proje), n=33; puana katılmadı.
+  - Kalibrasyon: ölçülen isabet %61 (20/13, 12 proje) — ölçülen isabet düşük — puana katılmadı
+
+<sub>⚠️ doğrulanmamış dayanak: OWASP API1:2023 BOLA (docs/hukuki-dayanaklar.md)</sub>
+
+#### ❔ Silme işlemi verinin her kopyasına ulaşmıyor `AUD-DEL-02`
+
+- OpenAI: OpenAI tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/app/api/chat/route.ts:10`
+  - ilk görüşte bu tür 7 konumdan 4 tanesi gerçekti
+  - Neden doğrulanmalı: Kontrol edilecek: elle doğrulanmış 7 gerçek projede bu sinyal (DEL-02:vendor-copy) konumlarının 2/12 kadarı doğru çıktı (isabet %17, %90 aralık %6–%40; yanlışlar 5 projeden). Puana ve --fail-on sınırına katılmadı; kodda doğrulayın. Bu sinyal (DEL-02:vendor-copy) için ölçülen isabet %57 (4/3, 6 proje), n=7; puana katılmadı.
+  - Kalibrasyon: ölçülen isabet %57 (4/3, 6 proje) — ölçülen isabet düşük — puana katılmadı
+- Stripe: Stripe tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/app/api/checkout/route.ts:8`
+  - ilk görüşte bu tür 7 konumdan 4 tanesi gerçekti
+  - Neden doğrulanmalı: Kontrol edilecek: elle doğrulanmış 7 gerçek projede bu sinyal (DEL-02:vendor-copy) konumlarının 2/12 kadarı doğru çıktı (isabet %17, %90 aralık %6–%40; yanlışlar 5 projeden). Puana ve --fail-on sınırına katılmadı; kodda doğrulayın. Bu sinyal (DEL-02:vendor-copy) için ölçülen isabet %57 (4/3, 6 proje), n=7; puana katılmadı.
+  - Kalibrasyon: ölçülen isabet %57 (4/3, 6 proje) — ölçülen isabet düşük — puana katılmadı
+- Resend: Resend tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/app/api/signup/route.ts:19`
+  - ilk görüşte bu tür 7 konumdan 4 tanesi gerçekti
+  - Neden doğrulanmalı: Kontrol edilecek: elle doğrulanmış 7 gerçek projede bu sinyal (DEL-02:vendor-copy) konumlarının 2/12 kadarı doğru çıktı (isabet %17, %90 aralık %6–%40; yanlışlar 5 projeden). Puana ve --fail-on sınırına katılmadı; kodda doğrulayın. Bu sinyal (DEL-02:vendor-copy) için ölçülen isabet %57 (4/3, 6 proje), n=7; puana katılmadı.
+  - Kalibrasyon: ölçülen isabet %57 (4/3, 6 proje) — ölçülen isabet düşük — puana katılmadı
+- PostHog: PostHog tarafındaki kopya silinmiyor (API ile silme veya saklama süresi gerekli) — `src/components/Analytics.tsx:7`
+  - ilk görüşte bu tür 7 konumdan 4 tanesi gerçekti
+  - Neden doğrulanmalı: Kontrol edilecek: elle doğrulanmış 7 gerçek projede bu sinyal (DEL-02:vendor-copy) konumlarının 2/12 kadarı doğru çıktı (isabet %17, %90 aralık %6–%40; yanlışlar 5 projeden). Puana ve --fail-on sınırına katılmadı; kodda doğrulayın. Bu sinyal (DEL-02:vendor-copy) için ölçülen isabet %57 (4/3, 6 proje), n=7; puana katılmadı.
+  - Kalibrasyon: ölçülen isabet %57 (4/3, 6 proje) — ölçülen isabet düşük — puana katılmadı
+- tablo support_tickets: kullanıcıya bağlayan yabancı anahtar yok — silme akışı bu tabloya ulaşmıyor — `supabase/migrations/0001_init.sql:39`
+  - ilk görüşte bu tür 15 konumdan 7 tanesi gerçekti
+  - Neden doğrulanmalı: Doğrulanmalı: bu sinyal (DEL-02:no-fk-link) için ilk görüşte ölçülen isabet %47 (7 TP / 8 FP, 7 proje), %90 aralık %28–%67; isabet %70'in altında ve alt sınır %60'ın altında. Puana katılmadı; elle doğrulayın.
+  - Kalibrasyon: ölçülen isabet %47 (7/8, 7 proje) — ölçülen isabet düşük — puana katılmadı
+
 #### ❔ İstemciye gereğinden fazla kişisel veri dönüyor `AUD-MIN-02`
 
 - GET /api/profile tüm kolonları (select *) istemciye döndürüyor: Doğum tarihi, TC Kimlik No / ulusal kimlik, Pazarlama tercihleri / izinleri — `src/app/api/profile/route.ts:7`
   - ilk görüşte bu tür 10 konumdan 5 tanesi gerçekti
   - Neden doğrulanmalı: Doğrulanmalı: bu sinyal (MIN-02:other-sensitive) için ilk görüşte ölçülen isabet %50 (5 TP / 5 FP, 3 proje), %90 aralık %27–%73; isabet %70'in altında ve alt sınır %60'ın altında. Puana katılmadı; elle doğrulayın.
   - Kalibrasyon: ölçülen isabet %50 (5/5, 3 proje) — ölçülen isabet düşük — puana katılmadı
-
-#### ❔ Silme işlemi verinin her kopyasına ulaşmıyor `AUD-DEL-02`
-
-- tablo support_tickets: kullanıcıya bağlayan yabancı anahtar yok — silme akışı bu tabloya ulaşmıyor — `supabase/migrations/0001_init.sql:39`
-  - ilk görüşte bu tür 15 konumdan 7 tanesi gerçekti
-  - Neden doğrulanmalı: Doğrulanmalı: bu sinyal (DEL-02:no-fk-link) için ilk görüşte ölçülen isabet %47 (7 TP / 8 FP, 7 proje), %90 aralık %28–%67; isabet %70'in altında ve alt sınır %60'ın altında. Puana katılmadı; elle doğrulayın.
-  - Kalibrasyon: ölçülen isabet %47 (7/8, 7 proje) — ölçülen isabet düşük — puana katılmadı
 
 ### Çoğunlukla gürültü (1)
 

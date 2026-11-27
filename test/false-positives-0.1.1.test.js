@@ -161,8 +161,10 @@ test('no check, or a lookup by id, stays a finding; a guard-like name alone does
     ...ep('leads', "export async function POST(req: Request) {\n  const { email } = await req.json();\n" + WRITE + '}\n'),
     ...ep('lookup', "export async function POST(req: Request) {\n  const id = new URL(req.url).searchParams.get('id');\n  const { data } = await sb.from('subscribers').select('email').eq('id', id).single();\n  if (!data) return Response.json({}, { status: 404 });\n  const email = data.email;\n" + WRITE + '}\n'),
   }), { lang: 'en' });
-  const scored = locs(a, 'AUD-SEC-03').filter((l) => l.sub === 'SEC-03:no-auth').map(where).sort();
-  assert.deepEqual(scored, ['leads', 'lookup']);
+  // Reported (0.2.1: SEC-03:no-auth goes to review on its real-project precision, which is not a token gate).
+  const shown = [...locs(a, 'AUD-SEC-03'), ...locs(a, 'AUD-SEC-03', false)].filter((l) => l.sub === 'SEC-03:no-auth');
+  assert.deepEqual(shown.map(where).sort(), ['leads', 'lookup']);
+  for (const l of shown) assert.ok(!l.reviewReason || /real projects/.test(l.reviewReason.en), l.reviewReason?.en);
   assert.ok(!locs(a, 'AUD-SEC-03', false).some((l) => /from the request and rejects it/.test(l.reviewReason?.en || '')));
 });
 

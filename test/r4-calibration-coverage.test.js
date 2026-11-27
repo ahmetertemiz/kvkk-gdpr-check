@@ -114,13 +114,13 @@ function sec03Graph({ auth = false, path: p = '/api/profile', helper = null, own
 test('SEC-03: an unresolved auth-like helper in the handler sends "no auth" to review', () => {
   const plain = sec03Graph();
   const f1 = unauthenticatedEndpoints(plain.g, plain.model, 'en');
-  const a = calibrate([f1], { layers: covered() });
+  const a = calibrate([f1], { layers: covered(), real: false });
   assert.equal(a.findings.length, 1, 'no helper → finding');
   assert.equal(a.findings[0].locations[0].basis, 'absence');
 
   for (const helper of ['requireUserId', 'ensureMember', 'getCurrentUser', 'withAuthSession']) {
     const h = sec03Graph({ helper });
-    const r = calibrate([unauthenticatedEndpoints(h.g, h.model, 'en')], { layers: covered() });
+    const r = calibrate([unauthenticatedEndpoints(h.g, h.model, 'en')], { layers: covered(), real: false });
     assert.equal(r.findings.length, 0, `${helper} → not a finding`);
     assert.match(r.review[0].locations[0].reviewReason.en, new RegExp(helper));
   }
@@ -128,11 +128,11 @@ test('SEC-03: an unresolved auth-like helper in the handler sends "no auth" to r
 
 test('SEC-03: auth "unknown" / authHelperUnresolved and IDOR without a client-supplied id go to review', () => {
   const u = sec03Graph({ auth: 'unknown', ownershipCheck: false, path: '/api/notes/[id]' });
-  const r = calibrate([unauthenticatedEndpoints(u.g, u.model, 'en')], { layers: covered() });
+  const r = calibrate([unauthenticatedEndpoints(u.g, u.model, 'en')], { layers: covered(), real: false });
   assert.equal(r.findings.length, 0);
   assert.ok(r.review.length);
   const noId = sec03Graph({ auth: true, ownershipCheck: false, path: '/settings/profile' });
-  const r2 = calibrate([unauthenticatedEndpoints(noId.g, noId.model, 'en')], { layers: covered() });
+  const r2 = calibrate([unauthenticatedEndpoints(noId.g, noId.model, 'en')], { layers: covered(), real: false });
   assert.equal(r2.findings.length, 0);
   assert.match(r2.review[0].locations[0].reviewReason.en, /record identifier/);
   // A path parameter keeps the IDOR suspicion, but its measured sub-signal (SEC-03:idor-suspect) has low first-sight
@@ -145,7 +145,7 @@ test('SEC-03: auth "unknown" / authHelperUnresolved and IDOR without a client-su
   assert.equal(rId.review[0].locations[0].calibration.status, 'demoted');
   assert.match(rId.review[0].locations[0].reviewReason.en, /SEC-03:idor-suspect/);
   // Without precision calibration the location is still produced as a scored finding.
-  assert.equal(calibrate([unauthenticatedEndpoints(withId.g, withId.model, 'en')], { layers: covered(), precision: false }).findings.length, 1);
+  assert.equal(calibrate([unauthenticatedEndpoints(withId.g, withId.model, 'en')], { layers: covered(), precision: false, real: false }).findings.length, 1);
   const body = sec03Graph({ auth: true, ownershipCheck: false, path: '/settings/profile', subjectIdFrom: { field: 'userId', file: 'x.ts', line: 2 } });
   const r3 = calibrate([unauthenticatedEndpoints(body.g, body.model, 'en')], { layers: covered() });
   assert.equal(r3.findings.length, 1);

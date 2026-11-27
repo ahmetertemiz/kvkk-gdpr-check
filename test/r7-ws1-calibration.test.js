@@ -288,7 +288,7 @@ test('calibrationSummary counts statuses for scored and review parts', () => {
     { rule: rule('AUD-DEL-02'), severity: 'medium', locations: [L({ sub: 'DEL-02:no-such-signal', line: 1 }), L({ line: 2 })] },
     { rule: rule('AUD-MIN-01'), severity: 'medium', locations: [L({ sub: 'MIN-01:unused-schema-field', line: 3 })] },
     { rule: rule('AUD-RET-01'), severity: 'medium', locations: [L({ sub: 'RET-01:record-content' })] },
-  ]);
+  ], { real: false }); // benchmark calibration only: the real-project layer is tested in real-calibration.test.js
   const s = calibrationSummary(out);
   assert.equal(s.enabled, true);
   assert.deepEqual(s.scored, { unkeyed: 1, reliable: 1 });

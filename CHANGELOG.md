@@ -18,6 +18,24 @@ En az süre ("en az 3 yıl"), yasal süre (vergi, muhasebe), deneme süresi, ya�
 
 **Puan:** Eski RET-01 konumları artık puana girmiyor; bu yüzden puan yükselebilir. Anlamı değişen kuralın eski ölçümleri (ayar seti %24, 84 projelik set %88) yeni hükmün yanında gösterilmiyor (`src/redefined-rules.js`).
 
+### Yeniden kalibrasyon: yedi gerçek proje
+
+`src/real-precision.js` yedi projeden yeniden üretildi: 0.2.0'ın üç projesi ve sonra kör ölçülen dört proje. Bu dördü artık ayar setinde. Kurallar ve eşikler değişmedi.
+- **Gerçek set kararı:** Bir alt sinyalin gerçek sette yeterli verisi varsa (en az 8 etiket, yanlışlar en az 2 projeden) kararı gerçek set verir; 84 projelik setteki oranı onu korumaz. Koruma yalnızca gerçek sette yeterli verisi olmayan alt sinyaller için var.
+- **"Doğrulanmalı"ya inen alt sinyaller:**
+  - `SEC-03:no-auth`: 14 doğru / 34 yanlış;
+  - `DEL-02:vendor-copy`: 2 / 10;
+  - `SEC-03:idor-suspect`: 7 / 20;
+  - `DEL-02:fk-parent-not-deleted`: 9 / 17.
+
+  Son ikisinin konumları zaten "Doğrulanmalı"daydı.
+- **Kritik / yüksek kalabilen kurallar:** `AUD-SEC-09`, `PII001`, `TRF001`, `TRF002`; `AUD-TRF-01` ve `CFG004` kalıyor.
+- **Etki, yedi projede:** Derin denetimin kritik, yüksek ve orta konumları 47/94'ten (%50) 44/76'ya (%58) çıktı. "Doğrulanmalı"ya inenler 15 yanlış, 3 doğru, 1 belirsiz. Hiçbir konum rapordan çıkmadı.
+- **Etki, 84 projelik sette:**
+  - 55 konum "Doğrulanmalı"ya indi. Etiketli olanlardan 33'ü doğru, 11'i yanlış.
+  - Rapordan çıkan konum yok.
+  - 2 konum (`SEC-09:password-in-email`) ortadan yükseğe çıktı.
+
 ### Envanter: veri alan üçüncü taraflar daha eksiksiz
 
 Derin denetimin aktarım kaydı yalnızca veri akışı izlenen servisleri listeliyordu. Dört kör projede bağımsız envanterdeki 71 alıcının 40'ını gösteriyordu (%56). Kaçanlar şu genel yollarla bulunuyor; hepsi yalnızca Envanter'de, hiçbir hükme ve puana girmiyor:
