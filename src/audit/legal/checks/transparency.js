@@ -912,7 +912,7 @@ function claimContradictions(g, c) {
       out.push({ strength: 'app', label: T(`${nodeLabel(s.sink, 'tr')} reklam/analitik sağlayıcısına gidiyor: ${s.elements.map((e) => elLabel(e, 'tr')).join(', ')}`, `goes to the analytics/advertising provider ${nodeLabel(s.sink, 'en')}: ${s.elements.map((e) => elLabel(e, 'en')).join(', ')}`), ev: s.edges[0]?.evidence?.[0] || null, strong: true });
     }
   } else if (c.claim === 'no-tracking') {
-    // Cookieless, identifier-free analytics (Plausible, Fathom, Umami…: consentRequired false) do not contradict "no tracking cookies".
+    // Cookieless, identifier-free analytics (Plausible, Fathom…: consentRequired false) do not contradict "no tracking cookies".
     for (const s of g.nodesOf('Sink', (n) => isAnalyticsSink(n) && n.consentRequired !== false)) {
       out.push({ strength: 'app', label: T(`${nodeLabel(s, 'tr')} kullanılıyor`, `${nodeLabel(s, 'en')} is used`), ev: s.evidence?.[0] || null, strong: !g.edgesFrom(s.id, 'gatedBy').length });
     }

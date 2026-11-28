@@ -12,7 +12,7 @@ const ids = (r) => r.known.map((x) => x.vendorId).sort();
 test('resource requests: fetch, src, <link>, CSS and data-built resource URLs count; links and own-page URLs do not', () => {
   const r = sideRecipients(graphOf([
     f('src/version.ts', 'export const latest = () => fetch(`https://api.github.com/repos/${repo}/releases`);'),
-    f('src/Footer.tsx', '<img src="https://status.openstatus.dev/badge/v2" />\n<a href="https://twitter.com/someone">x</a>\n<Link href="https://docs.example-saas.io/guide">docs</Link>'),
+    f('src/Footer.tsx', '<img src="https://app.documenso.com/badge.svg" />\n<a href="https://twitter.com/someone">x</a>\n<Link href="https://docs.example-saas.io/guide">docs</Link>'),
     f('src/layout.astro', '<link rel="preconnect" href="https://fonts.googleapis.com" />'),
     f('src/icons.ts', 'export const icon = (h: string) => `https://icons.duckduckgo.com/ip3/${h}.ico`;'),
     f('src/share.ts', 'export const share = (t: string) => `https://twitter.com/intent/tweet?text=${t}`;'),
@@ -20,7 +20,7 @@ test('resource requests: fetch, src, <link>, CSS and data-built resource URLs co
     f('src/rates.ts', 'export const rate = (d: string) => fetch(`https://api.rates-somewhere.io/v1/${d}`);'),
     f('src/__tests__/x.test.ts', 'fetch("https://api.tinybird.co/v0/events")'),
   ]));
-  assert.deepEqual(ids(r), ['duckduckgo-icons', 'github-api', 'google-fonts', 'ms-office-viewer', 'openstatus']);
+  assert.deepEqual(ids(r), ['documenso', 'duckduckgo-icons', 'github-api', 'google-fonts', 'ms-office-viewer']);
   assert.deepEqual(r.verify.map((x) => [x.kind, x.name]), [['domain', 'api.rates-somewhere.io']], 'unknown domain apart; links, share URLs and tests left out');
 });
 
@@ -59,10 +59,10 @@ test('reports: known services carry their detection source; unknown domains are 
   const md = auditMarkdown({
     findings: [], review: [], score: null, counts: {}, layers: {}, stack: [],
     model: { activities: [], transfers: [], inventory: [], dpia: { criteria: [], required: false, labels: [] }, deletionMatrix: { hasFlow: false, flows: [], rows: [] },
-      namedVendors: [{ vendor: 'OpenStatus', vendorId: 'openstatus', source: 'url', evidence: [{ file: 'src/Footer.tsx', line: 1 }] }],
+      namedVendors: [{ vendor: 'Documenso', vendorId: 'documenso', source: 'url', evidence: [{ file: 'src/Footer.tsx', line: 1 }] }],
       unverifiedRecipients: [{ kind: 'domain', name: 'api.rates-somewhere.io', host: 'api.rates-somewhere.io', evidence: [{ file: 'src/rates.ts', line: 1 }] }] },
   }, { lang: 'tr' });
-  assert.match(md, /\*\*OpenStatus\*\* _\(istek \/ kaynak adresi\)_/);
+  assert.match(md, /\*\*Documenso\*\* _\(istek \/ kaynak adresi\)_/);
   assert.match(md, /### Bilinmeyen alan adları ve işletmecinin yapılandırdığı servisler — doğrulayın/);
   assert.match(md, /\*\*api\.rates-somewhere\.io\*\* _\(alan adı\)_/);
 });

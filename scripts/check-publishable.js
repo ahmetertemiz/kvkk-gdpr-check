@@ -13,6 +13,8 @@
  *      one of these shapes still stops a push, so fixtures must write it in pieces (['sk', 'live', '…'].join('_'))
  * Project names come from the benchmark list (private/bench/repos.json) and from the real-project set
  * (private/bench/real/repos.json: stack names, site host names).
+ * A project name that is also a service of the vendor catalogue may stand only in the catalogue files and in the tests
+ * that import them (CATALOGUE_FILES, catalogueNameAllowed); everywhere else it is still a hit.
  * Exit code 1 and one line per hit. No project name is written into this file on purpose.
  */
 import fs from 'node:fs';
@@ -68,23 +70,74 @@ function projectNames() {
 }
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-export { PUSH_PROTECTED, SECRET, projectNames };
+// A project name that is also the name of a service in the vendor catalogue may stand in the catalogue files and in the
+// tests that import them, and nowhere else (README, docs, CHANGELOG, examples and every other file still fail). Decided by
+// rule, not by a list of names: the name must be a service of the catalogue (id, name, label, alias, or the registrable
+// name of one of its domains).
+const CATALOGUE_FILES = new Set(['src/data/vendors.js', 'src/live/extra-vendors.js', 'src/audit/extract/_sinks.js']);
 
-function main() {
-const names = projectNames();
-const nameRe = names && names.length ? new RegExp(`(?<![\\w-])(?:${names.map(esc).join('|')})(?![\\w-])`, 'i') : null;
-const hits = [];
-for (const rel of walk(ROOT)) {
-  if (PRIVATE_PATHS.some((re) => re.test(rel))) { hits.push(`${rel}: must stay private`); continue; }
-  if (!TEXT.test(rel)) continue;
-  const lines = fs.readFileSync(path.join(ROOT, rel), 'utf8').split(/\r?\n/);
-  lines.forEach((l, i) => {
-    const m = nameRe && l.match(nameRe);
-    if (m) hits.push(`${rel}:${i + 1}: benchmark project named (${m[0]})`);
+/** Lower-case names the vendor catalogue defines a service by. */
+async function catalogueServiceNames() {
+  const v = await import('../src/data/vendors.js');
+  const { EXTRA_VENDORS } = await import('../src/live/extra-vendors.js');
+  const entries = [...v.VENDORS, ...v.INVENTORY_VENDORS, ...EXTRA_VENDORS, ...Object.values(v.DEPENDENCY_VENDORS || {}).flatMap((g) => g.members || [])];
+  const out = new Set();
+  const words = (x) => String(x || '').toLowerCase().split(/[^a-z0-9.-]+/).filter(Boolean);
+  for (const e of entries) {
+    for (const x of [e.id, ...(e.aliases || [])]) if (x) out.add(String(x).toLowerCase());
+    for (const x of [e.name, ...(e.labels || [])]) for (const w of words(x)) out.add(w);
+    for (const d of e.domains || []) {
+      const parts = String(d).toLowerCase().split('.');
+      out.add(parts.join('.'));
+      if (parts.length >= 2) out.add(parts[parts.length - 2]);
+    }
+  }
+  return out;
+}
+
+/** A test that imports a catalogue file directly. */
+function importsCatalogue(rel, text) {
+  if (!/^test\//.test(rel)) return false;
+  for (const m of String(text).matchAll(/\b(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g)) {
+    if (!m[1].startsWith('.')) continue;
+    const target = path.posix.normalize(path.posix.join(path.posix.dirname(rel), m[1]));
+    if (CATALOGUE_FILES.has(target)) return true;
+  }
+  return false;
+}
+
+/** Whether a project name found in file rel is allowed there: a catalogue service, in a catalogue file or its test. */
+function catalogueNameAllowed(rel, text, name, serviceNames) {
+  if (!serviceNames || !serviceNames.has(String(name).toLowerCase())) return false;
+  return CATALOGUE_FILES.has(rel) || importsCatalogue(rel, text);
+}
+
+/** Problems of one text file (rel: path from the repository root, '/' separated). */
+function scanText(rel, text, { names = null, serviceNames = null } = {}) {
+  const nameRe = names && names.length ? new RegExp(`(?<![\\w-])(?:${names.map(esc).join('|')})(?![\\w-])`, 'gi') : null;
+  const hits = [];
+  String(text).split(/\r?\n/).forEach((l, i) => {
+    if (nameRe) {
+      const bad = [...l.matchAll(nameRe)].map((m) => m[0]).filter((n) => !catalogueNameAllowed(rel, text, n, serviceNames));
+      if (bad.length) hits.push(`${rel}:${i + 1}: benchmark project named (${bad[0]})`);
+    }
     if (LOCAL_PATH.test(l) && rel !== 'scripts/check-publishable.js') hits.push(`${rel}:${i + 1}: path of a local machine`);
     if (SECRET.test(l) && !ALLOW_SECRET.test(rel) && rel !== 'scripts/check-publishable.js') hits.push(`${rel}:${i + 1}: credential-shaped value`);
     else if (PUSH_PROTECTED.test(l) && rel !== 'scripts/check-publishable.js') hits.push(`${rel}:${i + 1}: provider key format blocked by push protection (write it in pieces)`);
   });
+  return hits;
+}
+
+export { PUSH_PROTECTED, SECRET, projectNames, catalogueServiceNames, scanText, CATALOGUE_FILES };
+
+async function main() {
+const names = projectNames();
+const serviceNames = names ? await catalogueServiceNames() : null;
+const hits = [];
+for (const rel of walk(ROOT)) {
+  if (PRIVATE_PATHS.some((re) => re.test(rel))) { hits.push(`${rel}: must stay private`); continue; }
+  if (!TEXT.test(rel)) continue;
+  hits.push(...scanText(rel, fs.readFileSync(path.join(ROOT, rel), 'utf8'), { names, serviceNames }));
 }
 for (const h of process.argv.includes('--list') ? hits : hits.slice(0, 60)) console.log(h);
 if (!names) console.log('note: private/bench/repos.json not found; project names were not checked');

@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { PUSH_PROTECTED, projectNames } from '../scripts/check-publishable.js';
+import { PUSH_PROTECTED, projectNames, scanText, catalogueServiceNames, CATALOGUE_FILES } from '../scripts/check-publishable.js';
 
 const j = (parts, sep) => parts.join(sep);
 const body = (n) => 'Ab1Cd2Ef3Gh4Ij5Kl6Mn7Op8Qr9St0Uv1Wx2Yz3'.repeat(2).slice(0, n);
@@ -53,4 +53,34 @@ test('project names include the real-project set (stack, folder, site host), not
     if (prevBench === undefined) delete process.env.KVKK_BENCH_DATA; else process.env.KVKK_BENCH_DATA = prevBench;
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+// 0.2.1: a project name that is also a service of the vendor catalogue may stand in the catalogue files and their tests
+// only. A made-up name stands for the project here; the rule is whether the catalogue defines a service by that name.
+test('a project name that is a catalogue service passes in the catalogue, fails in README and elsewhere', () => {
+  const names = ['zorbalix'];
+  const serviceNames = new Set(['zorbalix']);
+  const line = "  { id: 'zorbalix', name: 'Zorbalix', domains: ['zorbalix.example'] },";
+  assert.deepEqual(scanText('src/data/vendors.js', line, { names, serviceNames }), [], 'catalogue file');
+  assert.deepEqual(scanText('src/live/extra-vendors.js', line, { names, serviceNames }), [], 'catalogue file');
+  const testFile = "import { vendorById } from '../src/data/vendors.js';\nassert.ok(vendorById('zorbalix'));";
+  assert.deepEqual(scanText('test/vendors-x.test.js', testFile, { names, serviceNames }), [], 'test that imports the catalogue');
+  for (const rel of ['README.md', 'README.en.md', 'docs/ACCURACY.md', 'CHANGELOG.md', 'examples/reports/audit-app.md', 'src/audit/legal/checks/transparency.js']) {
+    assert.equal(scanText(rel, 'Measured on Zorbalix.', { names, serviceNames }).length, 1, rel);
+  }
+  const other = "import { sideRecipients } from '../src/audit/legal/side-recipients.js';\nconst u = 'https://zorbalix.example/badge';";
+  assert.equal(scanText('test/side-x.test.js', other, { names, serviceNames }).length, 1, 'test that does not import the catalogue');
+});
+
+test('a project name that is not a catalogue service fails in the catalogue files too', () => {
+  const line = "  { id: 'qwertyuio', name: 'Qwertyuio' },";
+  assert.equal(scanText('src/data/vendors.js', line, { names: ['qwertyuio'], serviceNames: new Set(['zorbalix']) }).length, 1);
+  assert.equal(scanText('src/data/vendors.js', line, { names: ['qwertyuio'], serviceNames: null }).length, 1, 'no catalogue: no exception');
+});
+
+test('catalogue service names come from the catalogue itself: id, name words, labels, aliases, domain names', async () => {
+  const s = await catalogueServiceNames();
+  for (const n of ['stripe', 'documenso', 'jitsu', 'cal.com']) assert.ok(s.has(n), n);
+  assert.ok(!s.has('qwertyuio'));
+  assert.ok(CATALOGUE_FILES.has('src/data/vendors.js'));
 });
