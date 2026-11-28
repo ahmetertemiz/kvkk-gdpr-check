@@ -1,6 +1,6 @@
 # Değişiklikler
 
-## 0.2.1 — yayımlanmadı
+## 0.2.1 — 2026-11-28
 
 ### Davranış değişikliği: saklama süresi (RET-01, RET001)
 

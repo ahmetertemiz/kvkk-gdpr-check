@@ -2,6 +2,12 @@
 
 Bu belge aracın ne kadar doğru çalıştığını ölçüldüğü hâliyle anlatır. İddia değil, ölçümdür; ölçümün kendi zayıflıkları da aşağıda yazılıdır.
 
+> ⚠️ **Bulguların yarısından fazlası yanlış alarm olabilir.** Araç geliştirilirken hiç görülmemiş altı gerçek projede (0.2.0 ile), kritik, yüksek ve orta önemli 164 konumun 71'i gerçek bir sorundu (yaklaşık %43, Wilson %90 aralığı %37–%50). Proje bazında oran %13 ile %57 arasında.
+
+## Durum
+
+Kural tabanlı isabet, görülmemiş altı projenin ölçümünde proje başına %13 ile %57 arasında kaldı. 0.2.1'deki değişiklikler bu aralığı yükseltmedi: son iki projede 0.2.0 %26, 0.2.1 %27 verdi. Araç tek başına hüküm vermek için değil, kodu okuyan bir insana ya da ajana nereye bakacağını göstermek için kullanılmalı. Ajanlar için [elle doğrulama becerisi](../skill/kvkk-gdpr-audit/SKILL.md) aracın listesini kodda tek tek doğrular.
+
 ## İki ölçüm seti
 
 Aracın isabeti iki ayrı sette ölçülür. Raporlardaki "İsabet:" satırı ikisini yan yana verir, hiçbir zaman birleştirmez:
@@ -43,7 +49,76 @@ Oranlar doğru / (doğru + yanlış) olarak hesaplandı, belirsiz kararlar hari�
 - **Etiketsiz konumlar:** Derin denetimin kritik, yüksek ve orta konumlarından 10'u etiketsiz; oranlara girmez.
 - **AUD-SEC-04 (log'a kişisel veri):** Gerçek sette 8 konumun 1'i doğru, 84 projelik sette 72 konumun 48'i. Kural düzeyinde ölçüldüğü konumlar "Doğrulanmalı"ya gider. Alt sinyali olan konumlar için kural düzeyine bakan bir yedek kural yazıldı ama kapalı. Açılırsa 84 projelik sette çoğu doğru olan konumları da listeden çıkarıyordu.
 
-### Görülmemiş dört proje
+### Görülmemiş altı proje
+
+Önce dört proje 0.2.0 ile ölçüldü (aşağıda ayrıntısıyla). 0.2.1'i sınamak için iki proje daha seçildi (2026-11-28) ve hem 0.2.0 hem 0.2.1 ile, aynı kör protokolle ölçüldü:
+- İkisi de açık kaynak TypeScript projesi: biri Next.js / Prisma uygulaması (isteğe bağlı ClickHouse ile), diğeri Drizzle / SQLite kullanan bir monorepo.
+- İkisi de 84 projelik sette, gerçek ayar setinde ya da geliştirme sırasında kullanılmadı; canlı siteleri taranmadı.
+- 0.2.1 ölçümü donmuş bir kopyayla yapıldı; ölçüm başladıktan sonra araçta hiçbir şey değişmedi.
+- 0.2.0 npm'deki paketti. İki sürümde de bulunan konumlara 0.2.1 etiketi taşındı (aynı tarama, kural, alt sinyal, dosya, satır ve etiket metni). Yalnızca 0.2.0'da olan 84 konum aynı kör protokolle ayrıca etiketlendi.
+
+İlk dört projenin etiketleri 0.2.1'in ayarına girdi. Bu yüzden 0.2.1'in görülmemiş koddaki sonucu yalnızca son iki projede ölçülebiliyor.
+
+| Kontrol edilecekler, kritik + yüksek + orta: gerçek sorun | Hızlı tarama | Derin denetim | İkisi birlikte |
+|---|---|---|---|
+| İlk dört proje, 0.2.0 | 18 / 42 (%43) | 41 / 76 (%54) | 59 / 118 (%50; %43–%57) |
+| Son iki proje, 0.2.0 | 4 / 16 (%25) | 8 / 30 (%27) | 12 / 46 (%26; %17–%38) |
+| **Altı proje, 0.2.0** | 22 / 58 (%38; %28–%49) | 49 / 106 (%46; %38–%54) | **71 / 164 (%43; Wilson %90: %37–%50)** |
+| Son iki proje, 0.2.1 | 4 / 16 (%25) | 8 / 29 (%28) | 12 / 45 (%27; %17–%39) |
+
+- **Proje bazında (0.2.0):** %13 (1 / 8), %29, %29, %50, %55 ve %57. En düşüğü yalnızca 8 konumluk bir projede; aralıklar geniş.
+- **Olgu doğru:** Altı projede aynı konumların 112 / 171'inde (%65) iddia olgu olarak doğru.
+
+#### 0.2.1'in hedefleri ve sonucu
+
+| Hedef (son iki proje) | 0.2.0 | 0.2.1 | Sonuç |
+|---|---|---|---|
+| Kritik, yüksek ve orta konumlarda isabet %50'nin altına düşmesin | 12 / 46 (%26) | 12 / 45 (%27) | **Tutmadı.** Fark sürümden değil projelerden geliyor: 0.2.0 aynı projelerde aynı oranı veriyor. |
+| Veri alan üçüncü tarafların eksiksizliği (derin denetim) %56'dan belirgin artsın | 19 / 26 (%73) | 22 / 26 (%85; %70–%93) | **Tuttu.** |
+| Kodu okurken bulunan sorunlardan raporda geçenler %53'ün altına düşmesin | 35 / 68 (%51) | 35 / 68 (%51; %42–%61) | **Sınırda tutmadı.** İki sürümde aynı. |
+
+**Kodu okurken bulunan 68 sorun, raporun neresinde:**
+
+| | 0.2.0 | 0.2.1 |
+|---|---|---|
+| Bulgu / Doğrulanmalı / yalnızca envanter / raporda yok | 19 / 11 / 5 / 33 | 13 / 15 / 7 / 33 |
+| Yüksek ve orta önemli 41 sorun | 11 / 8 / 5 / 17 | 9 / 9 / 6 / 17 |
+| Yüksek önemli 5 sorun | 1 / 2 / 1 / 1 | 0 / 2 / 2 / 1 |
+
+Kaçırılan yüksek önemli sorun kimlik doğrulamasız bir SSRF. Yüksek önemli beş sorunun hiçbiri 0.2.1'de bulgu olarak geçmiyor.
+
+#### 0.2.1'in bedelleri
+
+Aynı iki projede 0.2.0'a göre:
+- **Envanter isabeti düştü:** derin denetimin öğe ve alıcı satırlarında %72'den (44 / 61) %67'ye (50 / 75). Yeni üçüncü taraf satırlarının 14'ünden 6'sı doğru. Yanlışlar arasında katalogda servis olarak bulunan projenin kendi adı var.
+- **Altı saklama sorunu bulgudan indi:** "Otomatik temizliği olmayan tablolar" artık bir hüküm değil, envanterde bir olgu. Bu tabloların gösterdiği altı gerçek saklama sorunu bulgu olmaktan çıktı: ikisi yalnızca envanterde, dördü "Doğrulanmalı" listesinde. Biri yüksek önemli (ziyaretçi verisinin süresiz saklanması). Raporda geçen sorun sayısı değişmedi.
+- **Karşılığında:** Kontrol listesinden %34 isabetli 83 düşük önemli konum çıktı (162 konumdan 79'a). Orta önemli bir yanlış ("biyometrik veri") kalktı.
+
+Kayda değer etkisi olmayan değişiklikler: yeniden kalibrasyon (paylaşılan konumların hiçbirinde önem ya da bölüm değişmedi) ve projenin kendi alan adının çıkarılması.
+
+#### "Doğrulanmalı" listesi
+
+| | 0.2.0 | 0.2.1 |
+|---|---|---|
+| Son iki proje: boyut | 83 | 83 |
+| Son iki proje: gerçek sorun | 32 / 80 (%40) | 31 / 79 (%39; %31–%48) |
+| … kritik, yüksek ve orta | 29 / 61 (%48) | 29 / 61 (%48) |
+| Altı proje: gerçek sorun | 89 / 240 (%37; %32–%42) | |
+
+**Bu listenin isabeti, puanlanan üst bölümünkinden yüksek çıkabiliyor:** son iki projede %39'a karşı %27. Bir projede "Doğrulanmalı" listesindeki konumların çoğu gerçek sorundu, puanlanan konumların ise azı. İki liste de aynı dikkatle okunmalı; "Doğrulanmalı" daha az güvenilir demek değil, ölçümün o sinyal için yetersiz ya da karışık olduğu demek.
+
+#### Envanter (son iki proje)
+
+| | 0.2.0 | 0.2.1 |
+|---|---|---|
+| İsabet, derin denetim (belirsizler yanlış sayılarak) | 44 / 61 (%72) | 50 / 75 (%67) |
+| İsabet, hızlı tarama | 25 / 36 (%69) | 25 / 36 (%69) |
+| Eksiksizlik: kişisel veri öğeleri, derin / hızlı | 33 / 87 (%38) / 23 / 87 (%26) | aynı |
+| Eksiksizlik: veri alan üçüncü taraflar, derin / hızlı | 19 / 26 (%73) / 5 / 26 (%19) | 22 / 26 (%85) / 5 / 26 (%19) |
+
+**Liste tam değil:** kod okunarak bulunan kişisel veri öğelerinin derin denetimde yalnızca %38'i listelendi. En çok eksik kalan yine uygulamanın asıl verisi; örneğin analitik uygulamasında ziyaretçi oturumu, URL ve sorgu dizesi, yönlendiren, olay verisi ve JavaScript hataları.
+
+### İlk dört görülmemiş proje (0.2.0)
 
 **Projeler:** Araç geliştirilirken hiç görülmemiş dört açık kaynak uygulama (2026-11-27). Hepsi Next.js / Prisma / tRPC monorepo'ları; birinde veritabanı katmanı Drizzle / SQLite.
 - Projelerin hiçbiri 84 projelik sette, gerçek ayar setinde ya da geliştirme sırasında kullanılmadı.
@@ -82,7 +157,7 @@ Oranlar doğru / (doğru + yanlış) olarak hesaplandı, belirsiz kararlar hari�
   | Silme bütünlüğü ve veri sahibi hakları | 7 |
   | Bildirilmeyen üçüncü taraf akışları | 5 |
 
-- **Envanter:** Listelenenler büyük oranda doğru, ama liste tam değil. Uygulamanın asıl verisi çoğu zaman yok: oylar, ziyaretçi izleme olayları, kayıtlı URL'ler ve arşivler. Kendi istemcisiyle çağrılan analitik servisleri, oturum açma sağlayıcıları ve mağaza ödemeleri de sık sık eksik.
+- **Envanter:** Listelenenler büyük oranda doğru, ama liste tam değil (kişisel veri öğelerinin derin denetimde %73'ü; son iki projede %38'i). Uygulamanın asıl verisi çoğu zaman yok: oylar, ziyaretçi izleme olayları, kayıtlı URL'ler ve arşivler. Kendi istemcisiyle çağrılan analitik servisleri, oturum açma sağlayıcıları ve mağaza ödemeleri de sık sık eksik.
 - **"Doğrulanmalı" listesi:** Maddelerinin %36'sı gerçek sorun. Bazı gerçek sorunlar yalnızca orada görünüyor; atlamayın.
 - **En çok tekrar eden beş yanlış alarm sınıfı:**
 

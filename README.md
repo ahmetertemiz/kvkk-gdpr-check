@@ -2,17 +2,21 @@
 
 **Yazılım projenizi KVKK ve GDPR riskleri açısından tarayan, her bulguyu dosya ve satırıyla gösteren komut satırı aracı.**
 
-> ⚠️ **Bulguların yarısı yanlış alarm olabilir; her birini kodda kendiniz doğrulayın.** Araç geliştirilirken hiç görülmemiş dört gerçek projede, kritik, yüksek ve orta önemli 118 konumun 59'u gerçek bir sorundu (%50, Wilson %90 aralığı %43–%57; [Ne kadar doğru?](#ne-kadar-doğru)).
+> ⚠️ **Bulguların yarısından fazlası yanlış alarm olabilir; her birini kodda kendiniz doğrulayın.** Araç geliştirilirken hiç görülmemiş altı gerçek projede (0.2.0 ile), kritik, yüksek ve orta önemli 164 konumun 71'i gerçek bir sorundu (yaklaşık %43, Wilson %90 aralığı %37–%50). Proje bazında oran %13 ile %57 arasında ([Ne kadar doğru?](#ne-kadar-doğru)).
 >
-> **Güvenlik incelemesinin yerini tutmaz.** Kodu okuyarak bulunan sorunların yalnızca %53'ü raporda geçti; yüksek önemli 10 sorunun yalnızca 2'si. En çok kaçan tür yetki ve erişim kontrolü.
+> **Güvenlik incelemesinin yerini tutmaz.** Kodu okuyarak bulunan sorunların yalnızca yarısı kadarı raporda geçti: ilk dört projede %53, sonraki iki projede %51. Yüksek önemli sorunların çoğu bulgu olarak çıkmadı. En çok kaçan tür yetki ve erişim kontrolü.
 >
-> **Envanter** bölümünde listelenenler büyük oranda doğrudur (%84), ama liste tam değildir: kişisel veri öğelerinin dörtte biri ile beşte ikisi, veri alan üçüncü tarafların yarısı ile dörtte üçü eksik kalabilir.
+> **Envanter** bölümünde listelenenlerin çoğu doğrudur (ilk dört projede %84, sonraki iki projede %67), ama liste tam değildir: son iki projede kod okunarak bulunan kişisel veri öğelerinin derin denetimde yalnızca %38'i listelendi.
 
 [English](README.en.md) · [Doğruluk](docs/ACCURACY.md) · [Hukuki dayanaklar](docs/hukuki-dayanaklar.md) · [Örnek rapor](examples/reports/audit-app.md)
 
 > **Aracın asıl çıktısı skor değil, kanıtlı bulgu listesidir.** Skor çoğu projede verilmez: ölçüm setindeki 84 projenin 28'inde verildi. [Neden?](#skor)
 
 > ⚖️ Hukuki danışmanlık değildir. Bulgu çıkmaması sorun olmadığı anlamına gelmez. Üretilen belgeler taslaktır; bir hukukçu incelemeden yayımlamayın.
+
+## Durum
+
+Kural tabanlı isabet, görülmemiş altı projenin ölçümünde proje başına %13 ile %57 arasında kaldı. 0.2.1'deki değişiklikler bu aralığı yükseltmedi. Araç tek başına hüküm vermek için değil, kodu okuyan bir insana ya da ajana nereye bakacağını göstermek için kullanılmalı. Ajanlar için [elle doğrulama becerisi](skill/kvkk-gdpr-audit/SKILL.md) aracın listesini kodda tek tek doğrular.
 
 ## 30 saniyede başlayın
 
@@ -58,9 +62,9 @@ Her rapor (metin, Markdown, HTML, JSON) iki bölümdür:
 - **Envanter: olgu, hüküm yok.**
   - Hızlı taramada: kodun ve veritabanı şemasının tuttuğu kişisel veriler, izleyiciler, veri alan üçüncü taraflar; canlı taramada çerezler ve istek giden alan adları.
   - Derin denetimde ayrıca: işleme faaliyetleri, yurt dışı aktarım kaydı ve kodda adı geçen ama veri akışı izlenemeyen servisler ("doğrulayın" notuyla).
-  - Listelenen öğeler büyük oranda doğrudur (görülmemiş dört projede %84), ama liste tam değildir. Kişisel veri öğelerinin hızlı taramada %59'u, derin denetimde %73'ü; veri alan üçüncü tarafların %24'ü ve %56'sı listelendi. Her öğe tek satırda, kesilmeden listelenir.
+  - Listelenen öğelerin çoğu doğrudur (ilk dört görülmemiş projede %84, sonraki iki projede 0.2.1 ile %67), ama liste tam değildir. Son iki projede kod okunarak bulunan kişisel veri öğelerinin derin denetimde %38'i, hızlı taramada %26'sı listelendi; veri alan üçüncü tarafların derin denetimde %85'i. Her öğe tek satırda, kesilmeden listelenir.
 - **Kontrol edilecekler: hüküm içeren bulgular.** Her kuralın yanında bir "İsabet:" satırı vardır. Bu satır iki ölçümü ayrı ayrı verir: gerçek projelerde ve 84 projelik ölçüm setinde ne kadar doğru çıktığı. 5'ten az etiket varsa oran değil, yalnızca sayı yazar ("yetersiz veri: 1 konumda 0 doğru").
-- **Doğrulanmalı (puana katılmadı):** ölçümde çoğu yanlış çıkan sinyaller. Puana, sayılara ve `--fail-on` sınırına girmez; `--fail-on-review` ile girer. **Bu listeyi atlamayın:** görülmemiş dört projede maddelerinin %36'sı gerçek sorundu. Bazı gerçek sorunlar yalnızca bu listede görünüyor.
+- **Doğrulanmalı (puana katılmadı):** ölçümde çoğu yanlış çıkan sinyaller. Puana, sayılara ve `--fail-on` sınırına girmez; `--fail-on-review` ile girer. **Bu listeyi atlamayın:** son iki görülmemiş projede maddelerinin %39'u gerçek sorundu; puanlanan kritik, yüksek ve orta konumlardan (%27) daha yüksek. İki listeyi aynı dikkatle okuyun. Bazı gerçek sorunlar yalnızca bu listede görünüyor.
 
 **Önem sınırı.** Bir konum ancak bir ölçüm destekliyorsa kritik ya da yüksek gösterilir. Destek şu durumlardan biridir:
 - kuralın gerçek projelerde en az 8 etiketi var ve isabetin %90 alt sınırı en az %50;
@@ -159,7 +163,33 @@ Düzeyler görülmemiş projelerdeki ölçüme göre sabit bir kuralla verilir. 
 - **Etiketsiz konumlar:** Derin denetimin kritik, yüksek ve orta konumlarından 10'u hiç etiketlenmedi; oranlara girmez.
 - **Bağımsız tek sonuç:** O projeye bakılarak yapılan düzeltmelerden önce, 0.1.x ile ölçülen oranlar %13, %26 ve %8'di. Bunlar kritik, yüksek ve orta konumlardı; hızlı tarama, derin denetim ve canlı tarama birlikte sayıldı. %8, araç geliştirilirken hiç görülmemiş üçüncü projenin sonucuydu.
 
-### Görülmemiş dört proje
+### Görülmemiş altı proje
+
+Araç geliştirilirken hiç görülmemiş altı açık kaynak uygulamada kör olarak ölçüldü: önce dördü 0.2.0 ile, sonra 0.2.1'i sınamak için iki yenisi hem 0.2.0 hem 0.2.1 ile. İlk dört projenin etiketleri 0.2.1'in ayarına girdi; bu yüzden 0.2.1'in görülmemiş koddaki sonucu yalnızca son iki projede ölçülebiliyor.
+
+| Kontrol edilecekler, kritik + yüksek + orta: gerçek sorun | Hızlı tarama | Derin denetim | İkisi birlikte |
+|---|---|---|---|
+| İlk dört proje, 0.2.0 | 18 / 42 (%43) | 41 / 76 (%54) | 59 / 118 (%50; %43–%57) |
+| Son iki proje, 0.2.0 | 4 / 16 (%25) | 8 / 30 (%27) | 12 / 46 (%26; %17–%38) |
+| **Altı proje, 0.2.0** | 22 / 58 (%38) | 49 / 106 (%46) | **71 / 164 (%43; Wilson %90: %37–%50)** |
+| Son iki proje, 0.2.1 | 4 / 16 (%25) | 8 / 29 (%28) | 12 / 45 (%27; %17–%39) |
+
+- **Proje bazında (0.2.0):** %13, %29, %29, %50, %55 ve %57. En düşüğü yalnızca 8 konumluk bir projede.
+- **0.2.1'in hedefleri ve sonucu** (son iki proje):
+
+  | Hedef | Sonuç |
+  |---|---|
+  | Kritik, yüksek ve orta konumlarda isabet %50'nin altına düşmesin | **Tutmadı:** %27. 0.2.0 aynı projelerde %26 verdi; fark sürümden değil projelerden geliyor. |
+  | Veri alan üçüncü tarafların eksiksizliği (derin denetim) %56'dan belirgin artsın | **Tuttu:** 22 / 26 (%85). 0.2.0 aynı projelerde %73. |
+  | Kodu okurken bulunan sorunlardan raporda geçenler %53'ün altına düşmesin | **Sınırda tutmadı:** 35 / 68 (%51). 0.2.0 aynı projelerde de 35 / 68. |
+
+- **0.2.1'in bedelleri** (aynı iki projede 0.2.0'a göre):
+  - Derin denetimin envanter isabeti düştü: %72'den %67'ye. Yeni üçüncü taraf satırlarının bir kısmı yanlış.
+  - Altı saklama sorunu bulgudan envantere ya da "Doğrulanmalı" listesine indi; biri yüksek önemli. Sebep: "otomatik temizliği olmayan tablolar" artık bir hüküm değil, envanterde bir olgu. Raporda geçen sorun sayısı değişmedi.
+- **"Doğrulanmalı" listesi:** Son iki projede maddelerinin 31 / 79'u (%39) gerçek sorun; puanlanan kritik, yüksek ve orta konumlardan (%27) yüksek. Altı projede 0.2.0 ile 89 / 240 (%37). İki liste de aynı dikkatle okunmalı.
+- **Envanter (son iki proje, 0.2.1):** Listelenenlerin %67'si doğru. Liste tam değil: kişisel veri öğelerinin derin denetimde %38'i, hızlı taramada %26'sı listelendi.
+
+#### İlk dört proje (0.2.0)
 
 Araç geliştirilirken hiç görülmemiş dört açık kaynak uygulamada ölçüldü: Next.js / Prisma / tRPC monorepo'ları, birinde Drizzle / SQLite. Ölçüm 0.2.0 ile ve kör olarak yapıldı:
 - **Kör okuma:** Her konum önce kodda okundu; aracın etiketine ancak karar verildikten sonra bakıldı.
@@ -184,7 +214,7 @@ Her konuma iki karar verildi:
 - **Kaçırma:** Kodu okuyarak bulunan 139 sorunun 73'ü (%53) raporun herhangi bir bölümünde geçiyor. Yüksek ve orta önemlilerde 57'nin 33'ü. **Yüksek önemli 10 sorunun yalnızca 2'si.**
   - En çok kaçan tür yetki ve erişim kontrolü: takımlar arası erişim (IDOR), kimlik doğrulamasız uç noktalar, rol yükseltme.
   - Ardından güvenlik yapılandırması, aydınlatma metni ile kod arasındaki uyumsuzluklar, silme bütünlüğü ve bildirilmeyen üçüncü taraf akışları geliyor.
-- **Envanter:** Listelenenler büyük oranda doğru (%84), ama liste tam değil. Uygulamanın asıl verisi çoğu zaman eksik kalıyor: oylar, ziyaretçi izleme olayları, kayıtlı URL'ler ve arşivler. Kendi istemcisiyle çağrılan servislerde ve oturum açma sağlayıcılarında üçüncü tarafların bir kısmı da eksik.
+- **Envanter:** Listelenenler büyük oranda doğru (%84), ama liste tam değil (kişisel veri öğelerinin derin denetimde %73'ü; son iki projede %38'i). Uygulamanın asıl verisi çoğu zaman eksik kalıyor: oylar, ziyaretçi izleme olayları, kayıtlı URL'ler ve arşivler. Kendi istemcisiyle çağrılan servislerde ve oturum açma sağlayıcılarında üçüncü tarafların bir kısmı da eksik.
 - **"Doğrulanmalı" listesi:** Maddelerinin %36'sı gerçek sorun. Bazı gerçek sorunlar yalnızca orada duruyor; atlamayın.
 - **Ölçümden sonraki düzeltme:** Projelerden birinde, hızlı taramada yüksek önemde kalan tek konum yanlıştı. Gerçek görünümlü anahtar istisnası yerel bir adresi (`http://localhost:3000`) sır sayıyordu; bu ölçümden sonra düzeltildi. O projenin rakamları düzeltmeden önce ölçüldü. Düzeltme yalnızca o konumun önemini değiştiriyor; diğer üç proje düzeltilmiş 0.2.0 ile ölçüldü.
 - **Yöntem ve iki ölçüt:** [docs/ACCURACY.md](docs/ACCURACY.md).
@@ -210,7 +240,7 @@ Yöntem ve tur tur sonuçlar: [docs/ACCURACY.md](docs/ACCURACY.md). İsabetin ra
 ## Sınırları
 
 - **Hukuki danışmanlık değildir, uyumu garanti etmez.** Bulgu çıkmaması sorun olmadığı anlamına gelmez.
-- **Güvenlik incelemesinin ya da sızma testinin yerini tutmaz.** Görülmemiş dört projede yüksek önemli sorunların çoğunu, özellikle yetki ve erişim kontrolü açıklarını kaçırdı. Sözleşmeleri, çalışan sistemi, gerçek veriyi ve idari tedbirleri görmez.
+- **Güvenlik incelemesinin ya da sızma testinin yerini tutmaz.** Görülmemiş altı projede yüksek önemli sorunların çoğunu, özellikle yetki ve erişim kontrolü açıklarını bulgu olarak göstermedi. Sözleşmeleri, çalışan sistemi, gerçek veriyi ve idari tedbirleri görmez.
 - Skor bir üst sınırdır: doğrulanmayı bekleyen yüksek önemli maddeler skora girmez.
 - "Kapsam ok" güvence değildir: son iki turda 12 projenin 4'ünde skor güvenilir görünürken açıklanmamış temel bir eksik vardı.
 - Kuralların hukuki dayanaklarını bir hukukçu incelemedi. Hangisinin birincil kaynaktan okunduğu, hangisinin doğrulanamadığı: [docs/hukuki-dayanaklar.md](docs/hukuki-dayanaklar.md). Doğrulanmayanlar raporda "doğrulanmamış dayanak" notuyla çıkar.
